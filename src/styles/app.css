@@ -1,0 +1,105 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Typography Classes */
+  .headline-4xl {
+    @apply text-4xl font-bold;
+  }
+  
+  .headline-3xl {
+    @apply text-3xl font-bold;
+  }
+  
+  .headline-2xl {
+    @apply text-2xl font-bold;
+  }
+  
+  .headline-xl {
+    @apply text-xl font-bold;
+  }
+  
+  .text-large {
+    @apply text-lg font-normal;
+  }
+  
+  .text-base-bold {
+    @apply text-base font-bold;
+  }
+  
+  .text-base-semibold {
+    @apply text-base font-semibold;
+  }
+  
+  .text-regular {
+    @apply text-base font-normal;
+  }
+  
+  .text-small {
+    @apply text-sm font-normal;
+  }
+  
+  .text-extra-small {
+    @apply text-xs font-normal;
+  }
+
+  /* Button Classes */
+  .btn-primary {
+    @apply bg-primary text-primary-content px-4 py-2 rounded-md hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-base-200 text-base-content px-4 py-2 rounded-md hover:bg-base-300 focus:outline-none focus:ring-2 focus:ring-neutral focus:ring-offset-2;
+  }
+  
+  .btn-accent {
+    @apply bg-accent text-accent-content px-4 py-2 rounded-md hover:bg-accent-focus focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2;
+  }
+  
+  /* Card Classes */
+  .card {
+    @apply bg-base-100 p-6 rounded-lg shadow;
+  }
+  
+  /* Form Classes */
+  .input {
+    @apply block w-full px-3 py-2 border border-base-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary;
+  }
+  
+  .label {
+    @apply block text-small font-medium text-base-content;
+  }
+  
+  /* Badge Classes */
+  .badge-success {
+    @apply bg-success text-success-content px-2 py-1 rounded-full text-extra-small;
+  }
+  
+  .badge-warning {
+    @apply bg-warning text-warning-content px-2 py-1 rounded-full text-extra-small;
+  }
+  
+  .badge-error {
+    @apply bg-error text-error-content px-2 py-1 rounded-full text-extra-small;
+  }
+  
+  .badge-info {
+    @apply bg-info text-info-content px-2 py-1 rounded-full text-extra-small;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
