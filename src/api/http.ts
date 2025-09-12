@@ -27,10 +27,14 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only handle 401 errors for non-auth endpoints
+    if (error.response?.status === 401 && !error.config.url?.includes('/login')) {
+      // Clear tokens first
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
+      
+      // Dispatch custom event for token expiry
+      window.dispatchEvent(new CustomEvent('tokenExpired'))
     }
     return Promise.reject(error)
   }

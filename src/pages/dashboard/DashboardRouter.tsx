@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
-import { DirectorDashboard } from './DirectorDashboard'
+import { DirectorDashboard } from '../director/DirectorDashboard'
 import { ProfesorDashboard } from './ProfesorDashboard'
 import { AlumnoDashboard } from './AlumnoDashboard'
 

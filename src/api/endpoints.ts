@@ -45,6 +45,33 @@ export const authApi = {
     http.post('accounts/logout/'),
 }
 
+// Director endpoints
+export const directorApi = {
+  getUsers: () => 
+    http.get<User[]>('director/users/'),
+  
+  createUser: (data: Partial<User> & { password: string }) => 
+    http.post<User>('director/users/', data),
+  
+  updateUser: (id: number, data: Partial<User>) => 
+    http.put<User>(`director/users/${id}/`, data),
+  
+  deleteUser: (id: number) => 
+    http.delete(`director/users/${id}/`),
+  
+  getSections: () => 
+    http.get('director/sections/'),
+  
+  createSection: (data: any) => 
+    http.post('director/sections/', data),
+  
+  updateSection: (id: number, data: any) => 
+    http.put(`director/sections/${id}/`, data),
+  
+  deleteSection: (id: number) => 
+    http.delete(`director/sections/${id}/`),
+}
+
 // Dashboard endpoints
 export const dashboardApi = {
   getDashboard: () => 

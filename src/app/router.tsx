@@ -3,6 +3,9 @@ import { useAuthStore } from '../store/auth'
 import { Login } from '../pages/auth/Login'
 import { Logout } from '../pages/auth/Logout'
 import { DashboardRouter } from '../pages/dashboard/DashboardRouter'
+import { DirectorDashboard } from '../pages/director/DirectorDashboard'
+import { StudentsPage } from '../pages/director/StudentsPage'
+import { ProfessorsPage } from '../pages/director/ProfessorsPage'
 import { Courses } from '../pages/academic/Courses'
 import { Sections } from '../pages/academic/Sections'
 import { MyPortfolio } from '../pages/portfolios/MyPortfolio'
@@ -29,6 +32,13 @@ export function AppRouter() {
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard/*" element={<DashboardRouter />} />
+        {user?.role === 'DIRECTOR' && (
+          <>
+            <Route path="/director" element={<DirectorDashboard />} />
+            <Route path="/students" element={<StudentsPage />} />
+            <Route path="/professors" element={<ProfessorsPage />} />
+          </>
+        )}
         <Route path="/courses" element={<Courses />} />
         <Route path="/sections" element={<Sections />} />
         <Route path="/portfolio" element={<MyPortfolio />} />

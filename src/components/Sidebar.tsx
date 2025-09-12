@@ -8,7 +8,6 @@ import {
   FolderOpen, 
   Settings,
   GraduationCap,
-  BarChart3
 } from 'lucide-react'
 
 const navigation = [
@@ -20,8 +19,11 @@ const navigation = [
 ]
 
 const directorNavigation = [
-  { name: 'Analíticas', href: '/analytics', icon: BarChart3 },
+  { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
+  { name: 'Secciones', href: '/sections', icon: Users },
   { name: 'Estudiantes', href: '/students', icon: GraduationCap },
+  { name: 'Profesores', href: '/professors', icon: Users },
+  { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
 export function Sidebar() {
@@ -29,7 +31,7 @@ export function Sidebar() {
   const { sidebarOpen } = useUIStore()
 
   const isDirector = user?.role === 'DIRECTOR'
-  const allNavigation = isDirector ? [...navigation, ...directorNavigation] : navigation
+  const allNavigation = isDirector ? directorNavigation : navigation
 
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${
