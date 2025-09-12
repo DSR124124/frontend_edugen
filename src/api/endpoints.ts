@@ -9,6 +9,8 @@ export interface User {
   last_name: string
   role: 'DIRECTOR' | 'PROFESOR' | 'ALUMNO'
   institution?: number
+  section?: number
+  section_name?: string
   created_at: string
 }
 
@@ -33,6 +35,48 @@ export interface DashboardData {
   }
 }
 
+export interface GradeLevel {
+  id: number
+  name: string
+  level: number
+  institution: number
+  created_at: string
+}
+
+export interface Term {
+  id: number
+  name: string
+  start_date: string
+  end_date: string
+  is_active: boolean
+  institution: number
+  created_at: string
+}
+
+export interface Section {
+  id: number
+  name: string
+  professor: number
+  professor_name?: string
+  term: number
+  term_name?: string
+  grade_level: number
+  grade_level_name?: string
+  capacity: number
+  created_at: string
+}
+
+export interface Institution {
+  id: number
+  name: string
+  code: string
+  address: string
+  phone: string
+  email: string
+  created_at: string
+  updated_at: string
+}
+
 // Auth endpoints
 export const authApi = {
   login: (data: LoginRequest) => 
@@ -43,6 +87,24 @@ export const authApi = {
   
   logout: () => 
     http.post('accounts/logout/'),
+}
+
+// Users endpoints
+export const usersApi = {
+  getUsers: () => 
+    http.get<User[]>('accounts/'),
+  
+  getUser: (id: number) => 
+    http.get<User>(`accounts/${id}/`),
+  
+  updateUser: (id: number, data: Partial<User>) => 
+    http.patch<User>(`accounts/${id}/`, data),
+  
+  createUser: (data: Partial<User>) => 
+    http.post<User>('accounts/', data),
+  
+  deleteUser: (id: number) => 
+    http.delete(`accounts/${id}/`),
 }
 
 // Director endpoints
@@ -60,16 +122,53 @@ export const directorApi = {
     http.delete(`director/users/${id}/`),
   
   getSections: () => 
-    http.get('director/sections/'),
+    http.get<Section[]>('director/sections/'),
   
-  createSection: (data: any) => 
-    http.post('director/sections/', data),
+  createSection: (data: Partial<Section>) => 
+    http.post<Section>('director/sections/', data),
   
-  updateSection: (id: number, data: any) => 
-    http.put(`director/sections/${id}/`, data),
+  updateSection: (id: number, data: Partial<Section>) => 
+    http.put<Section>(`director/sections/${id}/`, data),
   
   deleteSection: (id: number) => 
     http.delete(`director/sections/${id}/`),
+  
+  getGradeLevels: () => 
+    http.get<GradeLevel[]>('director/grade-levels/'),
+  
+  createGradeLevel: (data: Partial<GradeLevel>) => 
+    http.post<GradeLevel>('director/grade-levels/', data),
+  
+  updateGradeLevel: (id: number, data: Partial<GradeLevel>) => 
+    http.put<GradeLevel>(`director/grade-levels/${id}/`, data),
+  
+  deleteGradeLevel: (id: number) => 
+    http.delete(`director/grade-levels/${id}/`),
+  
+  getTerms: () => 
+    http.get<Term[]>('director/terms/'),
+  
+  createTerm: (data: Partial<Term>) => 
+    http.post<Term>('director/terms/', data),
+  
+  updateTerm: (id: number, data: Partial<Term>) => 
+    http.put<Term>(`director/terms/${id}/`, data),
+  
+  deleteTerm: (id: number) => 
+    http.delete(`director/terms/${id}/`),
+  
+  getInstitution: () => 
+    http.get<Institution>('director/institution/'),
+  
+  updateInstitution: (data: Partial<Institution>) => 
+    http.patch<Institution>('director/institution/', data),
+  
+  getSectionOptions: () => 
+    http.get<{
+      professors: Array<{id: number, first_name: string, last_name: string, username: string}>,
+      terms: Array<{id: number, name: string, is_active: boolean}>,
+      grade_levels: Array<{id: number, name: string, level: number}>
+    }>('director/sections/options/'),
 }
 
 // Dashboard endpoints

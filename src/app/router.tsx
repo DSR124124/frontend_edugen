@@ -3,9 +3,13 @@ import { useAuthStore } from '../store/auth'
 import { Login } from '../pages/auth/Login'
 import { Logout } from '../pages/auth/Logout'
 import { DashboardRouter } from '../pages/dashboard/DashboardRouter'
-import { DirectorDashboard } from '../pages/director/DirectorDashboard'
+import { DirectorDashboard } from '../pages/dashboard/DirectorDashboard'
 import { StudentsPage } from '../pages/director/StudentsPage'
 import { ProfessorsPage } from '../pages/director/ProfessorsPage'
+import { GradeLevelsPage } from '../pages/director/GradeLevelsPage'
+import { TermsPage } from '../pages/director/TermsPage'
+import { SectionsPage } from '../pages/director/SectionsPage'
+import { InstitutionPage } from '../pages/director/InstitutionPage'
 import { Courses } from '../pages/academic/Courses'
 import { Sections } from '../pages/academic/Sections'
 import { MyPortfolio } from '../pages/portfolios/MyPortfolio'
@@ -35,8 +39,12 @@ export function AppRouter() {
         {user?.role === 'DIRECTOR' && (
           <>
             <Route path="/director" element={<DirectorDashboard />} />
-            <Route path="/students" element={<StudentsPage />} />
-            <Route path="/professors" element={<ProfessorsPage />} />
+            <Route path="/director/grades" element={<GradeLevelsPage />} />
+            <Route path="/director/terms" element={<TermsPage />} />
+            <Route path="/director/sections" element={<SectionsPage />} />
+            <Route path="/director/students" element={<StudentsPage />} />
+            <Route path="/director/professors" element={<ProfessorsPage />} />
+            <Route path="/director/institution" element={<InstitutionPage />} />
           </>
         )}
         <Route path="/courses" element={<Courses />} />

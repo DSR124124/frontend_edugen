@@ -8,6 +8,10 @@ import {
   FolderOpen, 
   Settings,
   GraduationCap,
+  Calendar,
+  Layers,
+  UserCheck,
+  Building2,
 } from 'lucide-react'
 
 const navigation = [
@@ -20,9 +24,12 @@ const navigation = [
 
 const directorNavigation = [
   { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
-  { name: 'Secciones', href: '/sections', icon: Users },
-  { name: 'Estudiantes', href: '/students', icon: GraduationCap },
-  { name: 'Profesores', href: '/professors', icon: Users },
+  { name: 'Institución', href: '/director/institution', icon: Building2 },
+  { name: 'Grados', href: '/director/grades', icon: Layers },
+  { name: 'Períodos', href: '/director/terms', icon: Calendar },
+  { name: 'Secciones', href: '/director/sections', icon: Users },
+  { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
+  { name: 'Profesores', href: '/director/professors', icon: UserCheck },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 

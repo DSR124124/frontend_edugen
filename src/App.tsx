@@ -2,6 +2,7 @@ import { AppRouter } from './app/router'
 import { AppProviders } from './app/providers'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ErrorProvider } from './contexts/ErrorContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import { ToastContainer } from './components/ui/Toast'
 import { TokenExpiredModal } from './components/TokenExpiredModal'
 import { LoadingScreen } from './components/LoadingScreen'
@@ -31,9 +32,11 @@ function App() {
   return (
     <ErrorBoundary>
       <ErrorProvider>
-        <AppProviders>
-          <AppContent />
-        </AppProviders>
+        <NotificationProvider>
+          <AppProviders>
+            <AppContent />
+          </AppProviders>
+        </NotificationProvider>
       </ErrorProvider>
     </ErrorBoundary>
   )

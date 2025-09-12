@@ -1,6 +1,6 @@
 import { useAuthStore } from '../store/auth'
 import { useUIStore } from '../store/ui'
-import { Menu, Bell, User } from 'lucide-react'
+import { Menu, User, LogOut } from 'lucide-react'
 
 export function Header() {
   const { user, logout } = useAuthStore()
@@ -20,25 +20,23 @@ export function Header() {
         </div>
 
         <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-md hover:bg-gray-100">
-            <Bell className="h-5 w-5" />
-          </button>
-          
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-primary-content" />
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="h-5 w-5 text-blue-600" />
             </div>
             <div className="text-sm">
-              <p className="text-base-semibold text-base-content">{user?.first_name} {user?.last_name}</p>
-              <p className="text-sm text-base-content/60 capitalize">{user?.role?.toLowerCase()}</p>
+              <p className="font-semibold text-gray-900">{user?.first_name} {user?.last_name}</p>
+              <p className="text-xs text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
             </div>
-            <button
-              onClick={logout}
-              className="ml-2 text-sm text-gray-500 hover:text-gray-700"
-            >
-              Salir
-            </button>
           </div>
+          
+          <button
+            onClick={logout}
+            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Salir</span>
+          </button>
         </div>
       </div>
     </header>

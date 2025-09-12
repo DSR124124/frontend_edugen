@@ -1,20 +1,21 @@
-import { useEffect, useState } from 'react'
-import { useDirectorApi } from '../../hooks/useDirectorApi'
+import { useState } from 'react'
+import { useDirectorUsers } from '../../hooks/useDirectorUsers'
+import { useAuthStore } from '../../store/auth'
 import { UserDetailModal } from '../../components/UserDetailModal'
 import { EditUserModal } from '../../components/EditUserModal'
 import { ConfirmModal } from '../../components/ConfirmModal'
 import { User } from '../../api/endpoints'
 
-export function ProfessorsPage() {
+export function DirectorDashboard() {
+  const { user } = useAuthStore()
   const {
     users,
     loading,
     error,
-    loadUsers,
     createUser,
     updateUser,
     deleteUser,
-  } = useDirectorApi()
+  } = useDirectorUsers()
 
   const [showCreateUser, setShowCreateUser] = useState(false)
   const [showUserDetail, setShowUserDetail] = useState(false)
@@ -28,30 +29,27 @@ export function ProfessorsPage() {
     email: '',
     first_name: '',
     last_name: '',
+    role: 'PROFESOR' as 'PROFESOR' | 'ALUMNO',
     password: '',
   })
 
-  // Filtrar solo profesores
-  const professors = users.filter(user => user.role === 'PROFESOR')
-
-  useEffect(() => {
-    loadUsers()
-  }, [loadUsers]) // Remove loadUsers dependency to prevent infinite loop
+  // Users are loaded automatically by the hook
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await createUser({ ...newUser, role: 'PROFESOR' })
+      await createUser(newUser)
       setNewUser({
         username: '',
         email: '',
         first_name: '',
         last_name: '',
+        role: 'PROFESOR',
         password: '',
       })
       setShowCreateUser(false)
     } catch (err) {
-      console.error('Error creating professor:', err)
+      console.error('Error creating user:', err)
     }
   }
 
@@ -67,7 +65,7 @@ export function ProfessorsPage() {
         setShowConfirmDelete(false)
         setUserToDelete(null)
       } catch (err) {
-        console.error('Error deleting professor:', err)
+        console.error('Error deleting user:', err)
       }
     }
   }
@@ -98,6 +96,7 @@ export function ProfessorsPage() {
       setShowEditUser(false)
       setEditingUser(null)
       
+      // Mostrar notificación de éxito
       alert('Usuario actualizado correctamente')
     } catch (error) {
       console.error('Error updating user:', error)
@@ -120,38 +119,145 @@ export function ProfessorsPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Gestión de Profesores
+            Panel del Director
           </h1>
           <p className="text-gray-600 mt-2">
-            Administra los profesores de tu institución
+            Bienvenido, {user?.first_name} {user?.last_name}
           </p>
         </div>
 
-        {/* Stats Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+        {/* Quick Navigation */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/institution'}>
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Institución</p>
+                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Profesores</p>
-              <p className="text-2xl font-semibold text-gray-900">{professors.length}</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/grades'}>
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Grados</p>
+                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/terms'}>
+            <div className="flex items-center">
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Períodos</p>
+                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/sections'}>
+            <div className="flex items-center">
+              <div className="p-2 bg-pink-100 rounded-lg">
+                <svg className="w-6 h-6 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Secciones</p>
+                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/professors'}>
+            <div className="flex items-center">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Profesores</p>
+                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Professors Section */}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Usuarios</p>
+                <p className="text-2xl font-semibold text-gray-900">{users.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Profesores</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {users.filter(u => u.role === 'PROFESOR').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Estudiantes</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {users.filter(u => u.role === 'ALUMNO').length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Users Section */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Profesores</h2>
+              <h2 className="text-lg font-medium text-gray-900">Usuarios</h2>
               <button
                 onClick={() => setShowCreateUser(true)}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Crear Profesor
+                Crear Usuario
               </button>
             </div>
           </div>
@@ -159,15 +265,15 @@ export function ProfessorsPage() {
           <div className="p-6">
             {loading ? (
               <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <p className="mt-2 text-gray-600">Cargando...</p>
               </div>
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-red-600">{error}</p>
                 <button
-                  onClick={() => loadUsers()}
-                  className="mt-2 text-green-600 hover:text-green-800"
+                  onClick={() => window.location.reload()}
+                  className="mt-2 text-blue-600 hover:text-blue-800"
                 >
                   Reintentar
                 </button>
@@ -178,7 +284,10 @@ export function ProfessorsPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Profesor
+                        Usuario
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Rol
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Email
@@ -189,46 +298,55 @@ export function ProfessorsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {professors.map((professor) => (
-                      <tr key={professor.id}>
+                    {users.map((user) => (
+                      <tr key={user.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <span className="text-sm font-medium text-green-700">
-                                  {professor.first_name.charAt(0)}{professor.last_name.charAt(0)}
+                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span className="text-sm font-medium text-gray-700">
+                                  {user.first_name.charAt(0)}{user.last_name.charAt(0)}
                                 </span>
                               </div>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {professor.first_name} {professor.last_name}
+                                {user.first_name} {user.last_name}
                               </div>
                               <div className="text-sm text-gray-500">
-                                @{professor.username}
+                                @{user.username}
                               </div>
                             </div>
                           </div>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.role === 'PROFESOR' 
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {professor.email}
+                          {user.email}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => handleViewUser(professor)}
+                              onClick={() => handleViewUser(user)}
                               className="text-blue-600 hover:text-blue-900 font-medium"
                             >
                               Ver
                             </button>
                             <button
-                              onClick={() => handleEditUser(professor)}
+                              onClick={() => handleEditUser(user)}
                               className="text-green-600 hover:text-green-900 font-medium"
                             >
                               Editar
                             </button>
                             <button
-                              onClick={() => handleDeleteUser(professor.id)}
+                              onClick={() => handleDeleteUser(user.id)}
                               className="text-red-600 hover:text-red-900 font-medium"
                             >
                               Eliminar
@@ -239,18 +357,18 @@ export function ProfessorsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            )}
           </div>
-        </div>
+        )}
+          </div>
+      </div>
 
-        {/* Create Professor Modal */}
+        {/* Create User Modal */}
         {showCreateUser && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
               <div className="mt-3">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Crear Nuevo Profesor
+                  Crear Nuevo Usuario
                 </h3>
                 <form onSubmit={handleCreateUser} className="space-y-4">
                   <div>
@@ -305,6 +423,19 @@ export function ProfessorsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
+                      Rol
+                    </label>
+                    <select
+                      value={newUser.role}
+                      onChange={(e) => setNewUser({...newUser, role: e.target.value as 'PROFESOR' | 'ALUMNO'})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    >
+                      <option value="PROFESOR">Profesor</option>
+                      <option value="ALUMNO">Alumno</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
                       Contraseña
                     </label>
                     <input
@@ -313,8 +444,8 @@ export function ProfessorsPage() {
                       onChange={(e) => setNewUser({...newUser, password: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
                       required
-                    />
-                  </div>
+        />
+      </div>
                   <div className="flex justify-end space-x-3 pt-4">
                     <button
                       type="button"
@@ -325,14 +456,14 @@ export function ProfessorsPage() {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                     >
-                      Crear Profesor
+                      Crear Usuario
                     </button>
-                  </div>
+        </div>
                 </form>
-              </div>
-            </div>
+          </div>
+        </div>
           </div>
         )}
 
@@ -351,7 +482,7 @@ export function ProfessorsPage() {
           onClose={handleCloseEditUser}
           user={editingUser}
           onSave={handleSaveUser}
-          loading={loading}
+          loading={false}
         />
 
         {/* Confirm Delete Modal */}
@@ -359,8 +490,8 @@ export function ProfessorsPage() {
           isOpen={showConfirmDelete}
           onClose={cancelDeleteUser}
           onConfirm={confirmDeleteUser}
-          title="Eliminar Profesor"
-          message="¿Estás seguro de que quieres eliminar este profesor? Esta acción no se puede deshacer."
+          title="Eliminar Usuario"
+          message="¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer."
           confirmText="Eliminar"
           cancelText="Cancelar"
           loading={loading}

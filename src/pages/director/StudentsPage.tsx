@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useDirectorApi } from '../../hooks/useDirectorApi'
 import { UserDetailModal } from '../../components/UserDetailModal'
+import { EditUserModal } from '../../components/EditUserModal'
+import { ConfirmModal } from '../../components/ConfirmModal'
+import { CreateStudentModal } from '../../components/CreateStudentModal'
 import { User } from '../../api/endpoints'
+import { useNotificationContext } from '../../contexts/NotificationContext'
 
 export function StudentsPage() {
   const {
@@ -10,52 +14,68 @@ export function StudentsPage() {
     error,
     loadUsers,
     createUser,
+    updateUser,
     deleteUser,
   } = useDirectorApi()
 
+  const { showSuccess, showError } = useNotificationContext()
+
   const [showCreateUser, setShowCreateUser] = useState(false)
   const [showUserDetail, setShowUserDetail] = useState(false)
+  const [showEditUser, setShowEditUser] = useState(false)
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [newUser, setNewUser] = useState({
-    username: '',
-    email: '',
-    first_name: '',
-    last_name: '',
-    password: '',
-  })
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [userToDelete, setUserToDelete] = useState<number | null>(null)
 
   // Filtrar solo estudiantes
   const students = users.filter(user => user.role === 'ALUMNO')
 
   useEffect(() => {
     loadUsers()
-  }, []) // Remove loadUsers dependency to prevent infinite loop
+  }, [loadUsers]) // Remove loadUsers dependency to prevent infinite loop
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreateUser = async (studentData: {
+    username: string
+    email: string
+    first_name: string
+    last_name: string
+    password: string
+    section: number
+    role: 'ALUMNO'
+  }) => {
     try {
-      await createUser({ ...newUser, role: 'ALUMNO' })
-      setNewUser({
-        username: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        password: '',
-      })
+      await createUser(studentData)
       setShowCreateUser(false)
+      showSuccess('Éxito', 'Estudiante creado correctamente')
     } catch (err) {
       console.error('Error creating student:', err)
+      showError('Error', 'Error al crear el estudiante')
     }
   }
 
-  const handleDeleteUser = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este estudiante?')) {
+  const handleDeleteUser = (id: number) => {
+    setUserToDelete(id)
+    setShowConfirmDelete(true)
+  }
+
+  const confirmDeleteUser = async () => {
+    if (userToDelete) {
       try {
-        await deleteUser(id)
+        await deleteUser(userToDelete)
+        setShowConfirmDelete(false)
+        setUserToDelete(null)
+        showSuccess('Éxito', 'Estudiante eliminado correctamente')
       } catch (err) {
         console.error('Error deleting student:', err)
+        showError('Error', 'Error al eliminar el estudiante')
       }
     }
+  }
+
+  const cancelDeleteUser = () => {
+    setShowConfirmDelete(false)
+    setUserToDelete(null)
   }
 
   const handleViewUser = (user: User) => {
@@ -64,8 +84,31 @@ export function StudentsPage() {
   }
 
   const handleEditUser = (user: User) => {
-    // TODO: Implementar edición de usuario
-    console.log('Edit user:', user)
+    setEditingUser(user)
+    setShowEditUser(true)
+  }
+
+  const handleSaveUser = async (userData: Partial<User>) => {
+    if (!editingUser) return
+    
+    try {
+      console.log('Saving user:', editingUser.id, userData)
+      await updateUser(editingUser.id, userData)
+      
+      // Cerrar el modal
+      setShowEditUser(false)
+      setEditingUser(null)
+      
+      showSuccess('Éxito', 'Usuario actualizado correctamente')
+    } catch (error) {
+      console.error('Error updating user:', error)
+      showError('Error', 'Error al actualizar el usuario')
+    }
+  }
+
+  const handleCloseEditUser = () => {
+    setShowEditUser(false)
+    setEditingUser(null)
   }
 
   const handleDeleteUserFromModal = (user: User) => {
@@ -142,6 +185,9 @@ export function StudentsPage() {
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sección
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
@@ -170,6 +216,9 @@ export function StudentsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {student.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {student.section_name || 'Sin asignar'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
@@ -203,96 +252,12 @@ export function StudentsPage() {
         </div>
 
         {/* Create Student Modal */}
-        {showCreateUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Crear Nuevo Estudiante
-                </h3>
-                <form onSubmit={handleCreateUser} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.first_name}
-                        onChange={(e) => setNewUser({...newUser, first_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.last_name}
-                        onChange={(e) => setNewUser({...newUser, last_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateUser(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                    >
-                      Crear Estudiante
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
+        <CreateStudentModal
+          isOpen={showCreateUser}
+          onClose={() => setShowCreateUser(false)}
+          onSave={handleCreateUser}
+          loading={loading}
+        />
 
         {/* User Detail Modal */}
         <UserDetailModal
@@ -301,6 +266,27 @@ export function StudentsPage() {
           user={selectedUser}
           onEdit={handleEditUser}
           onDelete={handleDeleteUserFromModal}
+        />
+
+        {/* Edit User Modal */}
+        <EditUserModal
+          isOpen={showEditUser}
+          onClose={handleCloseEditUser}
+          user={editingUser}
+          onSave={handleSaveUser}
+          loading={loading}
+        />
+
+        {/* Confirm Delete Modal */}
+        <ConfirmModal
+          isOpen={showConfirmDelete}
+          onClose={cancelDeleteUser}
+          onConfirm={confirmDeleteUser}
+          title="Eliminar Estudiante"
+          message="¿Estás seguro de que quieres eliminar este estudiante? Esta acción no se puede deshacer."
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          loading={loading}
         />
       </div>
     </div>
