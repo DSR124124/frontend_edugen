@@ -13,6 +13,7 @@ import {
   Building2,
   FolderOpen,
   Bot,
+  FileText,
 } from 'lucide-react'
 
 const navigation = [
@@ -20,7 +21,6 @@ const navigation = [
   { name: 'Cursos', href: '/courses', icon: BookOpen },
   { name: 'Secciones', href: '/sections', icon: Users },
   { name: 'Portafolio', href: '/portfolio', icon: FolderOpen },
-  { name: 'IA Generador', href: '/ai-content', icon: Bot },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
@@ -32,7 +32,6 @@ const directorNavigation = [
   { name: 'Secciones', href: '/director/sections', icon: Users },
   { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
   { name: 'Profesores', href: '/director/professors', icon: UserCheck },
-  { name: 'IA Generador', href: '/ai-content', icon: Bot },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
@@ -44,6 +43,7 @@ const professorNavigation = [
   { name: 'Mis Estudiantes', href: '/professor/students', icon: GraduationCap },
   { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
   { name: 'IA Generador', href: '/ai-content', icon: Bot },
+  { name: 'Contenidos Generados', href: '/generated-content', icon: FileText },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 

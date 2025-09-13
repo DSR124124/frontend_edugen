@@ -16,7 +16,7 @@ import { Sections } from '../pages/academic/Sections'
 import { MyPortfolio } from '../pages/portfolios/MyPortfolio'
 import { Profile } from '../pages/settings/Profile'
 import { ContentGenerator } from '../pages/ai/ContentGenerator'
-import { GeneratedContentPage } from '../pages/ai/GeneratedContentPage'
+import { GeneratedContentPage } from '../pages/professor/GeneratedContentPage'
 import { AppLayout } from '../layouts/AppLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
 
@@ -53,13 +53,13 @@ export function AppRouter() {
         {user?.role === 'PROFESOR' && (
           <>
             <Route path="/professor/*" element={<ProfessorRouter />} />
+            <Route path="/ai-content" element={<ContentGenerator />} />
+            <Route path="/generated-content" element={<GeneratedContentPage />} />
           </>
         )}
         <Route path="/courses" element={<Courses />} />
         <Route path="/sections" element={<Sections />} />
         <Route path="/portfolio" element={<MyPortfolio />} />
-        <Route path="/ai-content" element={<ContentGenerator />} />
-        <Route path="/generated-content" element={<GeneratedContentPage />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

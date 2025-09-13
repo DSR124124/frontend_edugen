@@ -106,6 +106,35 @@ export interface Topic {
   updated_at: string
 }
 
+export interface Material {
+  id: number
+  name: string
+  description?: string
+  material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'OTHER'
+  file?: string
+  url?: string
+  topic: number
+  topic_name: string
+  professor: number
+  professor_name: string
+  is_shared: boolean // true = material de clase, false = personalizado
+  assigned_students?: number[] // IDs de estudiantes para materiales personalizados
+  created_at: string
+  updated_at: string
+}
+
+export interface Student {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  username: string
+  section?: {
+    id: number
+    name: string
+  }
+}
+
 // AI Content Generator Types
 export interface Conversation {
   id: number
@@ -113,7 +142,7 @@ export interface Conversation {
   user_name: string
   session_id: string
   title: string
-  requirements: any
+  requirements: Record<string, unknown>
   is_active: boolean
   created_at: string
   updated_at: string
@@ -133,7 +162,7 @@ export interface ContentTemplate {
   name: string
   description: string
   prompt_template: string
-  grapesjs_config: any
+  grapesjs_config: Record<string, unknown>
   is_active: boolean
   created_at: string
 }
@@ -147,7 +176,7 @@ export interface GeneratedContent {
   html_content: string
   css_content: string
   js_content: string
-  grapesjs_components: any
+  grapesjs_components: Record<string, unknown>
   is_public: boolean
   created_at: string
   updated_at: string
@@ -270,6 +299,9 @@ export const academicApi = {
   getStudentsBySection: (sectionId: number) => 
     http.get(`academic/sections/${sectionId}/students/`),
   
+  getStudentsByCourse: (courseId: number) => 
+    http.get(`academic/courses/${courseId}/students/`),
+  
   getGradeLevels: () => 
     http.get('institutions/grade-levels/'),
   
@@ -306,6 +338,22 @@ export const academicApi = {
   
   deleteTopic: (id: number) => 
     http.delete(`academic/topics/${id}/`),
+
+  // Materials endpoints
+  getMaterials: () => 
+    http.get<Material[]>('academic/materials/'),
+  
+  getMaterialsByTopic: (topicId: number) => 
+    http.get<Material[]>(`academic/materials/by-topic/${topicId}/`),
+  
+  createMaterial: (data: FormData) => 
+    http.post<Material>('academic/materials/', data),
+  
+  updateMaterial: (id: number, data: FormData) => 
+    http.put<Material>(`academic/materials/${id}/`, data),
+  
+  deleteMaterial: (id: number) => 
+    http.delete(`academic/materials/${id}/`),
 }
 
 
@@ -507,18 +555,18 @@ export const aiContentApi = {
 
   // Requirements
   extractRequirements: (conversationId: number) =>
-    http.post<{ requirements: any; message: string }>(
+    http.post<{ requirements: Record<string, unknown>; message: string }>(
       `ai/conversations/${conversationId}/extract-requirements/`
     ),
 
   // Content Generation
-  generateContent: (conversationId: number, data: { requirements: any; title: string }) =>
+  generateContent: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content/`,
       data
     ),
 
-  generateContentStreaming: (conversationId: number, data: { requirements: any; title: string }) =>
+  generateContentStreaming: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content-streaming/`,
       data
@@ -538,7 +586,7 @@ export const aiContentApi = {
   getGeneratedContentById: (id: number) =>
     http.get<GeneratedContent>(`ai/generated-content/${id}/`),
 
-  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: any }) =>
+  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: Record<string, unknown> }) =>
     http.patch<GeneratedContent>(`ai/generated-content/${id}/`, data),
 
   deleteGeneratedContent: (id: number) =>

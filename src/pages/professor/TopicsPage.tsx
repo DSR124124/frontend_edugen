@@ -1,21 +1,29 @@
 import { useState, useEffect } from 'react'
 import { useTopics } from '../../hooks/useTopics'
-import { useProfessorSections } from '../../hooks/useProfessorSections'
+import { useMaterials } from '../../hooks/useMaterials'
 import { academicApi } from '../../api/endpoints'
 import { TopicModal } from '../../components/modals/TopicModal'
-import { Topic } from '../../api/endpoints'
+import { AddMaterialModal } from '../../components/modals/AddMaterialModal'
+import { GenerateAIMaterialModal } from '../../components/modals/GenerateAIMaterialModal'
+import { Topic, Student } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
+import { useNotificationContext } from '../../contexts/NotificationContext'
 
 export function TopicsPage() {
-  const { topics, loading, error, createTopic, updateTopic, deleteTopic, loadTopicsByCourse } = useTopics()
-  const { sections: professorSections } = useProfessorSections()
-  // Use professorSections to avoid unused variable warning
-  console.log('Professor sections:', professorSections)
+  const { topics, loading, createTopic, updateTopic, deleteTopic, loadTopicsByCourse } = useTopics()
+  const { createMaterial } = useMaterials()
+  const { showSuccess, showError } = useNotificationContext()
+  
   const [courses, setCourses] = useState<Array<{ id: number; name: string; code: string }>>([])
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null)
   const [loadingCourses, setLoadingCourses] = useState(false)
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+  const [isAIMaterialModalOpen, setIsAIMaterialModalOpen] = useState(false)
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+  const [students, setStudents] = useState<Student[]>([])
+  const [loadingStudents, setLoadingStudents] = useState(false)
 
   // Cargar cursos del profesor
   useEffect(() => {
@@ -24,7 +32,7 @@ export function TopicsPage() {
         setLoadingCourses(true)
         const response = await academicApi.getCourses()
         setCourses(response.data)
-      } catch (error) {
+      } catch {
         // Error loading courses
       } finally {
         setLoadingCourses(false)
@@ -44,7 +52,7 @@ export function TopicsPage() {
     try {
       await createTopic(data)
       setIsModalOpen(false)
-    } catch (error) {
+    } catch {
       // Error creating topic
     }
   }
@@ -56,7 +64,7 @@ export function TopicsPage() {
       await updateTopic(editingTopic.id, data)
       setEditingTopic(null)
       setIsModalOpen(false)
-    } catch (error) {
+    } catch {
       // Error updating topic
     }
   }
@@ -65,10 +73,103 @@ export function TopicsPage() {
     if (window.confirm('¿Estás seguro de que quieres eliminar este tema?')) {
       try {
         await deleteTopic(topicId)
-      } catch (error) {
+      } catch {
         // Error deleting topic
       }
     }
+  }
+
+  const handleAddMaterial = async (topic: Topic) => {
+    setSelectedTopic(topic)
+    
+    // Cargar estudiantes que tienen este curso en su portafolio
+    try {
+      setLoadingStudents(true)
+      const response = await academicApi.getStudentsByCourse(topic.course)
+      setStudents(response.data.students || [])
+    } catch {
+      setStudents([])
+    } finally {
+      setLoadingStudents(false)
+    }
+    
+    setIsMaterialModalOpen(true)
+  }
+
+  const handleCreateMaterial = async (data: {
+    name: string
+    description?: string
+    material_type: string
+    file?: File
+    url?: string
+    topic: number
+    is_shared: boolean
+    assigned_students?: number[]
+  }) => {
+    try {
+      await createMaterial(data)
+      setIsMaterialModalOpen(false)
+      setSelectedTopic(null)
+      showSuccess('Material Agregado', 'El material se ha agregado exitosamente')
+    } catch {
+      showError('Error al Agregar Material', 'No se pudo agregar el material')
+    }
+  }
+
+  const handleCloseMaterialModal = () => {
+    setIsMaterialModalOpen(false)
+    setSelectedTopic(null)
+    setStudents([])
+  }
+
+  const handleGenerateAIMaterial = async (topic: Topic) => {
+    setSelectedTopic(topic)
+    setIsAIMaterialModalOpen(true)
+  }
+
+  const handleAIGenerate = async (params: {
+    topic: number
+    topicName: string
+    courseName: string
+    educationalLevel: string
+    resourceType: string
+    additionalRequirements?: string
+  }) => {
+    try {
+      // Construir URL con parámetros para el generador de IA
+      const searchParams = new URLSearchParams({
+        topic: params.topic.toString(),
+        topicName: params.topicName,
+        courseName: params.courseName,
+        educationalLevel: params.educationalLevel,
+        resourceType: params.resourceType
+      })
+      
+      if (params.additionalRequirements) {
+        searchParams.set('additionalRequirements', params.additionalRequirements)
+      }
+      
+      const aiUrl = `/ai-content?${searchParams.toString()}`
+      
+      // Mostrar mensaje de confirmación con los parámetros
+      showSuccess(
+        'Creando Nueva Conversación con IA', 
+        `Se está creando una conversación automática con los parámetros: Tema: ${params.topicName} | Curso: ${params.courseName} | Nivel: ${params.educationalLevel} | Tipo: ${params.resourceType}`
+      )
+      
+      // Redirigir inmediatamente al generador de IA
+      window.location.href = aiUrl
+      
+      setIsAIMaterialModalOpen(false)
+      setSelectedTopic(null)
+    } catch {
+      showError('Error', 'No se pudo abrir el chatbot de IA')
+    }
+  }
+
+  const handleCloseAIMaterialModal = () => {
+    setIsAIMaterialModalOpen(false)
+    setSelectedTopic(null)
   }
 
   const handleReorderTopic = async (topicId: number, direction: 'up' | 'down') => {
@@ -93,7 +194,7 @@ export function TopicsPage() {
       if (selectedCourseId) {
         loadTopicsByCourse(selectedCourseId)
       }
-    } catch (error) {
+    } catch {
       // Error reordering topic
     }
   }
@@ -200,10 +301,6 @@ export function TopicsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-2 text-gray-600">Cargando temas...</p>
               </div>
-            ) : error ? (
-              <div className="p-6 text-center text-red-600">
-                <p>Error: {error}</p>
-              </div>
             ) : topics.length === 0 ? (
               <div className="p-6 text-center text-gray-500">
                 <div className="text-gray-400 mb-4">
@@ -273,6 +370,20 @@ export function TopicsPage() {
                           </div>
                           
                           <button
+                            onClick={() => handleAddMaterial(topic)}
+                            className="px-3 py-1 text-sm font-medium text-green-600 bg-green-50 rounded-md hover:bg-green-100 flex items-center space-x-1"
+                          >
+                            <span>📚</span>
+                            <span>Agregar Material</span>
+                          </button>
+                          <button
+                            onClick={() => handleGenerateAIMaterial(topic)}
+                            className="px-3 py-1 text-sm font-medium text-purple-600 bg-purple-50 rounded-md hover:bg-purple-100 flex items-center space-x-1"
+                          >
+                            <span>🤖</span>
+                            <span>Generar con IA</span>
+                          </button>
+                          <button
                             onClick={() => handleEditTopic(topic)}
                             className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100"
                           >
@@ -301,6 +412,25 @@ export function TopicsPage() {
           topic={editingTopic}
           courses={courses}
           loading={loading}
+        />
+
+        {/* Add Material Modal */}
+        <AddMaterialModal
+          isOpen={isMaterialModalOpen}
+          onClose={handleCloseMaterialModal}
+          onSave={handleCreateMaterial}
+          topic={selectedTopic}
+          students={students}
+          loading={loadingStudents}
+        />
+
+        {/* Generate AI Material Modal */}
+        <GenerateAIMaterialModal
+          isOpen={isAIMaterialModalOpen}
+          onClose={handleCloseAIMaterialModal}
+          onGenerate={handleAIGenerate}
+          topic={selectedTopic}
+          loading={false}
         />
       </div>
     </div>

@@ -1,13 +1,16 @@
 import { useState } from 'react'
 import { useDirectorUsers } from '../../hooks/useDirectorUsers'
 import { useAuthStore } from '../../store/auth'
+import { useNotificationContext } from '../../contexts/NotificationContext'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
+import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
 
 export function DirectorDashboard() {
   const { user } = useAuthStore()
+  const { showSuccess, showError } = useNotificationContext()
   const {
     users,
     loading,
@@ -24,31 +27,40 @@ export function DirectorDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [userToDelete, setUserToDelete] = useState<number | null>(null)
-  const [newUser, setNewUser] = useState({
-    username: '',
-    email: '',
-    first_name: '',
-    last_name: '',
-    role: 'PROFESOR' as 'PROFESOR' | 'ALUMNO',
-    password: '',
-  })
+  const [userType, setUserType] = useState<'PROFESOR' | 'ALUMNO'>('PROFESOR')
 
   // Users are loaded automatically by the hook
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreateUser = async (userData: any) => {
     try {
-      await createUser(newUser)
-      setNewUser({
-        username: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        role: 'PROFESOR',
-        password: '',
-      })
+      const newUser = await createUser(userData)
+      
+      // Mostrar notificación de éxito con detalles específicos
+      if (userData.role === 'PROFESOR') {
+        showSuccess(
+          '🎉 ¡Profesor Registrado Exitosamente!',
+          `El profesor ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de docentes activos.`,
+          6000
+        )
+      } else {
+        showSuccess(
+          '🎉 ¡Estudiante Registrado Exitosamente!',
+          `El estudiante ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de estudiantes.`,
+          6000
+        )
+      }
+      
+      // Cerrar el modal
       setShowCreateUser(false)
-    } catch (err) {
+      
+      // La lista se actualiza automáticamente gracias al hook useDirectorUsers
+      
+    } catch (err: any) {
+      showError(
+        '❌ Error al Registrar Usuario',
+        err.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
+        5000
+      )
     }
   }
 
@@ -61,9 +73,19 @@ export function DirectorDashboard() {
     if (userToDelete) {
       try {
         await deleteUser(userToDelete)
+        showSuccess(
+          'Usuario Eliminado',
+          'El usuario ha sido eliminado correctamente.',
+          3000
+        )
         setShowConfirmDelete(false)
         setUserToDelete(null)
-      } catch (err) {
+      } catch (err: any) {
+        showError(
+          'Error al Eliminar Usuario',
+          err.response?.data?.detail || 'No se pudo eliminar el usuario.',
+          5000
+        )
       }
     }
   }
@@ -94,9 +116,17 @@ export function DirectorDashboard() {
       setEditingUser(null)
       
       // Mostrar notificación de éxito
-      console.log('Éxito', 'Usuario actualizado correctamente')
-    } catch (error) {
-      console.error('Error', 'Error al actualizar el usuario')
+      showSuccess(
+        'Usuario Actualizado',
+        'Los datos del usuario han sido actualizados correctamente.',
+        3000
+      )
+    } catch (error: any) {
+      showError(
+        'Error al Actualizar Usuario',
+        error.response?.data?.detail || 'No se pudo actualizar el usuario.',
+        5000
+      )
     }
   }
 
@@ -249,12 +279,28 @@ export function DirectorDashboard() {
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">Usuarios</h2>
-              <button
-                onClick={() => setShowCreateUser(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Crear Usuario
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => {
+                    setUserType('PROFESOR')
+                    setShowCreateUser(true)
+                  }}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                >
+                  <span>👨‍🏫</span>
+                  <span>Crear Profesor</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setUserType('ALUMNO')
+                    setShowCreateUser(true)
+                  }}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                >
+                  <span>👨‍🎓</span>
+                  <span>Crear Estudiante</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -294,63 +340,92 @@ export function DirectorDashboard() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                    {users.map((user, index) => {
+                      // Verificar si el usuario es recién creado (último en la lista)
+                      const isNewUser = index === users.length - 1
+                      const createdDate = new Date(user.created_at)
+                      const isRecentlyCreated = (Date.now() - createdDate.getTime()) < 30000 // 30 segundos
+                      
+                      return (
+                        <tr key={user.id} className={isNewUser && isRecentlyCreated ? 'bg-green-50 border-l-4 border-green-400' : ''}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                  user.role === 'PROFESOR' 
+                                    ? 'bg-green-100' 
+                                    : 'bg-blue-100'
+                                }`}>
+                                  <span className={`text-sm font-medium ${
+                                    user.role === 'PROFESOR' 
+                                      ? 'text-green-700' 
+                                      : 'text-blue-700'
+                                  }`}>
+                                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className="text-sm font-medium text-gray-900">
+                                    {user.first_name} {user.last_name}
+                                  </div>
+                                  {isNewUser && isRecentlyCreated && (
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                      ✨ Nuevo
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  @{user.username}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                user.role === 'PROFESOR' 
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {user.role === 'PROFESOR' ? '👨‍🏫 Profesor' : '👨‍🎓 Estudiante'}
+                              </span>
+                              {user.specialty && (
+                                <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                  {user.specialty_display || user.specialty}
                                 </span>
-                              </div>
+                              )}
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.first_name} {user.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                @{user.username}
-                              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleViewUser(user)}
+                                className="text-blue-600 hover:text-blue-900 font-medium hover:bg-blue-50 px-2 py-1 rounded"
+                              >
+                                👁️ Ver
+                              </button>
+                              <button
+                                onClick={() => handleEditUser(user)}
+                                className="text-green-600 hover:text-green-900 font-medium hover:bg-green-50 px-2 py-1 rounded"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="text-red-600 hover:text-red-900 font-medium hover:bg-red-50 px-2 py-1 rounded"
+                              >
+                                🗑️ Eliminar
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            user.role === 'PROFESOR' 
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleViewUser(user)}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Ver
-                            </button>
-                            <button
-                              onClick={() => handleEditUser(user)}
-                              className="text-green-600 hover:text-green-900 font-medium"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="text-red-600 hover:text-red-900 font-medium"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
           </div>
@@ -359,109 +434,13 @@ export function DirectorDashboard() {
       </div>
 
         {/* Create User Modal */}
-        {showCreateUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Crear Nuevo Usuario
-                </h3>
-                <form onSubmit={handleCreateUser} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.first_name}
-                        onChange={(e) => setNewUser({...newUser, first_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.last_name}
-                        onChange={(e) => setNewUser({...newUser, last_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Rol
-                    </label>
-                    <select
-                      value={newUser.role}
-                      onChange={(e) => setNewUser({...newUser, role: e.target.value as 'PROFESOR' | 'ALUMNO'})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                    >
-                      <option value="PROFESOR">Profesor</option>
-                      <option value="ALUMNO">Alumno</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
+        <CreateUserModal
+          isOpen={showCreateUser}
+          onClose={() => setShowCreateUser(false)}
+          onSave={handleCreateUser}
+          loading={loading}
+          userType={userType}
         />
-      </div>
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateUser(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                    >
-                      Crear Usuario
-                    </button>
-        </div>
-                </form>
-          </div>
-        </div>
-          </div>
-        )}
 
         {/* User Detail Modal */}
         <UserDetailModal
