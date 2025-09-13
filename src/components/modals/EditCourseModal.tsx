@@ -11,31 +11,31 @@ interface Course {
   updated_at: string
 }
 
-interface Section {
-  id: number
-  name: string
-  course?: {
-    id: number
-    name: string
-    code: string
-  }
-  grade_level?: {
-    id: number
-    name: string
-    level: number
-  }
-  term?: {
-    id: number
-    name: string
-    is_active: boolean
-  }
-}
+// interface Section {
+//   id: number
+//   name: string
+//   course?: {
+//     id: number
+//     name: string
+//     code: string
+//   }
+//   grade_level?: {
+//     id: number
+//     name: string
+//     level: number
+//   }
+//   term?: {
+//     id: number
+//     name: string
+//     is_active: boolean
+//   }
+// }
 
-interface GradeLevel {
-  id: number
-  name: string
-  level: number
-}
+// interface GradeLevel {
+//   id: number
+//   name: string
+//   level: number
+// }
 
 interface EditCourseModalProps {
   isOpen: boolean

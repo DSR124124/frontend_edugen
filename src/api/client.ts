@@ -50,6 +50,7 @@ class ApiClient {
   }
 
   private async refreshToken(refreshToken: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return this.client.post('/accounts/token/refresh/', {
       refresh: refreshToken,
     })

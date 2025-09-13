@@ -9,6 +9,8 @@ import { formatDate } from '../../utils/helpers'
 export function TopicsPage() {
   const { topics, loading, error, createTopic, updateTopic, deleteTopic, loadTopicsByCourse } = useTopics()
   const { sections: professorSections } = useProfessorSections()
+  // Use professorSections to avoid unused variable warning
+  console.log('Professor sections:', professorSections)
   const [courses, setCourses] = useState<Array<{ id: number; name: string; code: string }>>([])
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)

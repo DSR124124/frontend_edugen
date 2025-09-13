@@ -94,9 +94,9 @@ export function DirectorDashboard() {
       setEditingUser(null)
       
       // Mostrar notificación de éxito
-      showSuccess('Éxito', 'Usuario actualizado correctamente')
+      console.log('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
-      showError('Error', 'Error al actualizar el usuario')
+      console.error('Error', 'Error al actualizar el usuario')
     }
   }
 

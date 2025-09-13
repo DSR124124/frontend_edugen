@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface UIState {
+export interface UIState {
   sidebarOpen: boolean
   theme: 'light' | 'dark'
   toggleSidebar: () => void

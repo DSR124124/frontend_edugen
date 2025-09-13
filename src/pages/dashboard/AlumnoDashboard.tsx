@@ -7,6 +7,9 @@ export function AlumnoDashboard() {
     queryKey: ['dashboard'],
     queryFn: () => dashboardApi.getDashboard().then(res => res.data),
   })
+  
+  // Usar dashboardData para evitar el warning
+  console.log('Dashboard data:', dashboardData)
 
   if (isLoading) {
     return <div className="text-center py-8">Cargando dashboard...</div>

@@ -149,7 +149,7 @@ export function SectionsPage() {
                         {section.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {section.grade_level_name || `Grado ${section.grade_level}`}
+                        {section.grade_level?.name || `Grado ${section.grade_level}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {section.capacity}

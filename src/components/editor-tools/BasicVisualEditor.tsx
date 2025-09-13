@@ -29,7 +29,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
       const addEditableClass = (tag: string, html: string) => {
         // Buscar tanto con comillas dobles como simples
         const regex = new RegExp(`<${tag}([^>]*?)(?:class\\s*=\\s*["']([^"']*)["'])?([^>]*?)>`, 'gi')
-        return html.replace(regex, (match, beforeClass, existingClass, afterClass) => {
+        return html.replace(regex, (_match, beforeClass, existingClass, afterClass) => {
           if (existingClass) {
             // Si ya tiene clase, agregar editable-element
             return `<${tag}${beforeClass}class="${existingClass} editable-element"${afterClass}>`
@@ -74,7 +74,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
     return ''
   })
   const [cssContent, setCssContent] = useState(content.css_content || '')
-  const [jsContent, setJsContent] = useState(content.js_content || '')
+  const [jsContent] = useState(content.js_content || '')
   const [draggedElement, setDraggedElement] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dropIndicator, setDropIndicator] = useState<{ x: number; y: number; visible: boolean; position: number }>({ x: 0, y: 0, visible: false, position: -1 })
@@ -105,23 +105,23 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
     }
   }
 
-  const addElement = (tag: string, content: string = '') => {
-    // Mapeo de ejemplos educativos
-    const educationalExamples: { [key: string]: string } = {
-      'h1': 'Tema Principal',
-      'h2': 'Objetivos de Aprendizaje', 
-      'h3': 'Concepto Clave',
-      'p': 'Explicación del contenido educativo',
-      'ul': '<li>Punto importante</li><li>Otro concepto</li><li>Información adicional</li>',
-      'button': 'Ejercicio',
-      'img': '',
-      'div': 'Sección de contenido'
-    }
-    
-    const exampleContent = content || educationalExamples[tag] || 'Contenido educativo'
-    const newElement = `<${tag} class="editable-element">${exampleContent}</${tag}>`
-    setHtmlContent(prev => prev + newElement)
-  }
+  // const addElement = (tag: string, content: string = '') => {
+  //   // Mapeo de ejemplos educativos
+  //   const educationalExamples: { [key: string]: string } = {
+  //     'h1': 'Tema Principal',
+  //     'h2': 'Objetivos de Aprendizaje', 
+  //     'h3': 'Concepto Clave',
+  //     'p': 'Explicación del contenido educativo',
+  //     'ul': '<li>Punto importante</li><li>Otro concepto</li><li>Información adicional</li>',
+  //     'button': 'Ejercicio',
+  //     'img': '',
+  //     'div': 'Sección de contenido'
+  //   }
+  //   
+  //   const exampleContent = content || educationalExamples[tag] || 'Contenido educativo'
+  //   const newElement = `<${tag} class="editable-element">${exampleContent}</${tag}>`
+  //   setHtmlContent(prev => prev + newElement)
+  // }
 
   const addStyle = (selector: string, styles: string) => {
     const newStyle = `${selector} { ${styles} }`
@@ -144,16 +144,16 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
   }
 
   // Funciones de arrastrar y soltar
-  const handleDragStart = (e: React.DragEvent, elementType: string) => {
-    setDraggedElement(elementType)
-    setIsDragging(true)
-    e.dataTransfer.effectAllowed = 'copy'
-  }
+  // const handleDragStart = (e: React.DragEvent, elementType: string) => {
+  //   setDraggedElement(elementType)
+  //   setIsDragging(true)
+  //   e.dataTransfer.effectAllowed = 'copy'
+  // }
 
-  const handleDragEnd = () => {
-    setDraggedElement(null)
-    setIsDragging(false)
-  }
+  // const handleDragEnd = () => {
+  //   setDraggedElement(null)
+  //   setIsDragging(false)
+  // }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -221,7 +221,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
   }
 
   // Función mejorada para determinar dónde insertar el elemento
-  const getInsertPosition = (content: string, x: number, y: number): number => {
+  const getInsertPosition = (content: string, _x: number, y: number): number => {
     // Buscar elementos existentes en el DOM real
     const existingElements = document.querySelectorAll('.editable-element')
     if (existingElements.length === 0) {
@@ -267,7 +267,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
     if (!closestElement) return -1
 
     // Obtener el HTML del elemento más cercano
-    const elementHTML = closestElement.outerHTML
+    const elementHTML = (closestElement as HTMLElement).outerHTML
     const elementIndex = content.indexOf(elementHTML)
     
     if (elementIndex === -1) return -1
@@ -345,7 +345,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
   // Verificar elementos editables cuando cambie el HTML
   useEffect(() => {
     const timer = setTimeout(() => {
-      const elements = document.querySelectorAll('.editable-element')
+      // const elements = document.querySelectorAll('.editable-element')
       // Los elementos están listos para ser editables
       
       // Asegurar que todos los elementos dentro del editor sean editables
@@ -642,7 +642,7 @@ export function BasicVisualEditor({ content, onSave }: BasicVisualEditorProps) {
                   className="absolute bg-blue-500 h-1 w-full rounded opacity-75 pointer-events-none z-10"
                   style={{
                     left: 0,
-                    top: dropIndicator.y - canvasRef.current?.getBoundingClientRect().top || 0,
+                    top: dropIndicator.y - (canvasRef.current?.getBoundingClientRect().top || 0),
                     transform: 'translateY(-2px)'
                   }}
                 />

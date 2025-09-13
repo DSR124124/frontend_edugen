@@ -67,33 +67,7 @@ export const isValidEmail = (email: string): boolean => {
   return VALIDATION.EMAIL_REGEX.test(email)
 }
 
-/**
- * Validate password strength
- */
-export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
-  const errors: string[] = []
-  
-  if (password.length < VALIDATION.PASSWORD_MIN_LENGTH) {
-    errors.push(`La contraseña debe tener al menos ${VALIDATION.PASSWORD_MIN_LENGTH} caracteres`)
-  }
-  
-  if (!/[A-Z]/.test(password)) {
-    errors.push('La contraseña debe contener al menos una letra mayúscula')
-  }
-  
-  if (!/[a-z]/.test(password)) {
-    errors.push('La contraseña debe contener al menos una letra minúscula')
-  }
-  
-  if (!/\d/.test(password)) {
-    errors.push('La contraseña debe contener al menos un número')
-  }
-  
-  return {
-    isValid: errors.length === 0,
-    errors,
-  }
-}
+// validatePassword function moved to validation.ts to avoid duplication
 
 /**
  * Debounce function
@@ -102,7 +76,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
   return (...args: Parameters<T>) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)

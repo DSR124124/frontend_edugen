@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { User } from '../api/endpoints'
 
-interface AuthState {
+export interface AuthState {
   user: User | null
   accessToken: string | null
   refreshToken: string | null

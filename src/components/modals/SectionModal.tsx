@@ -23,8 +23,8 @@ export function SectionModal({
   const [formData, setFormData] = useState<Partial<Section>>({
     name: '',
     capacity: 30,
-    term: 0,
-    grade_level: 0,
+    term: { id: 0, name: '', is_active: true },
+    grade_level: { id: 0, name: '', level: 0 },
   })
 
   useEffect(() => {
@@ -39,8 +39,8 @@ export function SectionModal({
       setFormData({
         name: '',
         capacity: 30,
-        term: 0,
-        grade_level: 0,
+        term: { id: 0, name: '', is_active: true },
+        grade_level: { id: 0, name: '', level: 0 },
       })
     }
   }, [section])
@@ -106,7 +106,7 @@ export function SectionModal({
             </label>
             <select
               name="grade_level"
-              value={formData.grade_level || 0}
+              value={typeof formData.grade_level === 'object' ? formData.grade_level.id : formData.grade_level || 0}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
@@ -127,7 +127,7 @@ export function SectionModal({
             </label>
             <select
               name="term"
-              value={formData.term || 0}
+              value={typeof formData.term === 'object' ? formData.term.id : formData.term || 0}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required

@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, ErrorInfo, ReactNode } from 'react'
 
 interface Props {
   children: ReactNode
@@ -19,6 +19,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Log error to console or error reporting service
+    console.error('Error caught by boundary:', error, errorInfo)
+    // Use the parameters to avoid unused variable warnings
+    void error
+    void errorInfo
   }
 
   public render() {

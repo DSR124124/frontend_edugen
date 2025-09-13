@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
-interface Course {
-  id: number
-  name: string
-  code: string
-  description?: string
-  institution: number
-  created_at: string
-}
+// interface Course {
+//   id: number
+//   name: string
+//   code: string
+//   description?: string
+//   institution: number
+//   created_at: string
+// }
 
 
 interface CreateCourseModalProps {
@@ -46,8 +46,8 @@ export function CreateCourseModal({
       code: '',
       description: '',
       credits: 0,
-      section_ids: [],
-      grade_level_id: ''
+      // section_ids: [],
+      // grade_level_id: ''
     })
     onClose()
   }

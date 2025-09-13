@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { API_CONFIG } from '../utils/constants'
+// import { API_CONFIG } from '../utils/constants'
 
 export interface UseApiState<T> {
   data: T | null

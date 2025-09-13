@@ -22,6 +22,7 @@ import { AuthLayout } from '../layouts/AuthLayout'
 
 export function AppRouter() {
   const { isAuthenticated, user } = useAuthStore()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
   if (!isAuthenticated) {
     return (
