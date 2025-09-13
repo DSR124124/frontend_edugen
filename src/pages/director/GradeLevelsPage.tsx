@@ -28,7 +28,6 @@ export function GradeLevelsPage() {
       setShowCreateModal(false)
       showSuccess('Éxito', 'Grado creado correctamente')
     } catch (error) {
-      console.error('Error creating grade level:', error)
       showError('Error', 'Error al crear el grado')
     }
   }
@@ -47,7 +46,6 @@ export function GradeLevelsPage() {
       setEditingGradeLevel(null)
       showSuccess('Éxito', 'Grado actualizado correctamente')
     } catch (error) {
-      console.error('Error updating grade level:', error)
       showError('Error', 'Error al actualizar el grado')
     }
   }
@@ -65,7 +63,6 @@ export function GradeLevelsPage() {
         setGradeLevelToDelete(null)
         showSuccess('Éxito', 'Grado eliminado correctamente')
       } catch (error) {
-        console.error('Error deleting grade level:', error)
         showError('Error', 'Error al eliminar el grado')
       }
     }

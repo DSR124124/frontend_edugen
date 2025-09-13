@@ -3,7 +3,7 @@ import { useDirectorApi } from '../../hooks/useDirectorApi'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
-import { CreateStudentModal } from '../../components/modals/CreateStudentModal'
+import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 
@@ -49,7 +49,6 @@ export function StudentsPage() {
       setShowCreateUser(false)
       showSuccess('Éxito', 'Estudiante creado correctamente')
     } catch (err) {
-      console.error('Error creating student:', err)
       showError('Error', 'Error al crear el estudiante')
     }
   }
@@ -67,7 +66,6 @@ export function StudentsPage() {
         setUserToDelete(null)
         showSuccess('Éxito', 'Estudiante eliminado correctamente')
       } catch (err) {
-        console.error('Error deleting student:', err)
         showError('Error', 'Error al eliminar el estudiante')
       }
     }
@@ -92,7 +90,6 @@ export function StudentsPage() {
     if (!editingUser) return
     
     try {
-      console.log('Saving user:', editingUser.id, userData)
       await updateUser(editingUser.id, userData)
       
       // Cerrar el modal
@@ -101,7 +98,6 @@ export function StudentsPage() {
       
       showSuccess('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
-      console.error('Error updating user:', error)
       showError('Error', 'Error al actualizar el usuario')
     }
   }
@@ -257,11 +253,12 @@ export function StudentsPage() {
         </div>
 
         {/* Create Student Modal */}
-        <CreateStudentModal
+        <CreateUserModal
           isOpen={showCreateUser}
           onClose={() => setShowCreateUser(false)}
           onSave={handleCreateUser}
           loading={loading}
+          userType="ALUMNO"
         />
 
         {/* User Detail Modal */}

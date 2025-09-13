@@ -23,7 +23,6 @@ export const useDirectorApi = () => {
       const response = await directorApi.getUsers()
       setUsers(response.data || [])
     } catch (err: any) {
-      console.error('Error loading users:', err)
       setError(err.response?.data?.detail || 'Error al cargar usuarios')
       setUsers([])
     } finally {
@@ -44,7 +43,6 @@ export const useDirectorApi = () => {
       const response = await directorApi.getSections()
       setSections(response.data || [])
     } catch (err: any) {
-      console.error('Error loading sections:', err)
       setError(err.response?.data?.detail || 'Error al cargar secciones')
       setSections([])
     } finally {
@@ -81,7 +79,6 @@ export const useDirectorApi = () => {
         const updatedResponse = await directorApi.getUsers()
         setUsers(updatedResponse.data || [])
       } catch (reloadErr) {
-        console.error('Error reloading users:', reloadErr)
         // Si falla la recarga, al menos actualizar con la respuesta original
         setUsers(prev => prev.map(user => user.id === id ? response.data : user))
       }

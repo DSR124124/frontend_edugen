@@ -1,11 +1,26 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useStudentsBySection } from '../../hooks/useStudentsBySection'
+import { StudentProfileModal } from '../../components/modals/StudentProfileModal'
+
+interface Student {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  username: string
+  is_active: boolean
+  enrolled_at: string
+}
 
 export function MyStudents() {
+  const [searchParams] = useSearchParams()
   const { sections: professorSections, loading: sectionsLoading } = useProfessorSections()
   const { data: studentsData, loading: studentsLoading, error: studentsError, getStudentsBySection } = useStudentsBySection()
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   // Cargar estudiantes cuando se selecciona una sección
   useEffect(() => {
@@ -14,12 +29,38 @@ export function MyStudents() {
     }
   }, [selectedSectionId, getStudentsBySection])
 
-  // Seleccionar la primera sección por defecto
+  // Seleccionar sección desde URL o primera sección por defecto
   useEffect(() => {
     if (professorSections && professorSections.length > 0 && !selectedSectionId) {
-      setSelectedSectionId(professorSections[0].id)
+      const sectionFromUrl = searchParams.get('section')
+      if (sectionFromUrl) {
+        const sectionId = parseInt(sectionFromUrl, 10)
+        // Verificar que la sección existe en las secciones del profesor
+        const sectionExists = professorSections.some(section => section.id === sectionId)
+        if (sectionExists) {
+          setSelectedSectionId(sectionId)
+        } else {
+          // Si la sección no existe, seleccionar la primera disponible
+          setSelectedSectionId(professorSections[0].id)
+        }
+      } else {
+        // Si no hay parámetro en URL, seleccionar la primera sección
+        setSelectedSectionId(professorSections[0].id)
+      }
     }
-  }, [professorSections, selectedSectionId])
+  }, [professorSections, selectedSectionId, searchParams])
+
+  // Función para abrir el perfil del estudiante
+  const handleViewProfile = (student: Student) => {
+    setSelectedStudent(student)
+    setIsProfileModalOpen(true)
+  }
+
+  // Función para cerrar el modal
+  const handleCloseProfile = () => {
+    setIsProfileModalOpen(false)
+    setSelectedStudent(null)
+  }
 
   if (sectionsLoading) {
     return (
@@ -92,6 +133,7 @@ export function MyStudents() {
             </div>
           </div>
         )}
+
 
         {/* Section Info and Stats */}
         {studentsData && (
@@ -199,7 +241,10 @@ export function MyStudents() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 font-medium">
+                            <button 
+                              onClick={() => handleViewProfile(student)}
+                              className="text-blue-600 hover:text-blue-900 font-medium"
+                            >
                               Ver Perfil
                             </button>
                             <button className="text-green-600 hover:text-green-900 font-medium">
@@ -231,6 +276,14 @@ export function MyStudents() {
             )}
           </div>
         </div>
+
+        {/* Student Profile Modal */}
+        <StudentProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={handleCloseProfile}
+          student={selectedStudent}
+          sectionId={selectedSectionId || 0}
+        />
       </div>
     </div>
   )

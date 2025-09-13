@@ -28,7 +28,6 @@ export function TermsPage() {
       setShowCreateModal(false)
       showSuccess('Éxito', 'Período creado correctamente')
     } catch (error) {
-      console.error('Error creating term:', error)
       showError('Error', 'Error al crear el período')
     }
   }
@@ -47,7 +46,6 @@ export function TermsPage() {
       setEditingTerm(null)
       showSuccess('Éxito', 'Período actualizado correctamente')
     } catch (error) {
-      console.error('Error updating term:', error)
       showError('Error', 'Error al actualizar el período')
     }
   }
@@ -65,7 +63,6 @@ export function TermsPage() {
         setTermToDelete(null)
         showSuccess('Éxito', 'Período eliminado correctamente')
       } catch (error) {
-        console.error('Error deleting term:', error)
         showError('Error', 'Error al eliminar el período')
       }
     }

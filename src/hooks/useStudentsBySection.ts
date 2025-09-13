@@ -35,7 +35,6 @@ export const useStudentsBySection = () => {
       const response = await academicApi.getStudentsBySection(sectionId)
       setData(response.data)
     } catch (err: unknown) {
-      console.error('Error loading students by section:', err)
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { error?: string } } }).response?.data?.error || 'Error al cargar estudiantes'
         : 'Error al cargar estudiantes'

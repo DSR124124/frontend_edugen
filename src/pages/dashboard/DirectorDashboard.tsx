@@ -49,7 +49,6 @@ export function DirectorDashboard() {
       })
       setShowCreateUser(false)
     } catch (err) {
-      console.error('Error creating user:', err)
     }
   }
 
@@ -65,7 +64,6 @@ export function DirectorDashboard() {
         setShowConfirmDelete(false)
         setUserToDelete(null)
       } catch (err) {
-        console.error('Error deleting user:', err)
       }
     }
   }
@@ -89,7 +87,6 @@ export function DirectorDashboard() {
     if (!editingUser) return
     
     try {
-      console.log('Saving user:', editingUser.id, userData)
       await updateUser(editingUser.id, userData)
       
       // Cerrar el modal
@@ -99,7 +96,6 @@ export function DirectorDashboard() {
       // Mostrar notificación de éxito
       showSuccess('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
-      console.error('Error updating user:', error)
       showError('Error', 'Error al actualizar el usuario')
     }
   }

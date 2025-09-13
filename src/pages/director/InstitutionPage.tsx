@@ -34,7 +34,6 @@ export function InstitutionPage() {
       setFormData({})
       showSuccess('Éxito', 'Información de la institución actualizada correctamente')
     } catch (error) {
-      console.error('Error updating institution:', error)
       showError('Error', 'Error al actualizar la información de la institución')
     }
   }

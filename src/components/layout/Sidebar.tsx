@@ -5,20 +5,19 @@ import {
   LayoutDashboard, 
   BookOpen, 
   Users, 
-  FolderOpen, 
   Settings,
   GraduationCap,
   Calendar,
   Layers,
   UserCheck,
   Building2,
+  FolderOpen,
 } from 'lucide-react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Cursos', href: '/courses', icon: BookOpen },
   { name: 'Secciones', href: '/sections', icon: Users },
-  { name: 'Portafolio', href: '/portfolio', icon: FolderOpen },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
@@ -35,10 +34,11 @@ const directorNavigation = [
 
 const professorNavigation = [
   { name: 'Dashboard', href: '/professor', icon: LayoutDashboard },
+  { name: 'Mis Cursos', href: '/professor/courses', icon: BookOpen },
+  { name: 'Temas', href: '/professor/topics', icon: Layers },
   { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
   { name: 'Mis Estudiantes', href: '/professor/students', icon: GraduationCap },
-  { name: 'Mis Evaluaciones', href: '/professor/evaluations', icon: BookOpen },
-  { name: 'Portafolio', href: '/portfolio', icon: FolderOpen },
+  { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
@@ -71,6 +71,7 @@ export function Sidebar() {
               <NavLink
                 key={item.name}
                 to={item.href}
+                end={item.href === '/professor' || item.href === '/director' || item.href === '/dashboard'}
                 className={({ isActive }) =>
                   `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     isActive

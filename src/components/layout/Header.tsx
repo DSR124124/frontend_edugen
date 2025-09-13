@@ -1,10 +1,10 @@
 import { useAuthStore } from '../../store/auth'
 import { useUIStore } from '../../store/ui'
-import { Menu, User, LogOut } from 'lucide-react'
+import { User, LogOut, Menu } from 'lucide-react'
 
 export function Header() {
   const { user, logout } = useAuthStore()
-  const { toggleSidebar } = useUIStore()
+  const { sidebarOpen, toggleSidebar } = useUIStore()
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -13,10 +13,22 @@ export function Header() {
           <button
             onClick={toggleSidebar}
             className="p-2 rounded-md hover:bg-gray-100"
+            title={sidebarOpen ? "Ocultar menú" : "Mostrar menú"}
           >
             <Menu className="h-5 w-5" />
           </button>
           <h1 className="headline-xl text-base-content">EDUGEN</h1>
+          
+          {/* Botón para ocultar sidebar cuando está abierto */}
+          {sidebarOpen && (
+            <button
+              onClick={toggleSidebar}
+              className="ml-6 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              title="Ocultar navegación"
+            >
+              Ocultar Nav
+            </button>
+          )}
         </div>
 
         <div className="flex items-center space-x-4">

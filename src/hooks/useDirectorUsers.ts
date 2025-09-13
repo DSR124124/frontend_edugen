@@ -17,7 +17,6 @@ export const useDirectorUsers = () => {
       setUsers(response.data || [])
       setLoaded(true)
     } catch (err: any) {
-      console.error('Error loading users:', err)
       setError(err.response?.data?.detail || 'Error al cargar usuarios')
       setUsers([])
     } finally {

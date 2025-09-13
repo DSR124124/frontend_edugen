@@ -1,7 +1,13 @@
 import { useProfessorSections } from '../../hooks/useProfessorSections'
+import { useNavigate } from 'react-router-dom'
 
 export function MySections() {
   const { sections, loading, error, loadSections } = useProfessorSections()
+  const navigate = useNavigate()
+
+  const handleViewStudents = (sectionId: number) => {
+    navigate(`/professor/students?section=${sectionId}`)
+  }
 
 
   if (loading) {
@@ -115,7 +121,10 @@ export function MySections() {
 
                     <div className="mt-4 pt-4 border-t border-gray-200">
                       <div className="flex space-x-2">
-                        <button className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                        <button 
+                          onClick={() => handleViewStudents(section.id)}
+                          className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                        >
                           Ver Estudiantes
                         </button>
                         <button className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">

@@ -4,7 +4,7 @@ import { useNotificationContext } from '../../contexts/NotificationContext'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
-import { CreateStudentModal } from '../../components/modals/CreateStudentModal'
+import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
 
 export function ProfessorsPage() {
@@ -40,7 +40,6 @@ export function ProfessorsPage() {
       await createUser({ ...userData, role: 'PROFESOR' })
       setShowCreateUser(false)
     } catch (err) {
-      console.error('Error creating professor:', err)
     }
   }
 
@@ -56,7 +55,6 @@ export function ProfessorsPage() {
         setShowConfirmDelete(false)
         setUserToDelete(null)
       } catch (err) {
-        console.error('Error deleting professor:', err)
       }
     }
   }
@@ -88,7 +86,6 @@ export function ProfessorsPage() {
       
       showSuccess('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
-      console.error('Error updating user:', error)
       showError('Error', 'Error al actualizar el usuario')
     }
   }
@@ -250,11 +247,12 @@ export function ProfessorsPage() {
         </div>
 
         {/* Create Professor Modal */}
-        <CreateStudentModal
+        <CreateUserModal
           isOpen={showCreateUser}
           onClose={() => setShowCreateUser(false)}
           onSave={handleCreateUser}
           loading={loading}
+          userType="PROFESOR"
         />
 
         {/* User Detail Modal */}

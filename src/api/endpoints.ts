@@ -91,6 +91,21 @@ export interface Institution {
   updated_at: string
 }
 
+export interface Topic {
+  id: number
+  name: string
+  description?: string
+  course: number
+  course_name: string
+  course_code: string
+  professor: number
+  professor_name: string
+  order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 // Auth endpoints
 export const authApi = {
   login: (data: LoginRequest) => 
@@ -199,24 +214,218 @@ export const academicApi = {
   getSections: () => 
     http.get('academic/sections/'),
   
+  getMySections: () => 
+    http.get('academic/sections/my-sections/'),
+  
   getEnrollments: () => 
     http.get('academic/enrollments/'),
   
   getStudentsBySection: (sectionId: number) => 
     http.get(`academic/sections/${sectionId}/students/`),
+  
+  getGradeLevels: () => 
+    http.get('institutions/grade-levels/'),
+  
+  getUser: () => 
+    http.get('accounts/me/'),
+  
+  createCourse: (data: { name: string; code: string; description?: string; credits?: number }) => 
+    http.post('academic/courses/', data),
+  
+  updateCourse: (courseId: number, data: { name: string; code: string; description?: string; credits?: number }) => 
+    http.put(`academic/courses/${courseId}/`, data),
+  
+  deleteCourse: (courseId: number) => 
+    http.delete(`academic/courses/${courseId}/`),
+  
+  assignCourseToSections: (courseId: number, data: { section_ids: number[]; grade_level_id?: number }) => 
+    http.post(`academic/courses/${courseId}/assign-to-sections/`, data),
+  
+  // Topics endpoints
+  getTopics: () => 
+    http.get<Topic[]>('academic/topics/'),
+  
+  getTopic: (id: number) => 
+    http.get<Topic>(`academic/topics/${id}/`),
+  
+  getTopicsByCourse: (courseId: number) => 
+    http.get<Topic[]>(`academic/topics/by-course/${courseId}/`),
+  
+  createTopic: (data: { name: string; description?: string; course: number }) => 
+    http.post<Topic>('academic/topics/', data),
+  
+  updateTopic: (id: number, data: { name?: string; description?: string; order?: number; is_active?: boolean }) => 
+    http.put<Topic>(`academic/topics/${id}/`, data),
+  
+  deleteTopic: (id: number) => 
+    http.delete(`academic/topics/${id}/`),
 }
 
-// Portfolio endpoints
-export const portfolioApi = {
-  getPortfolio: () => 
-    http.get('portfolio/portfolios/'),
-  
-  getArtifacts: () => 
-    http.get('portfolio/artifacts/'),
-}
 
 // Analytics endpoints
 export const analyticsApi = {
   getKPIs: () => 
     http.get('analytics/kpis/'),
+}
+
+// Portfolio and Activity interfaces
+export interface PortfolioCourse {
+  id: number
+  course: number
+  course_name: string
+  course_code: string
+  added_at: string
+  topics: Topic[]
+}
+
+export interface Portfolio {
+  id: number
+  student: number
+  section: number
+  title: string
+  description?: string
+  is_public: boolean
+  created_at: string
+  updated_at: string
+  student_name: string
+  section_name: string
+  courses: PortfolioCourse[]
+  activity_assignments_count: number
+  completed_assignments_count: number
+}
+
+export interface Activity {
+  id: number
+  professor: number
+  course: number
+  section: number
+  title: string
+  description: string
+  activity_type: 'GROUP' | 'INDIVIDUAL'
+  activity_type_display: string
+  instructions: string
+  due_date: string
+  points: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  professor_name: string
+  course_name: string
+  section_name: string
+  assignments_count: number
+  completed_assignments_count: number
+}
+
+export interface ActivityAssignment {
+  id: number
+  activity: number
+  student: number
+  portfolio: number
+  assigned_at: string
+  completed_at?: string
+  is_completed: boolean
+  grade?: number
+  feedback?: string
+  submission_notes?: string
+  student_name: string
+  activity_title: string
+  portfolio_title: string
+  days_until_due?: number
+  artifacts: Artifact[]
+}
+
+export interface Artifact {
+  id: number
+  assignment: number
+  title: string
+  description?: string
+  file: string
+  file_url?: string
+  artifact_type: string
+  created_at: string
+  assignment_title: string
+}
+
+// Portfolio and Activity endpoints
+export const portfolioApi = {
+  getPortfolios: () => 
+    http.get<Portfolio[]>('portfolio/portfolios/'),
+  
+  getPortfolio: (id: number) => 
+    http.get<Portfolio>(`portfolio/portfolios/${id}/`),
+  
+  getPortfoliosByCourse: (courseId: number) => 
+    http.get<Portfolio[]>(`portfolio/portfolios/by-course/?course_id=${courseId}`),
+  
+  getPortfoliosBySection: (sectionId: number) => 
+    http.get<Portfolio[]>(`portfolio/portfolios/by-section/?section_id=${sectionId}`),
+  
+  createPortfolio: (data: { student: number; course: number; section: number; title: string; description?: string }) => 
+    http.post<Portfolio>('portfolio/portfolios/', data),
+  
+  updatePortfolio: (id: number, data: { title?: string; description?: string; is_public?: boolean }) => 
+    http.patch<Portfolio>(`portfolio/portfolios/${id}/`, data),
+  
+  deletePortfolio: (id: number) => 
+    http.delete(`portfolio/portfolios/${id}/`),
+}
+
+export const activityApi = {
+  getActivities: () => 
+    http.get<Activity[]>('portfolio/activities/'),
+  
+  getActivity: (id: number) => 
+    http.get<Activity>(`portfolio/activities/${id}/`),
+  
+  getActivitiesByCourse: (courseId: number) => 
+    http.get<Activity[]>(`portfolio/activities/by-course/?course_id=${courseId}`),
+  
+  getActivitiesBySection: (sectionId: number) => 
+    http.get<Activity[]>(`portfolio/activities/by-section/?section_id=${sectionId}`),
+  
+  createActivity: (data: { course: number; section: number; title: string; description: string; activity_type: 'GROUP' | 'INDIVIDUAL'; instructions: string; due_date: string; points: number }) => 
+    http.post<Activity>('portfolio/activities/', data),
+  
+  updateActivity: (id: number, data: { title?: string; description?: string; instructions?: string; due_date?: string; points?: number; is_active?: boolean }) => 
+    http.patch<Activity>(`portfolio/activities/${id}/`, data),
+  
+  deleteActivity: (id: number) => 
+    http.delete(`portfolio/activities/${id}/`),
+  
+  assignToStudents: (id: number, data: { student_ids: number[] }) => 
+    http.post<ActivityAssignment[]>(`portfolio/activities/${id}/assign-to-students/`, data),
+  
+  assignToAllStudents: (id: number) => 
+    http.post<ActivityAssignment[]>(`portfolio/activities/${id}/assign-to-all-students/`, {}),
+}
+
+export const assignmentApi = {
+  getAssignments: () => 
+    http.get<ActivityAssignment[]>('portfolio/assignments/'),
+  
+  getAssignment: (id: number) => 
+    http.get<ActivityAssignment>(`portfolio/assignments/${id}/`),
+  
+  submitAssignment: (id: number, data: { submission_notes?: string }) => 
+    http.post<ActivityAssignment>(`portfolio/assignments/${id}/submit/`, data),
+  
+  gradeAssignment: (id: number, data: { grade?: number; feedback?: string }) => 
+    http.post<ActivityAssignment>(`portfolio/assignments/${id}/grade/`, data),
+}
+
+export const artifactApi = {
+  getArtifacts: () => 
+    http.get<Artifact[]>('portfolio/artifacts/'),
+  
+  getArtifact: (id: number) => 
+    http.get<Artifact>(`portfolio/artifacts/${id}/`),
+  
+  createArtifact: (data: { assignment: number; title: string; description?: string; file: File; artifact_type: string }) => 
+    http.post<Artifact>('portfolio/artifacts/', data),
+  
+  updateArtifact: (id: number, data: { title?: string; description?: string; artifact_type?: string }) => 
+    http.patch<Artifact>(`portfolio/artifacts/${id}/`, data),
+  
+  deleteArtifact: (id: number) => 
+    http.delete(`portfolio/artifacts/${id}/`),
 }

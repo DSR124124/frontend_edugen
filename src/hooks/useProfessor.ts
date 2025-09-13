@@ -14,7 +14,6 @@ export const useProfessor = () => {
       const response = await authApi.me()
       setUser(response.data)
     } catch (err: any) {
-      console.error('Error loading professor info:', err)
       setError(err.response?.data?.detail || 'Error al cargar información del profesor')
       setUser(null)
     } finally {

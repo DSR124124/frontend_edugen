@@ -37,7 +37,6 @@ export function SectionsPage() {
         const response = await directorApi.getSectionOptions()
         setSectionOptions(response.data)
       } catch (error) {
-        console.error('Error loading section options:', error)
         showError('Error', 'Error al cargar las opciones para crear secciones')
       }
     }
@@ -50,7 +49,6 @@ export function SectionsPage() {
       setShowCreateModal(false)
       showSuccess('Éxito', 'Sección creada correctamente')
     } catch (error) {
-      console.error('Error creating section:', error)
       showError('Error', 'Error al crear la sección')
     }
   }
@@ -69,7 +67,6 @@ export function SectionsPage() {
       setEditingSection(null)
       showSuccess('Éxito', 'Sección actualizada correctamente')
     } catch (error) {
-      console.error('Error updating section:', error)
       showError('Error', 'Error al actualizar la sección')
     }
   }
@@ -87,7 +84,6 @@ export function SectionsPage() {
         setSectionToDelete(null)
         showSuccess('Éxito', 'Sección eliminada correctamente')
       } catch (error) {
-        console.error('Error deleting section:', error)
         showError('Error', 'Error al eliminar la sección')
       }
     }

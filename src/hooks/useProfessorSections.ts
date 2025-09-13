@@ -11,13 +11,12 @@ export const useProfessorSections = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await academicApi.getSections()
+      const response = await academicApi.getMySections()
       
       // Intentar ambos formatos
       const sectionsData = response.data?.results || response.data || []
       setSections(sectionsData)
     } catch (err: unknown) {
-      console.error('Error loading professor sections:', err)
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Error al cargar secciones'
         : 'Error al cargar secciones'

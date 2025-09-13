@@ -44,7 +44,6 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
           const response = await directorApi.getSections()
           setSections(response.data)
         } catch (error) {
-          console.error('Error loading sections:', error)
         }
       }
       loadSections()
