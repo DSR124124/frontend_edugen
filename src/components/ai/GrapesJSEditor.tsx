@@ -7,6 +7,12 @@ interface GrapesJSEditorProps {
   onSave: (content: unknown) => void
 }
 
+interface CommandsConfig {
+  [key: string]: {
+    run: (editor: any) => void
+  }
+}
+
 interface GrapesJSEditor {
   getHtml: () => string
   getCss: () => string | undefined
@@ -163,24 +169,24 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
             },
             // Comandos personalizados
             commands: {
-              'show-layers': {
-                run: function(editor: any) {
-                  const panel = editor.Panels.getPanel('layers')
-                  if (panel) panel.set('visible', true)
-                }
-              },
-              'show-styles': {
-                run: function(editor: any) {
-                  const panel = editor.Panels.getPanel('layers')
-                  if (panel) panel.set('visible', false)
-                }
-              },
-              'show-traits': {
-                run: function(editor: any) {
-                  const panel = editor.Panels.getPanel('layers')
-                  if (panel) panel.set('visible', false)
-                }
-              },
+              // 'show-layers': {
+              //   run: function(editor: any) {
+              //     const panel = editor.Panels.getPanel('layers')
+              //     if (panel) panel.set('visible', true)
+              //   }
+              // },
+              // 'show-styles': {
+              //   run: function(editor: any) {
+              //     const panel = editor.Panels.getPanel('layers')
+              //     if (panel) panel.set('visible', false)
+              //   }
+              // },
+              // 'show-traits': {
+              //   run: function(editor: any) {
+              //     const panel = editor.Panels.getPanel('layers')
+              //     if (panel) panel.set('visible', false)
+              //   }
+              // },
               'set-device-desktop': {
                 run: function(editor: any) {
                   editor.setDevice('Desktop')
@@ -196,7 +202,7 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
                   editor.setDevice('Mobile portrait')
                 }
               }
-            }
+            } as CommandsConfig
           })
 
           // Cargar contenido generado

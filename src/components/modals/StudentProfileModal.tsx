@@ -130,7 +130,7 @@ export function StudentProfileModal({ isOpen, onClose, student, sectionId }: Stu
                           </p>
                         )}
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>Curso: {typeof portfolio.courses?.[0]?.course === 'object' ? portfolio.courses[0].course.name : 'Sin curso'}</span>
+                          <span>Curso: {portfolio.courses?.[0]?.course_name || 'Sin curso'}</span>
                           <span>Sección: {portfolio.section_name}</span>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             portfolio.is_public 

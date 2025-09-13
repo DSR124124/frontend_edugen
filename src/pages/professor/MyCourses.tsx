@@ -349,7 +349,7 @@ export function MyCourses() {
           onClose={() => setShowAssignModal(false)}
           onSubmit={handleAssignCourse}
           loading={loading}
-          course={selectedCourse}
+          course={selectedCourse as any}
           sections={professorSections || []}
         />
 
@@ -361,7 +361,7 @@ export function MyCourses() {
           }}
           onSubmit={handleUpdateCourse}
           loading={loading}
-          course={selectedCourse}
+          course={selectedCourse as any}
         />
 
         <ViewCourseModal
@@ -370,7 +370,7 @@ export function MyCourses() {
             setShowViewModal(false)
             setSelectedCourse(null)
           }}
-          course={selectedCourse}
+          course={selectedCourse as any}
           sections={professorSections || []}
         />
 
@@ -382,7 +382,7 @@ export function MyCourses() {
           }}
           onConfirm={handleDeleteCourse}
           loading={loading}
-          course={selectedCourse}
+          course={selectedCourse as any}
         />
       </div>
     </div>

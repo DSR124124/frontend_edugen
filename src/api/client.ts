@@ -49,12 +49,11 @@ class ApiClient {
     )
   }
 
-  private async refreshToken(refreshToken: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return this.client.post('/accounts/token/refresh/', {
-      refresh: refreshToken,
-    })
-  }
+  // private async refreshToken(refreshToken: string) {
+  //   return this.client.post('/accounts/token/refresh/', {
+  //     refresh: refreshToken,
+  //   })
+  // }
 
   // HTTP Methods
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
