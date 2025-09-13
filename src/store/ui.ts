@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface UIState {
+export interface UIState {
   sidebarOpen: boolean
   theme: 'light' | 'dark'
   toggleSidebar: () => void
@@ -9,7 +9,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  sidebarOpen: true,
+  sidebarOpen: false,
   theme: 'light',
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),

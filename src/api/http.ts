@@ -23,15 +23,49 @@ http.interceptors.request.use(
   }
 )
 
-// Response interceptor para manejar errores de autenticación
+// Response interceptor para manejar errores de autenticación y refresh tokens
 http.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      window.location.href = '/login'
+  async (error) => {
+    const originalRequest = error.config
+    
+    // Only handle 401 errors for non-auth endpoints
+    if (error.response?.status === 401 && !originalRequest.url?.includes('/login') && !originalRequest._retry) {
+      originalRequest._retry = true
+      
+      const refreshToken = localStorage.getItem('refresh_token')
+      
+      if (refreshToken) {
+        try {
+          // Intentar renovar el token
+          const response = await axios.post(`${API_URL}accounts/token/refresh/`, {
+            refresh: refreshToken
+          })
+          
+          const { access } = response.data
+          localStorage.setItem('access_token', access)
+          
+          // Reintentar la petición original con el nuevo token
+          originalRequest.headers.Authorization = `Bearer ${access}`
+          return http(originalRequest)
+        } catch (refreshError) {
+          // Si el refresh falla, limpiar tokens y redirigir
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          
+          // Dispatch custom event for token expiry
+          window.dispatchEvent(new CustomEvent('tokenExpired'))
+        }
+      } else {
+        // No hay refresh token, limpiar y redirigir
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        
+        // Dispatch custom event for token expiry
+        window.dispatchEvent(new CustomEvent('tokenExpired'))
+      }
     }
+    
     return Promise.reject(error)
   }
 )

@@ -3,7 +3,7 @@ import { dashboardApi } from '../../api/endpoints'
 import { KPICard } from '../../components/kpi/KPICard'
 
 export function AlumnoDashboard() {
-  const { data: dashboardData, isLoading } = useQuery({
+  const { isLoading } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => dashboardApi.getDashboard().then(res => res.data),
   })

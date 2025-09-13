@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { academicApi } from '../../api/endpoints'
+import { useAuthStore } from '../../store/auth'
 
 export function Sections() {
+  const { user } = useAuthStore()
   const { data: sections, isLoading } = useQuery({
     queryKey: ['sections'],
     queryFn: () => academicApi.getSections().then(res => res.data),
@@ -16,11 +18,18 @@ export function Sections() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Secciones</h1>
-          <p className="text-gray-600">Gestiona las secciones de los cursos</p>
+          <p className="text-gray-600">
+            {user?.role === 'DIRECTOR' 
+              ? 'Gestiona las secciones de los cursos' 
+              : 'Visualiza las secciones asignadas'
+            }
+          </p>
         </div>
-        <button className="bg-primary text-primary-content px-4 py-2 rounded-md hover:bg-primary-focus">
-          Nueva Sección
-        </button>
+        {user?.role === 'DIRECTOR' && (
+          <button className="bg-primary text-primary-content px-4 py-2 rounded-md hover:bg-primary-focus">
+            Nueva Sección
+          </button>
+        )}
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">

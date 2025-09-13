@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { User } from '../api/endpoints'
 
-interface AuthState {
+export interface AuthState {
   user: User | null
   accessToken: string | null
   refreshToken: string | null
@@ -59,6 +59,24 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Agregar configuración para evitar problemas de serialización
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name)
+          if (!str) return null
+          try {
+            return JSON.parse(str)
+          } catch {
+            return null
+          }
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value))
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name)
+        },
+      },
     }
   )
 )
