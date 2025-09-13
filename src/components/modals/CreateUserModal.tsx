@@ -406,7 +406,7 @@ export function CreateUserModal({
 
     setIsSubmitting(true)
     try {
-      const newUser = await onSave({ ...formData, role: userType })
+      await onSave({ ...formData, role: userType })
       
       // Mostrar estado de éxito
       setIsSuccess(true)

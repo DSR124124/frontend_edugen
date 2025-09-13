@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, GeneratedContent } from '../../api/endpoints'
 import { useNotificationContext } from '../../contexts/NotificationContext'
@@ -50,7 +50,7 @@ export function GeneratedContentPage() {
   const handleSaveContent = async (updatedContent: unknown) => {
     if (selectedContent) {
       try {
-        await aiContentApi.updateGeneratedContent(selectedContent.id, updatedContent)
+        await aiContentApi.updateGeneratedContent(selectedContent.id, updatedContent as any)
         queryClient.invalidateQueries({ queryKey: ['generated-content'] })
         showSuccess('Contenido Actualizado', 'El contenido se ha guardado exitosamente')
         handleCloseEditor()

@@ -31,14 +31,14 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
   // Obtener secciones del profesor
   const { data: sections, isLoading: loadingSections } = useQuery({
     queryKey: ['professor-sections'],
-    queryFn: () => academicApi.getProfessorSections(),
+    queryFn: () => academicApi.getMySections(),
     enabled: isOpen
   })
 
   // Obtener estudiantes de la sección seleccionada
   const { data: sectionStudents, isLoading: loadingStudents } = useQuery({
     queryKey: ['section-students', formData.sectionId],
-    queryFn: () => academicApi.getSectionStudents(formData.sectionId),
+    queryFn: () => academicApi.getStudentsBySection(formData.sectionId),
     enabled: isOpen && formData.sectionId > 0 && formData.assignmentType === 'personalized'
   })
 
@@ -48,7 +48,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
       setFormData({
         sectionId: 0,
         title: content.title || '',
-        description: content.description || '',
+        description: '',
         format: 'SCORM',
         assignmentType: 'general',
         selectedStudents: []

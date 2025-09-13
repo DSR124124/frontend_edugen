@@ -7,11 +7,11 @@ interface ContentEditorProps {
   onSave: (content: unknown) => void
 }
 
-export function ContentEditor({ content, onSave }: ContentEditorProps) {
-  const [htmlContent, setHtmlContent] = useState(content.html_content || '')
-  const [cssContent, setCssContent] = useState(content.css_content || '')
-  const [jsContent, setJsContent] = useState(content.js_content || '')
-  const [activeTab, setActiveTab] = useState<'preview'>('preview')
+export function ContentEditor({ content }: ContentEditorProps) {
+  const [htmlContent] = useState(content.html_content || '')
+  const [cssContent] = useState(content.css_content || '')
+  const [jsContent] = useState(content.js_content || '')
+  // const [activeTab] = useState<'preview'>('preview')
   const [notifications, setNotifications] = useState<Array<{
     id: string
     type: 'success' | 'error' | 'warning' | 'info'
@@ -20,10 +20,10 @@ export function ContentEditor({ content, onSave }: ContentEditorProps) {
     duration?: number
   }>>([])
 
-  const addNotification = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration?: number) => {
-    const id = Math.random().toString(36).substr(2, 9)
-    setNotifications(prev => [...prev, { id, title, message, type, duration }])
-  }
+  // const addNotification = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration?: number) => {
+  //   const id = Math.random().toString(36).substr(2, 9)
+  //   setNotifications(prev => [...prev, { id, title, message, type, duration }])
+  // }
 
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id))

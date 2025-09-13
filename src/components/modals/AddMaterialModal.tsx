@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { academicApi, Material, Student } from '../../api/endpoints'
+import { Student } from '../../api/endpoints'
 
 interface AddMaterialModalProps {
   isOpen: boolean
