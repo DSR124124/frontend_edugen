@@ -1,7 +1,6 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth'
 import { DirectorDashboard } from './DirectorDashboard'
-import { ProfesorDashboard } from './ProfesorDashboard'
 import { AlumnoDashboard } from './AlumnoDashboard'
 
 export function DashboardRouter() {
@@ -12,7 +11,7 @@ export function DashboardRouter() {
       case 'DIRECTOR':
         return <DirectorDashboard />
       case 'PROFESOR':
-        return <ProfesorDashboard />
+        return <Navigate to="/professor" replace />
       case 'ALUMNO':
         return <AlumnoDashboard />
       default:

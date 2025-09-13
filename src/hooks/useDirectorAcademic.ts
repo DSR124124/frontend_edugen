@@ -107,7 +107,7 @@ export function useDirectorSections() {
   const deleteSection = useMutation({
     mutationFn: (id: number) => directorApi.deleteSection(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['director', 'terms'] })
+      queryClient.invalidateQueries({ queryKey: ['director', 'sections'] })
     },
   })
 

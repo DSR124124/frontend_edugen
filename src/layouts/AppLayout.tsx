@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { useUIStore } from '../store/ui'
-import { Header } from '../components/Header'
-import { Sidebar } from '../components/Sidebar'
+import { Header } from '../components/layout/Header'
+import { Sidebar } from '../components/layout/Sidebar'
 
 interface AppLayoutProps {
   children: ReactNode

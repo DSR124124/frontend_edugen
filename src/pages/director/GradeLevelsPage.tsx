@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useDirectorGradeLevels } from '../../hooks/useDirectorAcademic'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { GradeLevel } from '../../api/endpoints'
-import { GradeLevelModal } from '../../components/GradeLevelModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
+import { GradeLevelModal } from '../../components/modals/GradeLevelModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
 
 export function GradeLevelsPage() {
   const {

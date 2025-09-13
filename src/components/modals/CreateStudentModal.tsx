@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { directorApi } from '../api/endpoints'
+import { directorApi } from '../../api/endpoints'
 
 interface CreateStudentModalProps {
   isOpen: boolean
@@ -20,7 +20,8 @@ export function CreateStudentModal({
     first_name: '',
     last_name: '',
     password: '',
-    section: 0,
+    role: 'ALUMNO',
+    assigned_sections_ids: [] as number[],
   })
 
   const [sections, setSections] = useState<Array<{
@@ -30,6 +31,7 @@ export function CreateStudentModal({
     professor_name?: string
     term_name?: string
   }>>([])
+
 
   // Cargar secciones disponibles
   useEffect(() => {
@@ -51,6 +53,15 @@ export function CreateStudentModal({
       ...formData,
       [e.target.name]: e.target.type === 'number' ? parseInt(e.target.value) : e.target.value,
     })
+  }
+
+  const handleSectionToggle = (sectionId: number) => {
+    setFormData(prev => ({
+      ...prev,
+      assigned_sections_ids: prev.assigned_sections_ids.includes(sectionId)
+        ? prev.assigned_sections_ids.filter(id => id !== sectionId)
+        : [...prev.assigned_sections_ids, sectionId]
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,10 +104,11 @@ export function CreateStudentModal({
               value={formData.email}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="estudiante@institucion.edu"
+              placeholder="usuario@institucion.edu"
               required
             />
           </div>
+
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -145,25 +157,33 @@ export function CreateStudentModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Sección
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Secciones Asignadas
             </label>
-            <select
-              name="section"
-              value={formData.section}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value={0}>Seleccionar sección</option>
+            <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-md p-2">
               {sections.map((section) => (
-                <option key={section.id} value={section.id}>
-                  {section.name} - {section.grade_level_name || 'Sin grado'} - {section.professor_name || 'Sin profesor'} - {section.term_name || 'Sin período'}
-                </option>
+                <div key={section.id} className="flex items-center space-x-2 py-1">
+                  <input
+                    type="checkbox"
+                    id={`create-section-${section.id}`}
+                    checked={formData.assigned_sections_ids.includes(section.id)}
+                    onChange={() => handleSectionToggle(section.id)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label 
+                    htmlFor={`create-section-${section.id}`}
+                    className="text-sm text-gray-700 cursor-pointer"
+                  >
+                    {section.name} ({section.grade_level_name || 'Sin grado'})
+                  </label>
+                </div>
               ))}
-            </select>
+              {sections.length === 0 && (
+                <p className="text-sm text-gray-500">No hay secciones disponibles</p>
+              )}
+            </div>
             <p className="text-xs text-gray-500 mt-1">
-              Se mostrará: Nombre de Sección - Grado - Profesor - Período
+              Selecciona las secciones donde estará matriculado el estudiante
             </p>
           </div>
 

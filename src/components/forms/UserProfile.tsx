@@ -1,8 +1,8 @@
 import React from 'react'
-import { User } from '../api/endpoints'
-import { getUserRoleDisplayName, getUserRoleColor, getInitials, formatDate } from '../utils/helpers'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/Card'
-import { Button } from './ui/Button'
+import { User } from '../../api/endpoints'
+import { getUserRoleDisplayName, getUserRoleColor, getInitials, formatDate } from '../../utils/helpers'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card'
+import { Button } from '../ui/Button'
 
 interface UserProfileProps {
   user: User
@@ -61,6 +61,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({
               <label className="text-sm font-medium text-gray-500">Rol</label>
               <p className="text-gray-900">{getUserRoleDisplayName(user.role)}</p>
             </div>
+            {user.role === 'PROFESOR' && user.specialty_display && (
+              <div>
+                <label className="text-sm font-medium text-gray-500">Especialidad</label>
+                <p className="text-gray-900">{user.specialty_display}</p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-500">ID de Usuario</label>
               <p className="text-gray-900 font-mono text-sm">#{user.id}</p>
@@ -81,6 +87,40 @@ export const UserProfile: React.FC<UserProfileProps> = ({
                 <label className="text-sm font-medium text-gray-500">Institución</label>
                 <p className="text-gray-900">ID: {user.institution}</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Secciones Asignadas para Profesores */}
+        {user.role === 'PROFESOR' && user.assigned_sections && user.assigned_sections.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Secciones Asignadas</h3>
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="space-y-2">
+                {user.assigned_sections.map((section, index) => (
+                  <div key={section.id} className="flex items-center justify-between bg-white rounded-md p-3 border border-blue-200">
+                    <div>
+                      <p className="font-medium text-gray-900">{section.name}</p>
+                      <p className="text-sm text-gray-600">
+                        {section.grade_level_name || 'Sin grado'} - {section.term_name || 'Sin período'}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      Sección {index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mensaje si no hay secciones asignadas */}
+        {user.role === 'PROFESOR' && (!user.assigned_sections || user.assigned_sections.length === 0) && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Secciones Asignadas</h3>
+            <div className="bg-gray-50 rounded-lg p-4 text-center">
+              <p className="text-gray-500">No hay secciones asignadas</p>
             </div>
           </div>
         )}

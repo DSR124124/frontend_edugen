@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useDirectorApi } from '../../hooks/useDirectorApi'
-import { UserDetailModal } from '../../components/UserDetailModal'
-import { EditUserModal } from '../../components/EditUserModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
+import { useNotificationContext } from '../../contexts/NotificationContext'
+import { UserDetailModal } from '../../components/modals/UserDetailModal'
+import { EditUserModal } from '../../components/modals/EditUserModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
+import { CreateStudentModal } from '../../components/modals/CreateStudentModal'
 import { User } from '../../api/endpoints'
 
 export function ProfessorsPage() {
@@ -15,6 +17,8 @@ export function ProfessorsPage() {
     updateUser,
     deleteUser,
   } = useDirectorApi()
+  
+  const { showSuccess, showError } = useNotificationContext()
 
   const [showCreateUser, setShowCreateUser] = useState(false)
   const [showUserDetail, setShowUserDetail] = useState(false)
@@ -23,13 +27,6 @@ export function ProfessorsPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [userToDelete, setUserToDelete] = useState<number | null>(null)
-  const [newUser, setNewUser] = useState({
-    username: '',
-    email: '',
-    first_name: '',
-    last_name: '',
-    password: '',
-  })
 
   // Filtrar solo profesores
   const professors = users.filter(user => user.role === 'PROFESOR')
@@ -38,17 +35,9 @@ export function ProfessorsPage() {
     loadUsers()
   }, [loadUsers]) // Remove loadUsers dependency to prevent infinite loop
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreateUser = async (userData: any) => {
     try {
-      await createUser({ ...newUser, role: 'PROFESOR' })
-      setNewUser({
-        username: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        password: '',
-      })
+      await createUser({ ...userData, role: 'PROFESOR' })
       setShowCreateUser(false)
     } catch (err) {
       console.error('Error creating professor:', err)
@@ -91,17 +80,16 @@ export function ProfessorsPage() {
     if (!editingUser) return
     
     try {
-      console.log('Saving user:', editingUser.id, userData)
       await updateUser(editingUser.id, userData)
       
       // Cerrar el modal
       setShowEditUser(false)
       setEditingUser(null)
       
-      alert('Usuario actualizado correctamente')
+      showSuccess('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
       console.error('Error updating user:', error)
-      alert('Error al actualizar el usuario. Verifica la consola para más detalles.')
+      showError('Error', 'Error al actualizar el usuario')
     }
   }
 
@@ -184,6 +172,12 @@ export function ProfessorsPage() {
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Especialidad
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Sección Asignada
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
@@ -212,6 +206,17 @@ export function ProfessorsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {professor.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {professor.specialty_display || 'Sin especialidad'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {professor.assigned_sections && professor.assigned_sections.length > 0 
+                            ? professor.assigned_sections.map(section => 
+                                `${section.name} (${section.grade_level_name || 'Sin grado'})`
+                              ).join(', ')
+                            : 'Sin secciones asignadas'
+                          }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
@@ -245,96 +250,12 @@ export function ProfessorsPage() {
         </div>
 
         {/* Create Professor Modal */}
-        {showCreateUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Crear Nuevo Profesor
-                </h3>
-                <form onSubmit={handleCreateUser} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.first_name}
-                        onChange={(e) => setNewUser({...newUser, first_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.last_name}
-                        onChange={(e) => setNewUser({...newUser, last_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateUser(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
-                    >
-                      Crear Profesor
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
+        <CreateStudentModal
+          isOpen={showCreateUser}
+          onClose={() => setShowCreateUser(false)}
+          onSave={handleCreateUser}
+          loading={loading}
+        />
 
         {/* User Detail Modal */}
         <UserDetailModal

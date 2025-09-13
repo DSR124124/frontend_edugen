@@ -3,8 +3,16 @@ import { VALIDATION } from './constants'
 /**
  * Format a date string to a readable format
  */
-export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOptions): string => {
+export const formatDate = (date: string | Date | null | undefined, options?: Intl.DateTimeFormatOptions): string => {
+  if (!date) return 'Fecha no disponible'
+  
   const dateObj = typeof date === 'string' ? new Date(date) : date
+  
+  // Check if the date is valid
+  if (isNaN(dateObj.getTime())) {
+    return 'Fecha inválida'
+  }
+  
   return dateObj.toLocaleDateString('es-ES', {
     year: 'numeric',
     month: 'long',
@@ -16,7 +24,7 @@ export const formatDate = (date: string | Date, options?: Intl.DateTimeFormatOpt
 /**
  * Format a date and time string
  */
-export const formatDateTime = (date: string | Date): string => {
+export const formatDateTime = (date: string | Date | null | undefined): string => {
   return formatDate(date, {
     hour: '2-digit',
     minute: '2-digit',

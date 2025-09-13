@@ -3,8 +3,8 @@ import { useDirectorSections } from '../../hooks/useDirectorAcademic'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { directorApi } from '../../api/endpoints'
 import { Section } from '../../api/endpoints'
-import { SectionModal } from '../../components/SectionModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
+import { SectionModal } from '../../components/modals/SectionModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
 
 export function SectionsPage() {
   const {
@@ -23,11 +23,9 @@ export function SectionsPage() {
   const [editingSection, setEditingSection] = useState<Section | null>(null)
   const [sectionToDelete, setSectionToDelete] = useState<number | null>(null)
   const [sectionOptions, setSectionOptions] = useState<{
-    professors: Array<{id: number, first_name: string, last_name: string, username: string}>,
     terms: Array<{id: number, name: string, is_active: boolean}>,
     grade_levels: Array<{id: number, name: string, level: number}>
   }>({
-    professors: [],
     terms: [],
     grade_levels: []
   })
@@ -138,9 +136,6 @@ export function SectionsPage() {
                       Grado
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Profesor
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Capacidad
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -159,9 +154,6 @@ export function SectionsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {section.grade_level_name || `Grado ${section.grade_level}`}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {section.professor_name || `Profesor ${section.professor}`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {section.capacity}
@@ -199,7 +191,6 @@ export function SectionsPage() {
         section={null}
         onSave={handleCreateSection}
         loading={createSection.isPending}
-        professors={sectionOptions.professors}
         terms={sectionOptions.terms}
         gradeLevels={sectionOptions.grade_levels}
       />
@@ -214,7 +205,6 @@ export function SectionsPage() {
         section={editingSection}
         onSave={handleSaveSection}
         loading={updateSection.isPending}
-        professors={sectionOptions.professors}
         terms={sectionOptions.terms}
         gradeLevels={sectionOptions.grade_levels}
       />

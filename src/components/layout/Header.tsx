@@ -1,5 +1,5 @@
-import { useAuthStore } from '../store/auth'
-import { useUIStore } from '../store/ui'
+import { useAuthStore } from '../../store/auth'
+import { useUIStore } from '../../store/ui'
 import { Menu, User, LogOut } from 'lucide-react'
 
 export function Header() {

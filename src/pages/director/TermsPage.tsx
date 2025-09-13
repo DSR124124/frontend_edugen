@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useDirectorTerms } from '../../hooks/useDirectorAcademic'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { Term } from '../../api/endpoints'
-import { TermModal } from '../../components/TermModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
+import { TermModal } from '../../components/modals/TermModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
 
 export function TermsPage() {
   const {

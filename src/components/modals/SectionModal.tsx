@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Section } from '../api/endpoints'
+import { Section } from '../../api/endpoints'
 
 interface SectionModalProps {
   isOpen: boolean
@@ -7,7 +7,6 @@ interface SectionModalProps {
   section: Section | null
   onSave: (sectionData: Partial<Section>) => Promise<void>
   loading: boolean
-  professors: Array<{id: number, first_name: string, last_name: string, username: string}>
   terms: Array<{id: number, name: string, is_active: boolean}>
   gradeLevels: Array<{id: number, name: string, level: number}>
 }
@@ -18,14 +17,12 @@ export function SectionModal({
   section, 
   onSave, 
   loading, 
-  professors, 
   terms,
   gradeLevels
 }: SectionModalProps) {
   const [formData, setFormData] = useState<Partial<Section>>({
     name: '',
     capacity: 30,
-    professor: 0,
     term: 0,
     grade_level: 0,
   })
@@ -35,7 +32,6 @@ export function SectionModal({
       setFormData({
         name: section.name,
         capacity: section.capacity,
-        professor: section.professor,
         term: section.term,
         grade_level: section.grade_level,
       })
@@ -43,7 +39,6 @@ export function SectionModal({
       setFormData({
         name: '',
         capacity: 30,
-        professor: 0,
         term: 0,
         grade_level: 0,
       })
@@ -56,6 +51,7 @@ export function SectionModal({
       [e.target.name]: e.target.type === 'number' ? parseInt(e.target.value) : e.target.value,
     })
   }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,25 +120,6 @@ export function SectionModal({
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Profesor
-            </label>
-            <select
-              name="professor"
-              value={formData.professor || 0}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value={0}>Seleccionar profesor</option>
-              {professors.map((professor) => (
-                <option key={professor.id} value={professor.id}>
-                  {professor.first_name} {professor.last_name} ({professor.username})
-                </option>
-              ))}
-            </select>
-          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

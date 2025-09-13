@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode } from 'react'
 import { useNotifications } from '../hooks/useNotifications'
-import { NotificationContainer } from '../components/NotificationContainer'
+import { NotificationContainer } from '../components/notifications/NotificationContainer'
 
 interface NotificationContextType {
   showSuccess: (title: string, message: string, duration?: number) => void

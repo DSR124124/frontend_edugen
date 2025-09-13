@@ -75,7 +75,17 @@ export const useDirectorApi = () => {
       setLoading(true)
       setError(null)
       const response = await directorApi.updateUser(id, userData)
-      setUsers(prev => prev.map(user => user.id === id ? response.data : user))
+      
+      // Recargar usuarios para obtener datos actualizados (especialmente assigned_sections)
+      try {
+        const updatedResponse = await directorApi.getUsers()
+        setUsers(updatedResponse.data || [])
+      } catch (reloadErr) {
+        console.error('Error reloading users:', reloadErr)
+        // Si falla la recarga, al menos actualizar con la respuesta original
+        setUsers(prev => prev.map(user => user.id === id ? response.data : user))
+      }
+      
       return response.data
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Error al actualizar usuario')

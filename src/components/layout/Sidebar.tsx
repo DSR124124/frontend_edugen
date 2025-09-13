@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { useAuthStore } from '../store/auth'
-import { useUIStore } from '../store/ui'
+import { useAuthStore } from '../../store/auth'
+import { useUIStore } from '../../store/ui'
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -33,12 +33,31 @@ const directorNavigation = [
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
+const professorNavigation = [
+  { name: 'Dashboard', href: '/professor', icon: LayoutDashboard },
+  { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
+  { name: 'Mis Estudiantes', href: '/professor/students', icon: GraduationCap },
+  { name: 'Mis Evaluaciones', href: '/professor/evaluations', icon: BookOpen },
+  { name: 'Portafolio', href: '/portfolio', icon: FolderOpen },
+  { name: 'Configuración', href: '/profile', icon: Settings },
+]
+
 export function Sidebar() {
   const { user } = useAuthStore()
   const { sidebarOpen } = useUIStore()
 
-  const isDirector = user?.role === 'DIRECTOR'
-  const allNavigation = isDirector ? directorNavigation : navigation
+  const getNavigation = () => {
+    switch (user?.role) {
+      case 'DIRECTOR':
+        return directorNavigation
+      case 'PROFESOR':
+        return professorNavigation
+      default:
+        return navigation
+    }
+  }
+
+  const allNavigation = getNavigation()
 
   return (
     <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${

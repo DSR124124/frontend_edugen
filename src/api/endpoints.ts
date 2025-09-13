@@ -8,9 +8,12 @@ export interface User {
   first_name: string
   last_name: string
   role: 'DIRECTOR' | 'PROFESOR' | 'ALUMNO'
+  specialty?: string
+  specialty_display?: string
   institution?: number
   section?: number
   section_name?: string
+  assigned_sections?: Array<{id: number, name: string, grade_level_name?: string, term_name?: string}>
   created_at: string
 }
 
@@ -56,14 +59,25 @@ export interface Term {
 export interface Section {
   id: number
   name: string
-  professor: number
-  professor_name?: string
-  term: number
-  term_name?: string
-  grade_level: number
-  grade_level_name?: string
+  professors: number[]
+  professors_names?: string[]
   capacity: number
   created_at: string
+  course?: {
+    id: number
+    name: string
+    code: string
+  }
+  grade_level?: {
+    id: number
+    name: string
+    level: number
+  }
+  term?: {
+    id: number
+    name: string
+    is_active: boolean
+  }
 }
 
 export interface Institution {
@@ -116,7 +130,7 @@ export const directorApi = {
     http.post<User>('director/users/', data),
   
   updateUser: (id: number, data: Partial<User>) => 
-    http.put<User>(`director/users/${id}/`, data),
+    http.patch<User>(`director/users/${id}/`, data),
   
   deleteUser: (id: number) => 
     http.delete(`director/users/${id}/`),
@@ -187,6 +201,9 @@ export const academicApi = {
   
   getEnrollments: () => 
     http.get('academic/enrollments/'),
+  
+  getStudentsBySection: (sectionId: number) => 
+    http.get(`academic/sections/${sectionId}/students/`),
 }
 
 // Portfolio endpoints

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useDirectorUsers } from '../../hooks/useDirectorUsers'
 import { useAuthStore } from '../../store/auth'
-import { UserDetailModal } from '../../components/UserDetailModal'
-import { EditUserModal } from '../../components/EditUserModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
+import { UserDetailModal } from '../../components/modals/UserDetailModal'
+import { EditUserModal } from '../../components/modals/EditUserModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { User } from '../../api/endpoints'
 
 export function DirectorDashboard() {
@@ -97,10 +97,10 @@ export function DirectorDashboard() {
       setEditingUser(null)
       
       // Mostrar notificación de éxito
-      alert('Usuario actualizado correctamente')
+      showSuccess('Éxito', 'Usuario actualizado correctamente')
     } catch (error) {
       console.error('Error updating user:', error)
-      alert('Error al actualizar el usuario. Verifica la consola para más detalles.')
+      showError('Error', 'Error al actualizar el usuario')
     }
   }
 

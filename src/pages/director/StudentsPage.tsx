@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useDirectorApi } from '../../hooks/useDirectorApi'
-import { UserDetailModal } from '../../components/UserDetailModal'
-import { EditUserModal } from '../../components/EditUserModal'
-import { ConfirmModal } from '../../components/ConfirmModal'
-import { CreateStudentModal } from '../../components/CreateStudentModal'
+import { UserDetailModal } from '../../components/modals/UserDetailModal'
+import { EditUserModal } from '../../components/modals/EditUserModal'
+import { ConfirmModal } from '../../components/modals/ConfirmModal'
+import { CreateStudentModal } from '../../components/modals/CreateStudentModal'
 import { User } from '../../api/endpoints'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 
@@ -41,7 +41,7 @@ export function StudentsPage() {
     first_name: string
     last_name: string
     password: string
-    section: number
+    assigned_sections_ids: number[]
     role: 'ALUMNO'
   }) => {
     try {
@@ -218,7 +218,12 @@ export function StudentsPage() {
                           {student.email}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {student.section_name || 'Sin asignar'}
+                          {student.assigned_sections && student.assigned_sections.length > 0 
+                            ? student.assigned_sections.map(section => 
+                                `${section.name} (${section.grade_level_name || 'Sin grado'})`
+                              ).join(', ')
+                            : 'Sin secciones asignadas'
+                          }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">

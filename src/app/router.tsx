@@ -10,6 +10,7 @@ import { GradeLevelsPage } from '../pages/director/GradeLevelsPage'
 import { TermsPage } from '../pages/director/TermsPage'
 import { SectionsPage } from '../pages/director/SectionsPage'
 import { InstitutionPage } from '../pages/director/InstitutionPage'
+import { ProfessorRouter } from '../pages/professor/ProfessorRouter'
 import { Courses } from '../pages/academic/Courses'
 import { Sections } from '../pages/academic/Sections'
 import { MyPortfolio } from '../pages/portfolios/MyPortfolio'
@@ -45,6 +46,11 @@ export function AppRouter() {
             <Route path="/director/students" element={<StudentsPage />} />
             <Route path="/director/professors" element={<ProfessorsPage />} />
             <Route path="/director/institution" element={<InstitutionPage />} />
+          </>
+        )}
+        {user?.role === 'PROFESOR' && (
+          <>
+            <Route path="/professor/*" element={<ProfessorRouter />} />
           </>
         )}
         <Route path="/courses" element={<Courses />} />

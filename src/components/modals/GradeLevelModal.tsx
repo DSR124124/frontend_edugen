@@ -1,46 +1,38 @@
 import { useState, useEffect } from 'react'
-import { Term } from '../api/endpoints'
+import { GradeLevel } from '../../api/endpoints'
 
-interface TermModalProps {
+interface GradeLevelModalProps {
   isOpen: boolean
   onClose: () => void
-  term: Term | null
-  onSave: (termData: Partial<Term>) => Promise<void>
+  gradeLevel: GradeLevel | null
+  onSave: (gradeLevelData: Partial<GradeLevel>) => Promise<void>
   loading: boolean
 }
 
-export function TermModal({ isOpen, onClose, term, onSave, loading }: TermModalProps) {
-  const [formData, setFormData] = useState<Partial<Term>>({
+export function GradeLevelModal({ isOpen, onClose, gradeLevel, onSave, loading }: GradeLevelModalProps) {
+  const [formData, setFormData] = useState<Partial<GradeLevel>>({
     name: '',
-    start_date: '',
-    end_date: '',
-    is_active: true,
+    level: 1,
   })
 
   useEffect(() => {
-    if (term) {
+    if (gradeLevel) {
       setFormData({
-        name: term.name,
-        start_date: term.start_date,
-        end_date: term.end_date,
-        is_active: term.is_active,
+        name: gradeLevel.name,
+        level: gradeLevel.level,
       })
     } else {
       setFormData({
         name: '',
-        start_date: '',
-        end_date: '',
-        is_active: true,
+        level: 1,
       })
     }
-  }, [term])
+  }, [gradeLevel])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.type === 'checkbox' 
-        ? (e.target as HTMLInputElement).checked 
-        : e.target.value,
+      [e.target.name]: e.target.type === 'number' ? parseInt(e.target.value) : e.target.value,
     })
   }
 
@@ -55,13 +47,13 @@ export function TermModal({ isOpen, onClose, term, onSave, loading }: TermModalP
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">
-          {term ? 'Editar Período' : 'Crear Período'}
+          {gradeLevel ? 'Editar Grado' : 'Crear Grado'}
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Período
+              Nombre del Grado
             </label>
             <input
               type="text"
@@ -69,52 +61,24 @@ export function TermModal({ isOpen, onClose, term, onSave, loading }: TermModalP
               value={formData.name || ''}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: 2025-I, 2025-II"
+              placeholder="Ej: 1er Grado, 2do Grado"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha de Inicio
+              Nivel
             </label>
             <input
-              type="date"
-              name="start_date"
-              value={formData.start_date || ''}
+              type="number"
+              name="level"
+              value={formData.level || 1}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              min="1"
               required
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha de Fin
-            </label>
-            <input
-              type="date"
-              name="end_date"
-              value={formData.end_date || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="is_active"
-                checked={formData.is_active || false}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                Período Activo
-              </span>
-            </label>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
@@ -131,7 +95,7 @@ export function TermModal({ isOpen, onClose, term, onSave, loading }: TermModalP
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={loading}
             >
-              {loading ? 'Guardando...' : (term ? 'Actualizar' : 'Crear')}
+              {loading ? 'Guardando...' : (gradeLevel ? 'Actualizar' : 'Crear')}
             </button>
           </div>
         </form>
