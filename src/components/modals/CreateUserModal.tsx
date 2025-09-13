@@ -43,7 +43,7 @@ export function CreateUserModal({
           const response = await directorApi.getSections()
           setSections(response.data)
         } catch (error) {
-          console.error('Error loading sections:', error)
+          // Error loading sections
         }
       }
       loadSections()

@@ -60,7 +60,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
       })
       onClose()
     } catch (error) {
-      console.error('Error al guardar tema:', error)
+      // Error saving topic
     }
   }
 

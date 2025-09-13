@@ -23,7 +23,7 @@ export function TopicsPage() {
         const response = await academicApi.getCourses()
         setCourses(response.data)
       } catch (error) {
-        console.error('Error al cargar cursos:', error)
+        // Error loading courses
       } finally {
         setLoadingCourses(false)
       }
@@ -43,7 +43,7 @@ export function TopicsPage() {
       await createTopic(data)
       setIsModalOpen(false)
     } catch (error) {
-      console.error('Error al crear tema:', error)
+      // Error creating topic
     }
   }
 
@@ -55,7 +55,7 @@ export function TopicsPage() {
       setEditingTopic(null)
       setIsModalOpen(false)
     } catch (error) {
-      console.error('Error al actualizar tema:', error)
+      // Error updating topic
     }
   }
 
@@ -64,7 +64,7 @@ export function TopicsPage() {
       try {
         await deleteTopic(topicId)
       } catch (error) {
-        console.error('Error al eliminar tema:', error)
+        // Error deleting topic
       }
     }
   }
@@ -92,7 +92,7 @@ export function TopicsPage() {
         loadTopicsByCourse(selectedCourseId)
       }
     } catch (error) {
-      console.error('Error al reordenar tema:', error)
+      // Error reordering topic
     }
   }
 

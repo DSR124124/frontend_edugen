@@ -106,6 +106,53 @@ export interface Topic {
   updated_at: string
 }
 
+// AI Content Generator Types
+export interface Conversation {
+  id: number
+  user: number
+  user_name: string
+  session_id: string
+  title: string
+  requirements: any
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  messages: ConversationMessage[]
+  messages_count: number
+}
+
+export interface ConversationMessage {
+  id: number
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
+export interface ContentTemplate {
+  id: number
+  name: string
+  description: string
+  prompt_template: string
+  grapesjs_config: any
+  is_active: boolean
+  created_at: string
+}
+
+export interface GeneratedContent {
+  id: number
+  conversation: number
+  conversation_title: string
+  user_name: string
+  title: string
+  html_content: string
+  css_content: string
+  js_content: string
+  grapesjs_components: any
+  is_public: boolean
+  created_at: string
+  updated_at: string
+}
+
 // Auth endpoints
 export const authApi = {
   login: (data: LoginRequest) => 
@@ -428,4 +475,72 @@ export const artifactApi = {
   
   deleteArtifact: (id: number) => 
     http.delete(`portfolio/artifacts/${id}/`),
+}
+
+// AI Content Generator API
+export const aiContentApi = {
+  // Conversations
+  getConversations: () =>
+    http.get<Conversation[]>('ai/conversations/'),
+
+  createConversation: (data: { title?: string }) =>
+    http.post<Conversation>('ai/conversations/', data),
+
+  getConversation: (id: number) =>
+    http.get<Conversation>(`ai/conversations/${id}/`),
+
+  updateConversation: (id: number, data: { title?: string; is_active?: boolean }) =>
+    http.patch<Conversation>(`ai/conversations/${id}/`, data),
+
+  deleteConversation: (id: number) =>
+    http.delete(`ai/conversations/${id}/`),
+
+  // Messages
+  getMessages: (conversationId: number) =>
+    http.get<ConversationMessage[]>(`ai/conversations/${conversationId}/messages/`),
+
+  sendMessage: (conversationId: number, data: { content: string }) =>
+    http.post<{ user_message: ConversationMessage; assistant_message: ConversationMessage }>(
+      `ai/conversations/${conversationId}/send-message/`,
+      data
+    ),
+
+  // Requirements
+  extractRequirements: (conversationId: number) =>
+    http.post<{ requirements: any; message: string }>(
+      `ai/conversations/${conversationId}/extract-requirements/`
+    ),
+
+  // Content Generation
+  generateContent: (conversationId: number, data: { requirements: any; title: string }) =>
+    http.post<{ content: GeneratedContent; message: string }>(
+      `ai/conversations/${conversationId}/generate-content/`,
+      data
+    ),
+
+  generateContentStreaming: (conversationId: number, data: { requirements: any; title: string }) =>
+    http.post<{ content: GeneratedContent; message: string }>(
+      `ai/conversations/${conversationId}/generate-content-streaming/`,
+      data
+    ),
+
+  // Templates
+  getTemplates: () =>
+    http.get<ContentTemplate[]>('ai/templates/'),
+
+  getTemplate: (id: number) =>
+    http.get<ContentTemplate>(`ai/templates/${id}/`),
+
+  // Generated Content
+  getGeneratedContent: () =>
+    http.get<GeneratedContent[]>('ai/generated-content/'),
+
+  getGeneratedContentById: (id: number) =>
+    http.get<GeneratedContent>(`ai/generated-content/${id}/`),
+
+  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: any }) =>
+    http.patch<GeneratedContent>(`ai/generated-content/${id}/`, data),
+
+  deleteGeneratedContent: (id: number) =>
+    http.delete(`ai/generated-content/${id}/`),
 }
