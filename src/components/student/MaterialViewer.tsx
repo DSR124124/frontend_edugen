@@ -310,8 +310,13 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
       )
     }
 
+    if (material.material_type === 'SCORM' && material.file) {
+      // Si es un material SCORM, procesarlo directamente
+      return <SCORMContentRenderer fileUrl={material.file} />
+    }
+    
     if (material.material_type === 'DOCUMENT' && material.file) {
-      // Si es un archivo SCORM (JSON), procesarlo directamente
+      // Si es un archivo SCORM (JSON) pero con tipo DOCUMENT, procesarlo como SCORM
       if (material.file.endsWith('.json')) {
         return <SCORMContentRenderer fileUrl={material.file} />
       }

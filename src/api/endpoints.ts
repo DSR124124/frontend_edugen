@@ -110,11 +110,14 @@ export interface Material {
   id: number
   name: string
   description?: string
-  material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'OTHER'
+  material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'
   file?: string
   url?: string
   topic: number
   topic_name: string
+  course_id: number
+  course_name: string
+  course_code: string
   professor: number
   professor_name: string
   is_shared: boolean // true = material de clase, false = personalizado
@@ -354,6 +357,16 @@ export const academicApi = {
   
   deleteMaterial: (id: number) => 
     http.delete(`academic/materials/${id}/`),
+
+  // Material Analytics endpoints
+  getMaterialAnalytics: () =>
+    http.get<MaterialAnalytics[]>('academic/material-analytics/'),
+  
+  getMaterialAnalyticsByCourse: (courseId: number) =>
+    http.get<any[]>(`academic/material-analytics/by-course/${courseId}/`),
+  
+  getMaterialDetailedAnalytics: (materialId: number, timeRange: string = '30d') =>
+    http.get(`academic/material-analytics/material/${materialId}/detailed/?time_range=${timeRange}`),
 }
 
 // Material Tracking interfaces
@@ -448,9 +461,6 @@ export const materialTrackingApi = {
   getMaterialInteractions: () => 
     http.get<MaterialInteraction[]>('academic/material-interactions/'),
   
-  // Get material analytics
-  getMaterialAnalytics: () => 
-    http.get<MaterialAnalytics[]>('academic/material-analytics/'),
 }
 
 // Analytics endpoints

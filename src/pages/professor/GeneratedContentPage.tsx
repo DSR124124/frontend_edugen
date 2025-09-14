@@ -131,7 +131,20 @@ export function GeneratedContentPage() {
       const materialData = new FormData()
       materialData.append('name', data.title)
       materialData.append('description', data.description || '')
-      materialData.append('material_type', data.format === 'SCORM' ? 'DOCUMENT' : 'DOCUMENT')
+      // Asignar el tipo de material correcto según el formato
+      let materialType = 'DOCUMENT' // Por defecto
+      if (data.format === 'SCORM') {
+        materialType = 'SCORM'
+      } else if (data.format === 'VIDEO') {
+        materialType = 'VIDEO'
+      } else if (data.format === 'AUDIO') {
+        materialType = 'AUDIO'
+      } else if (data.format === 'IMAGE') {
+        materialType = 'IMAGE'
+      } else if (data.format === 'LINK') {
+        materialType = 'LINK'
+      }
+      materialData.append('material_type', materialType)
       materialData.append('topic', topic.id.toString())
       materialData.append('professor', user?.id?.toString() || '') // Campo requerido
       materialData.append('is_shared', 'true') // Material compartido para toda la sección

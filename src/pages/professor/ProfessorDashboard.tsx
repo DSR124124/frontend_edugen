@@ -1,5 +1,7 @@
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useProfessor } from '../../hooks/useProfessor'
+import { useProfessorMaterials } from '../../hooks/useProfessorMaterials'
+import { useActiveStudents } from '../../hooks/useActiveStudents'
 import { KPICard } from '../../components/kpi/KPICard'
 import { Link } from 'react-router-dom'
 
@@ -8,9 +10,11 @@ import { Link } from 'react-router-dom'
 export function ProfessorDashboard() {
   const { user: professor, loading: professorLoading, error: professorError } = useProfessor()
   const { sections: professorSections, loading: sectionsLoading, error: sectionsError } = useProfessorSections()
+  const { data: materials, isLoading: materialsLoading, error: materialsError } = useProfessorMaterials()
+  const { data: activeStudents, isLoading: studentsLoading, error: studentsError } = useActiveStudents()
 
 
-  if (professorLoading || sectionsLoading) {
+  if (professorLoading || sectionsLoading || materialsLoading || studentsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
@@ -23,12 +27,12 @@ export function ProfessorDashboard() {
     )
   }
 
-  if (professorError || sectionsError) {
+  if (professorError || sectionsError || materialsError || studentsError) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-8">
-            <p className="text-red-600">Error: {professorError || sectionsError}</p>
+            <p className="text-red-600">Error: {professorError || sectionsError || materialsError?.message || studentsError?.message}</p>
           </div>
         </div>
       </div>
@@ -75,15 +79,15 @@ export function ProfessorDashboard() {
           />
           <KPICard
             title="Estudiantes Activos"
-            value={120}
+            value={activeStudents || 0}
             icon="👥"
             color="green"
           />
           <KPICard
-            title="Evaluaciones Pendientes"
-            value={8}
-            icon="📝"
-            color="orange"
+            title="Materiales"
+            value={materials?.length || 0}
+            icon="📚"
+            color="purple"
           />
         </div>
 
