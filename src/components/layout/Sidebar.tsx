@@ -14,7 +14,6 @@ import {
   FolderOpen,
   Bot,
   FileText,
-  BookMarked,
   BarChart3,
   Home,
   Award,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, Calendar, GraduationCap, Clock, Award, Eye, User } from 'lucide-react'
+import { Users, Clock, Award, Eye, User } from 'lucide-react'
 import { ClassmatesModal } from './ClassmatesModal'
 import { useClassmates, ClassmatesResponse, Classmate } from '../../hooks/useClassmates'
 import { useAuthStore } from '../../store/auth'

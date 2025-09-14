@@ -1,5 +1,4 @@
-import React from 'react'
-import { X, Users, Mail, Calendar, User } from 'lucide-react'
+import { X, Users, Mail, Calendar } from 'lucide-react'
 import { Classmate } from '../../hooks/useClassmates'
 
 interface ClassmatesModalProps {

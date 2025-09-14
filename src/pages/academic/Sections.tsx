@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { academicApi, Section } from '../../api/endpoints'
+import { academicApi } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 
 export function Sections() {

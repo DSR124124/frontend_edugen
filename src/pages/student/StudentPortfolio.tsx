@@ -1,10 +1,20 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { academicApi, Course, Topic, Material } from '../../api/endpoints'
+import { academicApi, Topic, Material } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { MaterialViewer } from '../../components/modals/MaterialViewer'
-import { BookOpen, FileText, Eye, Users, Calendar, Award, Star } from 'lucide-react'
+import { BookOpen, FileText, Eye, Users } from 'lucide-react'
+
+// Local Course interface for this component
+interface Course {
+  id: number
+  name: string
+  description?: string
+  grade_level_name?: string
+  code: string
+  section_id?: number
+}
 
 export function StudentPortfolio() {
   const { user } = useAuthStore()
@@ -30,7 +40,6 @@ export function StudentPortfolio() {
   } : null
 
   const loadingCourses = false
-  const coursesError = null
 
   // Obtener todos los temas disponibles directamente
   const { data: topics, isLoading: loadingTopics } = useQuery({
