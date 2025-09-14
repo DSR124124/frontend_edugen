@@ -19,7 +19,7 @@ interface AssignMaterialModalProps {
   topics?: Topic[]
 }
 
-export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sections = [], topics = [] }: AssignMaterialModalProps) {
+export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sections = [] }: AssignMaterialModalProps) {
   const [formData, setFormData] = useState({
     sectionId: 0,
     title: '',

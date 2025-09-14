@@ -6,7 +6,7 @@ export function useProfessorMaterials() {
     queryKey: ['professor-materials'],
     queryFn: async () => {
       const response = await academicApi.getMaterials()
-      return response.data.results || response.data
+      return response.data
     }
   })
 }

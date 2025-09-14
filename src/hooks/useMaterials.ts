@@ -28,7 +28,7 @@ export const useMaterials = () => {
       setLoading(true)
       setError(null)
       const response = await academicApi.getMaterialsByTopic(topicId)
-      setMaterials(response.data)
+      setMaterials(response.data.results || response.data)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Error al cargar materiales'

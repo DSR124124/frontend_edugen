@@ -9,7 +9,7 @@ export const useMaterialTracking = () => {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
   
-  const trackingInterval = useRef<NodeJS.Timeout | null>(null)
+  const trackingInterval = useRef<number | null>(null)
   const startTime = useRef<number | null>(null)
   const lastProgress = useRef(0)
 

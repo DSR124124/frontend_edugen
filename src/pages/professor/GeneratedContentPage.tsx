@@ -11,7 +11,7 @@ import { useAuthStore } from '../../store/auth'
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useNotificationContext()
-  const { user, isAuthenticated } = useAuthStore()
+  const { user } = useAuthStore()
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
@@ -19,7 +19,7 @@ export function GeneratedContentPage() {
 
   // Obtener secciones y temas del profesor
   const { sections, loading: loadingSections, error: sectionsError } = useProfessorSections()
-  const { topics, loading: loadingTopics, error: topicsError } = useTopics()
+  const { topics } = useTopics()
   
 
   // Obtener contenidos generados
@@ -83,7 +83,7 @@ export function GeneratedContentPage() {
     sectionId: number
     title: string
     description?: string
-    format: 'SCORM' | 'PDF' | 'HTML'
+    format: 'SCORM' | 'PDF' | 'HTML' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK'
     assignmentType: 'general' | 'personalized'
     selectedStudents?: number[]
   }) => {
@@ -115,7 +115,7 @@ export function GeneratedContentPage() {
       }
 
       // Obtener el primer tema del curso (o crear uno si no existe)
-      let topic = topics.find(t => t.course === section.course.id)
+      let topic = topics.find(t => t.course === section.course?.id)
       if (!topic) {
         // Crear un tema por defecto para el curso
         const topicData = {
@@ -157,8 +157,7 @@ export function GeneratedContentPage() {
         materialData.append('file', blob, 'scorm-content.json')
       }
 
-      const materialResponse = await academicApi.createMaterial(materialData)
-      const material = materialResponse.data
+      await academicApi.createMaterial(materialData)
 
       const assignmentMessage = data.assignmentType === 'general' 
         ? `El material "${data.title}" se ha asignado a toda la sección en formato ${data.format}`

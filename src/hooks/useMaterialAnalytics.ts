@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { materialTrackingApi, ProfessorAnalytics, MaterialAnalytics, MaterialViewingSession, MaterialInteraction } from '../api/endpoints'
+import { materialTrackingApi } from '../api/endpoints'
 
 export const useMaterialAnalytics = () => {
   return useQuery({
     queryKey: ['material-analytics'],
-    queryFn: () => materialTrackingApi.getMaterialAnalytics().then(res => res.data),
+    queryFn: () => materialTrackingApi.getProfessorAnalytics().then((res: any) => res.data),
     staleTime: 5 * 60 * 1000, // 5 minutos
   })
 }
