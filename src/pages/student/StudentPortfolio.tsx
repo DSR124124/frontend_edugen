@@ -1,60 +1,82 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { academicApi, Topic, Material } from '../../api/endpoints'
+import { academicApi, Course, Topic, Material } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { MaterialViewer } from '../../components/modals/MaterialViewer'
-import { Users } from 'lucide-react'
+import { BookOpen, FileText, Eye, Users, Calendar, Award, Star } from 'lucide-react'
 
-export function MySectionMaterials() {
+export function StudentPortfolio() {
   const { user } = useAuthStore()
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [isMaterialViewerOpen, setIsMaterialViewerOpen] = useState(false)
+  const [materialFilter, setMaterialFilter] = useState<'all' | 'personalized' | 'class'>('personalized')
+
   // Obtener materiales con analytics
   const { data: materialsWithAnalytics } = useMyMaterialsWithAnalytics()
 
-  // Usar la sección del usuario directamente
-  const section = user?.section
-  const loadingSection = false
+  // Crear curso basado en la sección del usuario (ya que no podemos acceder a my-sections)
+  const courses = user?.section ? {
+    results: [{
+      id: user.section.id, // Usar el ID de la sección como ID del curso
+      name: user.section.course_name || user.section.name,
+      description: `Curso de ${user.section.name}`,
+      grade_level_name: user.section.grade_level_name,
+      code: `SEC-${user.section.id}`,
+      section_id: user.section.id
+    }]
+  } : null
 
+  const loadingCourses = false
+  const coursesError = null
 
-  // Obtener cursos de la sección
-  const { data: courses, isLoading: loadingCourses } = useQuery({
-    queryKey: ['section-courses', section?.id],
-    queryFn: () => academicApi.getCourses().then(res => res.data),
-    enabled: !!section?.id
-  })
-
-  // Obtener temas de todos los cursos de la sección
+  // Obtener todos los temas disponibles directamente
   const { data: topics, isLoading: loadingTopics } = useQuery({
-    queryKey: ['section-topics', courses?.results],
+    queryKey: ['all-topics', user?.section?.id],
     queryFn: async () => {
-      if (!courses?.results) return []
+      if (!user?.section?.id) return []
       
-      const allTopics: Topic[] = []
-      for (const course of courses.results) {
-        try {
-          const response = await academicApi.getTopicsByCourse(course.id)
-          allTopics.push(...response.data)
-        } catch {
-          // Error handling is done by the UI notification system
-        }
+      try {
+        const response = await academicApi.getTopics()
+        return response.data || []
+      } catch (error) {
+        return []
       }
-      return allTopics
     },
-    enabled: !!courses?.results
+    enabled: !!user?.section?.id
   })
 
-  // Obtener materiales de un tema específico
+  // Obtener materiales del tema seleccionado
   const { data: materials, isLoading: loadingMaterials } = useQuery({
     queryKey: ['topic-materials', selectedTopic?.id],
-    queryFn: () => academicApi.getMaterialsByTopic(selectedTopic!.id),
+    queryFn: async () => {
+      if (!selectedTopic) return { data: { results: [] } }
+      
+      try {
+        const response = await academicApi.getMaterialsByTopic(selectedTopic.id)
+        
+        // La API devuelve un array directamente, no un objeto con results
+        const materialsArray = Array.isArray(response.data) ? response.data : response.data?.results || []
+        
+        return { data: { results: materialsArray } }
+      } catch (error) {
+        return { data: { results: [] } }
+      }
+    },
     enabled: !!selectedTopic
   })
 
+  const handleCourseClick = (course: Course) => {
+    setSelectedCourse(course)
+    setSelectedTopic(null)
+    setSelectedMaterial(null)
+  }
+
   const handleTopicClick = (topic: Topic) => {
     setSelectedTopic(topic)
+    setSelectedMaterial(null)
   }
 
   const handleMaterialClick = (material: Material) => {
@@ -62,23 +84,20 @@ export function MySectionMaterials() {
     setIsMaterialViewerOpen(true)
   }
 
+  // Filtrar materiales según el filtro seleccionado
+  const filteredMaterials = materials?.data?.results?.filter(material => {
+    if (materialFilter === 'all') return true
+    if (materialFilter === 'personalized') return !material.is_shared
+    if (materialFilter === 'class') return material.is_shared
+    return true
+  }) || []
+
   const handleCloseMaterialViewer = () => {
     setIsMaterialViewerOpen(false)
     setSelectedMaterial(null)
   }
 
-  if (loadingSection || loadingCourses) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Cargando sección...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!section) {
+  if (!user?.section) {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">
@@ -86,8 +105,8 @@ export function MySectionMaterials() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="w-8 h-8 text-gray-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No tienes acceso a materiales</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No tienes acceso al portafolio</h2>
+            <p className="text-gray-600">
               Contacta a tu administrador para obtener acceso.
             </p>
           </div>
@@ -98,29 +117,127 @@ export function MySectionMaterials() {
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mis Materiales</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Mi Portafolio</h1>
           <p className="text-gray-600 mt-1">
-            Accede a todos tus materiales de estudio
+            Explora tus cursos, temas y materiales de estudio
           </p>
         </div>
+        
+        {/* Breadcrumb de navegación */}
+        <div className="mt-4 flex items-center space-x-2 text-sm">
+          <div className={`px-3 py-1 rounded-full ${selectedCourse ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'}`}>
+            1. Seleccionar Curso
+          </div>
+          <div className="text-gray-400">→</div>
+          <div className={`px-3 py-1 rounded-full ${selectedTopic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+            2. Seleccionar Tema
+          </div>
+          <div className="text-gray-400">→</div>
+          <div className={`px-3 py-1 rounded-full ${selectedTopic ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-500'}`}>
+            3. Ver Materiales
+          </div>
+        </div>
+        
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Lista de Temas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Lista de Cursos */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Temas Disponibles</h2>
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <BookOpen className="w-5 h-5 mr-2 text-blue-500" />
+              Mis Cursos
+            </h2>
             <p className="text-sm text-gray-600 mt-1">
-              Haz clic en un tema para ver sus materiales
+              Haz clic en un curso para ver sus temas
             </p>
           </div>
           
           <div className="p-6">
-            {loadingTopics ? (
+            {loadingCourses ? (
+              <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-600">Cargando cursos...</p>
+              </div>
+            ) : courses && courses.results && courses.results.length > 0 ? (
+              <div className="space-y-3">
+                {courses.results.map((course) => (
+                  <div
+                    key={course.id}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
+                      selectedCourse?.id === course.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                    onClick={() => handleCourseClick(course)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900">{course.name}</h3>
+                        {course.description && (
+                          <p className="text-sm text-gray-600 mt-1">{course.description}</p>
+                        )}
+                        <div className="flex items-center mt-2 text-xs text-gray-500">
+                          <span className="bg-gray-100 px-2 py-1 rounded">
+                            {course.grade_level_name}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <svg
+                          className={`w-5 h-5 transition-transform ${
+                            selectedCourse?.id === course.id ? 'rotate-90' : ''
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p>No hay cursos disponibles</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Lista de Temas */}
+        <div className={`bg-white rounded-lg shadow ${!selectedCourse ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <FileText className="w-5 h-5 mr-2 text-green-500" />
+              Temas
+              {selectedCourse && (
+                <span className="text-sm font-normal text-gray-600 ml-2">
+                  • {selectedCourse.name}
+                </span>
+              )}
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              {selectedCourse 
+                ? 'Haz clic en un tema para ver sus materiales'
+                : 'Primero selecciona un curso'
+              }
+            </p>
+          </div>
+          
+          <div className="p-6">
+            {!selectedCourse ? (
+              <div className="text-center py-8 text-gray-500">
+                <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p>Primero selecciona un curso para ver sus temas</p>
+              </div>
+            ) : loadingTopics ? (
               <div className="text-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-2 text-sm text-gray-600">Cargando temas...</p>
@@ -134,7 +251,7 @@ export function MySectionMaterials() {
                       key={topic.id}
                       className={`p-4 rounded-lg border cursor-pointer transition-all duration-200 ${
                         selectedTopic?.id === topic.id
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-green-500 bg-green-50'
                           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                       onClick={() => handleTopicClick(topic)}
@@ -147,10 +264,7 @@ export function MySectionMaterials() {
                           )}
                           <div className="flex items-center mt-2 text-xs text-gray-500">
                             <span className="bg-gray-100 px-2 py-1 rounded">
-                              {topic.course_name}
-                            </span>
-                            <span className="ml-2">
-                              Prof. {topic.professor_name}
+                              Orden: {topic.order}
                             </span>
                           </div>
                         </div>
@@ -172,40 +286,77 @@ export function MySectionMaterials() {
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <p>No hay temas disponibles</p>
+                <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p>No hay temas disponibles para este curso</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Lista de Materiales */}
-        <div className="bg-white rounded-lg shadow">
+        <div className={`bg-white rounded-lg shadow ${!selectedTopic ? 'opacity-50 pointer-events-none' : ''}`}>
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Materiales
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Eye className="w-5 h-5 mr-2 text-purple-500" />
+                  Materiales
+                  {selectedTopic && (
+                    <span className="text-sm font-normal text-gray-600 ml-2">
+                      • {selectedTopic.name}
+                    </span>
+                  )}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {selectedTopic 
+                    ? 'Haz clic en un material para verlo'
+                    : 'Selecciona un tema para ver sus materiales'
+                  }
+                </p>
+              </div>
+              
+              {/* Filtro de Materiales */}
               {selectedTopic && (
-                <span className="text-sm font-normal text-gray-600 ml-2">
-                  • {selectedTopic.name}
-                </span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setMaterialFilter('personalized')}
+                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                      materialFilter === 'personalized'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Personalizados
+                  </button>
+                  <button
+                    onClick={() => setMaterialFilter('class')}
+                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                      materialFilter === 'class'
+                        ? 'bg-green-100 text-green-800 border border-green-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    De Clase
+                  </button>
+                  <button
+                    onClick={() => setMaterialFilter('all')}
+                    className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                      materialFilter === 'all'
+                        ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    Todos
+                  </button>
+                </div>
               )}
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {selectedTopic 
-                ? 'Haz clic en un material para verlo'
-                : 'Selecciona un tema para ver sus materiales'
-              }
-            </p>
+            </div>
           </div>
           
           <div className="p-6">
             {!selectedTopic ? (
               <div className="text-center py-8 text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <Eye className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <p>Selecciona un tema para ver sus materiales</p>
               </div>
             ) : loadingMaterials ? (
@@ -213,9 +364,9 @@ export function MySectionMaterials() {
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                 <p className="mt-2 text-sm text-gray-600">Cargando materiales...</p>
               </div>
-            ) : materials && materials.data && materials.data.results && materials.data.results.length > 0 ? (
+            ) : filteredMaterials && filteredMaterials.length > 0 ? (
               <div className="space-y-3">
-                {materials.data.results.map((material: Material) => (
+                {filteredMaterials.map((material: Material) => (
                   <div
                     key={material.id}
                     className="p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all duration-200"
@@ -268,7 +419,11 @@ export function MySectionMaterials() {
                           <span className="bg-gray-100 px-2 py-1 rounded">
                             {material.material_type}
                           </span>
-                          <span className="ml-2">
+                          <span className={`ml-2 px-2 py-1 rounded ${
+                            material.is_shared 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
                             {material.is_shared ? 'Material de clase' : 'Material personalizado'}
                           </span>
                         </div>
@@ -308,10 +463,21 @@ export function MySectionMaterials() {
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <p>No hay materiales disponibles para este tema</p>
+                <Eye className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p>
+                  {materialFilter === 'personalized' 
+                    ? 'No hay materiales personalizados para este tema'
+                    : materialFilter === 'class'
+                    ? 'No hay materiales de clase para este tema'
+                    : 'No hay materiales disponibles para este tema'
+                  }
+                </p>
+                {materials?.data?.results && materials.data.results.length > 0 && (
+                  <p className="text-sm text-gray-400 mt-2">
+                    Total de materiales: {materials.data.results.length} | 
+                    Mostrando: {filteredMaterials.length}
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -326,7 +492,6 @@ export function MySectionMaterials() {
           onClose={handleCloseMaterialViewer}
         />
       )}
-
     </div>
   )
 }

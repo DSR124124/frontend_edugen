@@ -19,6 +19,8 @@ import { ContentGenerator } from '../pages/ai/ContentGenerator'
 import { GeneratedContentPage } from '../pages/professor/GeneratedContentPage'
 import { MaterialAnalyticsDashboard } from '../pages/professor/MaterialAnalyticsDashboard'
 import { MySectionMaterials } from '../pages/student/MySectionMaterials'
+import { MySection } from '../pages/student/MySection'
+import { StudentPortfolio } from '../pages/student/StudentPortfolio'
 import { AppLayout } from '../layouts/AppLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
 
@@ -62,7 +64,9 @@ export function AppRouter() {
         )}
         <Route path="/courses" element={<Courses />} />
         <Route path="/sections" element={<Sections />} />
+        <Route path="/my-section" element={<MySection />} />
         <Route path="/portfolio" element={<MyPortfolio />} />
+        <Route path="/student-portfolio" element={<StudentPortfolio />} />
         <Route path="/my-materials" element={<MySectionMaterials />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/logout" element={<Logout />} />

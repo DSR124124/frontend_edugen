@@ -11,7 +11,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { sidebarOpen } = useUIStore()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-base-200)' }}>
       <Header />
       <div className="flex">
         <Sidebar />

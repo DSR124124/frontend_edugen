@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
 import { authApi } from "../../api/endpoints";
 import estudiantesImage from "../../assets/images/backgrounds/estudiantes.jpg?url";
+import logoImage from "../../assets/images/logos/logo.png?url";
 
 export function Login() {
   const [formData, setFormData] = useState({
@@ -182,14 +183,12 @@ export function Login() {
           >
             {/* Logo */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="w-20 h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 p-2 border-2 border-white/30">
+                <img
+                  src={logoImage}
+                  alt="EduGen Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h2 className="headline-2xl text-white mb-2">¡Bienvenido!</h2>
               <p className="text-white/80">Accede a tu plataforma educativa</p>

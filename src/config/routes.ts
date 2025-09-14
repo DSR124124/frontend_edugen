@@ -81,6 +81,24 @@ export const routes: RouteConfig[] = [
     icon: 'BookOpen',
   },
 
+  // Student routes
+  {
+    path: '/my-section',
+    component: 'MySection',
+    title: 'Mi Sección',
+    description: 'Información de mi sección asignada',
+    roles: [USER_ROLES.ALUMNO],
+    icon: 'Users',
+  },
+  {
+    path: '/my-materials',
+    component: 'MySectionMaterials',
+    title: 'Mis Materiales',
+    description: 'Materiales de mi sección',
+    roles: [USER_ROLES.ALUMNO],
+    icon: 'BookMarked',
+  },
+
   // Portfolio routes
   {
     path: '/portfolio',

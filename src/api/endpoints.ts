@@ -11,8 +11,13 @@ export interface User {
   specialty?: string
   specialty_display?: string
   institution?: number
-  section?: number
-  section_name?: string
+  section?: {
+    id: number
+    name: string
+    course_name?: string
+    grade_level_name?: string
+    term_name?: string
+  }
   assigned_sections?: Array<{id: number, name: string, grade_level_name?: string, term_name?: string}>
   created_at: string
 }

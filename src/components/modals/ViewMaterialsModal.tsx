@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, Topic, Material } from '../../api/endpoints'
-import { MaterialViewer } from '../student/MaterialViewer'
+import { MaterialViewer } from './MaterialViewer'
 
 interface ViewMaterialsModalProps {
   isOpen: boolean

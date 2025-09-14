@@ -34,20 +34,20 @@ function SCORMContentRenderer({ fileUrl }: { fileUrl: string }) {
 
   if (isLoading) {
     return (
-      <div className="w-full h-96 flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <p className="text-gray-600">Cargando contenido...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Cargando contenido...</p>
         </div>
-      </div>
+      </div>  
     )
   }
 
   if (error) {
     return (
-      <div className="w-full h-96 flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center">
         <div className="text-center text-red-600">
-          <p>Error: {error}</p>
+          <p className="text-lg">Error: {error}</p>
         </div>
       </div>
     )
@@ -55,16 +55,16 @@ function SCORMContentRenderer({ fileUrl }: { fileUrl: string }) {
 
   if (!scormData) {
     return (
-      <div className="w-full h-96 flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center">
         <div className="text-center text-gray-600">
-          <p>No se pudo cargar el contenido</p>
+          <p className="text-lg">No se pudo cargar el contenido</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="w-full h-96 overflow-auto">
+    <div className="w-full h-full overflow-auto">
       <style dangerouslySetInnerHTML={{ __html: scormData.css_content || '' }} />
       <div dangerouslySetInnerHTML={{ __html: scormData.html_content || '' }} />
       {scormData.js_content && (
@@ -234,23 +234,25 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
   const renderMaterialContent = () => {
     if (material.material_type === 'VIDEO' && material.file) {
       return (
-        <div className="w-full">
-          <video
-            ref={videoRef}
-            controls
-            className="w-full h-auto rounded-lg"
-            preload="metadata"
-            onPlay={handlePlay}
-            onPause={handlePause}
-            onTimeUpdate={handleTimeUpdate}
-            onEnded={handleEnded}
-            onSeeked={handleSeeked}
-          >
-            <source src={material.file} type="video/mp4" />
-            <source src={material.file} type="video/webm" />
-            <source src={material.file} type="video/ogg" />
-            Tu navegador no soporta la reproducción de video.
-          </video>
+        <div className="w-full h-full">
+          <div className="relative bg-black h-full w-full overflow-hidden">
+            <video
+              ref={videoRef}
+              controls
+              className="w-full h-full object-contain"
+              preload="metadata"
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onTimeUpdate={handleTimeUpdate}
+              onEnded={handleEnded}
+              onSeeked={handleSeeked}
+            >
+              <source src={material.file} type="video/mp4" />
+              <source src={material.file} type="video/webm" />
+              <source src={material.file} type="video/ogg" />
+              Tu navegador no soporta la reproducción de video.
+            </video>
+          </div>
           {/* Barra de progreso personalizada */}
           <div className="mt-2">
             <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -273,11 +275,11 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
 
     if (material.material_type === 'AUDIO' && material.file) {
       return (
-        <div className="w-full">
+        <div className="w-full h-full flex flex-col items-center justify-center">
           <audio
             ref={audioRef}
             controls
-            className="w-full"
+            className="w-full max-w-2xl"
             preload="metadata"
             onPlay={handlePlay}
             onPause={handlePause}
@@ -323,7 +325,7 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
       
       // Para otros tipos de documentos, usar iframe
       return (
-        <div className="w-full h-96">
+        <div className="w-full h-full">
           <iframe
             src={material.file}
             className="w-full h-full rounded-lg border"
@@ -335,8 +337,8 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
 
     if (material.material_type === 'LINK' && material.url) {
       return (
-        <div className="w-full">
-          <div className="bg-gray-50 rounded-lg p-6 text-center">
+        <div className="w-full h-full">
+          <div className="bg-gray-50 rounded-lg p-6 text-center h-full flex flex-col items-center justify-center">
             <div className="mb-4">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -355,8 +357,8 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
     }
 
     return (
-      <div className="w-full">
-        <div className="bg-gray-50 rounded-lg p-6 text-center">
+      <div className="w-full h-full">
+        <div className="bg-gray-50 rounded-lg p-6 text-center h-full flex flex-col items-center justify-center">
           <div className="mb-4">
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -378,74 +380,113 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-xl w-full max-w-7xl h-[95vh] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center space-x-4">
             {getMaterialIcon(material.material_type)}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">{material.name}</h2>
-              <p className="text-sm text-gray-600">
-                {material.material_type} • {material.topic_name}
-              </p>
-              <p className="text-xs text-gray-500">
-                Prof. {material.professor_name}
-              </p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold text-gray-900 truncate">{material.name}</h2>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {material.material_type}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {material.topic_name}
+                </span>
+                <span className="text-sm text-gray-600">
+                  Prof. {material.professor_name}
+                </span>
+              </div>
+              {material.description && (
+                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{material.description}</p>
+              )}
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleDownload}
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Descargar</span>
+            </button>
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-6 overflow-auto">
-          {material.description && (
-            <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Descripción</h3>
-              <p className="text-gray-600">{material.description}</p>
-            </div>
-          )}
+        <div className="flex-1 p-6 overflow-auto bg-gray-50">
+          <div className="max-w-none">
+            {material.description && (
+              <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Descripción
+                </h3>
+                <p className="text-gray-600 leading-relaxed">{material.description}</p>
+              </div>
+            )}
 
-          <div className="mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Contenido</h3>
-            {renderMaterialContent()}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[75vh]">
+              <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Contenido del Material
+                </h3>
+              </div>
+              <div className="p-0 h-full">
+                <div className="h-full w-full">
+                  {renderMaterialContent()}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <span>
-                {material.is_shared ? 'Material de clase' : 'Material personalizado'}
-              </span>
-              <span>•</span>
-              <span>
-                Creado: {new Date(material.created_at).toLocaleDateString()}
-              </span>
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${material.is_shared ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                <span className="font-medium">
+                  {material.is_shared ? 'Material de Clase' : 'Material Personalizado'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Creado: {new Date(material.created_at).toLocaleDateString('es-ES')}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Actualizado: {new Date(material.updated_at).toLocaleDateString('es-ES')}</span>
+              </div>
             </div>
+            
             <div className="flex items-center space-x-3">
-              {material.file && (
-                <button
-                  onClick={handleDownload}
-                  disabled={isLoading}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span>{isLoading ? 'Descargando...' : 'Descargar'}</span>
-                </button>
-              )}
               {material.url && (
                 <button
                   onClick={handleOpenLink}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -455,6 +496,7 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
