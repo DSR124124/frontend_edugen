@@ -5,6 +5,7 @@ import { academicApi } from '../../api/endpoints'
 import { TopicModal } from '../../components/modals/TopicModal'
 import { AddMaterialModal } from '../../components/modals/AddMaterialModal'
 import { GenerateAIMaterialModal } from '../../components/modals/GenerateAIMaterialModal'
+import { ViewMaterialsModal } from '../../components/modals/ViewMaterialsModal'
 import { Topic, Student } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
 import { useNotificationContext } from '../../contexts/NotificationContext'
@@ -24,6 +25,8 @@ export function TopicsPage() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [students, setStudents] = useState<Student[]>([])
   const [loadingStudents, setLoadingStudents] = useState(false)
+  const [isMaterialsModalOpen, setIsMaterialsModalOpen] = useState(false)
+  const [viewingTopic, setViewingTopic] = useState<Topic | null>(null)
 
   // Cargar cursos del profesor
   useEffect(() => {
@@ -125,6 +128,11 @@ export function TopicsPage() {
   const handleGenerateAIMaterial = async (topic: Topic) => {
     setSelectedTopic(topic)
     setIsAIMaterialModalOpen(true)
+  }
+
+  const handleViewMaterials = (topic: Topic) => {
+    setViewingTopic(topic)
+    setIsMaterialsModalOpen(true)
   }
 
   const handleAIGenerate = async (params: {
@@ -370,6 +378,13 @@ export function TopicsPage() {
                           </div>
                           
                           <button
+                            onClick={() => handleViewMaterials(topic)}
+                            className="px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 flex items-center space-x-1"
+                          >
+                            <span>👁️</span>
+                            <span>Ver Materiales</span>
+                          </button>
+                          <button
                             onClick={() => handleAddMaterial(topic)}
                             className="px-3 py-1 text-sm font-medium text-green-600 bg-green-50 rounded-md hover:bg-green-100 flex items-center space-x-1"
                           >
@@ -431,6 +446,13 @@ export function TopicsPage() {
           onGenerate={handleAIGenerate}
           topic={selectedTopic}
           loading={false}
+        />
+
+        {/* View Materials Modal */}
+        <ViewMaterialsModal
+          isOpen={isMaterialsModalOpen}
+          onClose={() => setIsMaterialsModalOpen(false)}
+          topic={viewingTopic}
         />
       </div>
     </div>

@@ -14,12 +14,15 @@ import {
   FolderOpen,
   Bot,
   FileText,
+  BookMarked,
+  BarChart3,
 } from 'lucide-react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Cursos', href: '/courses', icon: BookOpen },
   { name: 'Secciones', href: '/sections', icon: Users },
+  { name: 'Mis Materiales', href: '/my-materials', icon: BookMarked },
   { name: 'Portafolio', href: '/portfolio', icon: FolderOpen },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
@@ -42,6 +45,7 @@ const professorNavigation = [
   { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
   { name: 'Mis Estudiantes', href: '/professor/students', icon: GraduationCap },
   { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
+  { name: 'Analytics', href: '/material-analytics', icon: BarChart3 },
   { name: 'IA Generador', href: '/ai-content', icon: Bot },
   { name: 'Contenidos Generados', href: '/generated-content', icon: FileText },
   { name: 'Configuración', href: '/profile', icon: Settings },

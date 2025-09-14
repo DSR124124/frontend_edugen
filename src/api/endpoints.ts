@@ -344,7 +344,7 @@ export const academicApi = {
     http.get<Material[]>('academic/materials/'),
   
   getMaterialsByTopic: (topicId: number) => 
-    http.get<Material[]>(`academic/materials/by-topic/${topicId}/`),
+    http.get<{results: Material[]}>(`academic/materials/?topic=${topicId}`),
   
   createMaterial: (data: FormData) => 
     http.post<Material>('academic/materials/', data),
@@ -356,6 +356,102 @@ export const academicApi = {
     http.delete(`academic/materials/${id}/`),
 }
 
+// Material Tracking interfaces
+export interface MaterialViewingSession {
+  id: number
+  student: number
+  student_name: string
+  material: number
+  material_name: string
+  started_at: string
+  ended_at?: string
+  duration_seconds: number
+  duration_formatted: string
+  is_completed: boolean
+  progress_percentage: number
+  last_activity: string
+}
+
+export interface MaterialInteraction {
+  id: number
+  session: number
+  interaction_type: 'PLAY' | 'PAUSE' | 'SEEK' | 'DOWNLOAD' | 'COMPLETE' | 'ABANDON'
+  timestamp: string
+  metadata: Record<string, any>
+  student_name: string
+  material_name: string
+}
+
+export interface MaterialAnalytics {
+  id: number
+  material: number
+  material_name: string
+  total_views: number
+  unique_viewers: number
+  total_duration: number
+  total_duration_formatted: string
+  average_duration: number
+  average_duration_formatted: string
+  completion_rate: number
+  last_updated: string
+}
+
+export interface MaterialWithAnalytics extends Material {
+  analytics?: MaterialAnalytics
+}
+
+export interface MaterialTrackingData {
+  material_id: number
+  action: 'start' | 'pause' | 'resume' | 'seek' | 'complete' | 'abandon'
+  progress_percentage?: number
+  duration_seconds?: number
+  metadata?: Record<string, any>
+}
+
+export interface ProfessorAnalytics {
+  total_materials: number
+  analytics: {
+    total_views: number
+    total_unique_viewers: number
+    total_duration: number
+    avg_completion_rate: number
+  }
+  popular_materials: MaterialAnalytics[]
+  active_students: Array<{
+    student__username: string
+    student__first_name: string
+    student__last_name: string
+    total_sessions: number
+    total_duration: number
+  }>
+}
+
+// Material Tracking endpoints
+export const materialTrackingApi = {
+  // Track material viewing
+  trackMaterial: (data: MaterialTrackingData) => 
+    http.post('academic/material-tracking/track/', data),
+  
+  // Get student materials with analytics
+  getMyMaterials: () => 
+    http.get<MaterialWithAnalytics[]>('academic/material-tracking/my-materials/'),
+  
+  // Get professor analytics
+  getProfessorAnalytics: () => 
+    http.get<ProfessorAnalytics>('academic/material-tracking/professor-analytics/'),
+  
+  // Get viewing sessions
+  getViewingSessions: () => 
+    http.get<MaterialViewingSession[]>('academic/material-sessions/'),
+  
+  // Get material interactions
+  getMaterialInteractions: () => 
+    http.get<MaterialInteraction[]>('academic/material-interactions/'),
+  
+  // Get material analytics
+  getMaterialAnalytics: () => 
+    http.get<MaterialAnalytics[]>('academic/material-analytics/'),
+}
 
 // Analytics endpoints
 export const analyticsApi = {

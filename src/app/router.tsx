@@ -17,6 +17,8 @@ import { MyPortfolio } from '../pages/portfolios/MyPortfolio'
 import { Profile } from '../pages/settings/Profile'
 import { ContentGenerator } from '../pages/ai/ContentGenerator'
 import { GeneratedContentPage } from '../pages/professor/GeneratedContentPage'
+import { MaterialAnalyticsDashboard } from '../pages/professor/MaterialAnalyticsDashboard'
+import { MySectionMaterials } from '../pages/student/MySectionMaterials'
 import { AppLayout } from '../layouts/AppLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
 
@@ -55,11 +57,13 @@ export function AppRouter() {
             <Route path="/professor/*" element={<ProfessorRouter />} />
             <Route path="/ai-content" element={<ContentGenerator />} />
             <Route path="/generated-content" element={<GeneratedContentPage />} />
+            <Route path="/material-analytics" element={<MaterialAnalyticsDashboard />} />
           </>
         )}
         <Route path="/courses" element={<Courses />} />
         <Route path="/sections" element={<Sections />} />
         <Route path="/portfolio" element={<MyPortfolio />} />
+        <Route path="/my-materials" element={<MySectionMaterials />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

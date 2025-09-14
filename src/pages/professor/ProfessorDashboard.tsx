@@ -1,6 +1,7 @@
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useProfessor } from '../../hooks/useProfessor'
 import { KPICard } from '../../components/kpi/KPICard'
+import { Link } from 'react-router-dom'
 
 // Professor Dashboard Component
 
@@ -155,6 +156,14 @@ export function ProfessorDashboard() {
               <div className="font-medium">Recursos</div>
               <div className="text-sm text-gray-500">Materiales</div>
             </button>
+            <Link 
+              to="/material-analytics"
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors block"
+            >
+              <div className="text-2xl mb-2">📈</div>
+              <div className="font-medium">Analytics</div>
+              <div className="text-sm text-gray-500">Ver métricas</div>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { academicApi } from '../../api/endpoints'
+import { academicApi, Section, Topic } from '../../api/endpoints'
 import { GeneratedContent } from '../../api/endpoints'
 
 interface AssignMaterialModalProps {
@@ -15,9 +15,11 @@ interface AssignMaterialModalProps {
     selectedStudents?: number[]
   }) => void
   content: GeneratedContent | null
+  sections?: Section[]
+  topics?: Topic[]
 }
 
-export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: AssignMaterialModalProps) {
+export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sections = [], topics = [] }: AssignMaterialModalProps) {
   const [formData, setFormData] = useState({
     sectionId: 0,
     title: '',
@@ -28,19 +30,17 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Obtener secciones del profesor
-  const { data: sections, isLoading: loadingSections } = useQuery({
-    queryKey: ['professor-sections'],
-    queryFn: () => academicApi.getMySections(),
-    enabled: isOpen
-  })
+  // Usar secciones pasadas como props
+  const loadingSections = false
 
   // Obtener estudiantes de la sección seleccionada
-  const { data: sectionStudents, isLoading: loadingStudents } = useQuery({
-    queryKey: ['section-students', formData.sectionId],
+  const { data: sectionStudents, isLoading: loadingStudents, error: studentsError } = useQuery({
+    queryKey: ['section-students', formData.sectionId, formData.assignmentType],
     queryFn: () => academicApi.getStudentsBySection(formData.sectionId),
     enabled: isOpen && formData.sectionId > 0 && formData.assignmentType === 'personalized'
   })
+
+
 
   // Inicializar datos del formulario
   useEffect(() => {
@@ -59,7 +59,10 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
   // Limpiar estudiantes seleccionados cuando cambia el tipo de asignación
   useEffect(() => {
     if (formData.assignmentType === 'general') {
-      setFormData(prev => ({ ...prev, selectedStudents: [] }))
+      setFormData(prev => ({
+        ...prev,
+        selectedStudents: []
+      }))
     }
   }, [formData.assignmentType])
 
@@ -105,8 +108,8 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
   }
 
   const handleSelectAllStudents = () => {
-    if (sectionStudents?.data) {
-      const allStudentIds = sectionStudents.data.map((student: any) => student.id)
+    if (sectionStudents?.data?.students) {
+      const allStudentIds = sectionStudents.data.students.map((student: any) => student.id)
       setFormData(prev => ({ ...prev, selectedStudents: allStudentIds }))
       setErrors(prev => ({ ...prev, selectedStudents: '' }))
     }
@@ -195,7 +198,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
                 }`}
               >
                 <option value={0}>Seleccionar sección...</option>
-                {sections?.data?.map((section: any) => (
+                {sections?.map((section: any) => (
                   <option key={section.id} value={section.id}>
                     {section.name} - {section.course?.name} (Capacidad: {section.capacity})
                   </option>
@@ -346,11 +349,15 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
                 <div className="animate-pulse bg-gray-200 h-32 rounded-md"></div>
               ) : (
                 <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  {sectionStudents?.data && sectionStudents.data.length > 0 ? (
+                  {studentsError ? (
+                    <div className="text-center py-4 text-red-600">
+                      <p>Error al cargar estudiantes: {studentsError.message}</p>
+                    </div>
+                  ) : sectionStudents?.data?.students && sectionStudents.data.students.length > 0 ? (
                     <>
                       <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
                         <span className="text-sm font-medium text-gray-700">
-                          {formData.selectedStudents.length} de {sectionStudents.data.length} estudiantes seleccionados
+                          {formData.selectedStudents.length} de {sectionStudents.data.students.length} estudiantes seleccionados
                         </span>
                         <div className="space-x-2">
                           <button
@@ -371,7 +378,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
                       </div>
                       
                       <div className="space-y-2">
-                        {sectionStudents.data.map((student: any) => (
+                        {sectionStudents.data.students.map((student: any) => (
                           <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
                             <input
                               type="checkbox"
@@ -381,10 +388,13 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content }: Assi
                             />
                             <div className="flex-1">
                               <div className="font-medium text-sm text-gray-900">
-                                {student.user?.first_name} {student.user?.last_name}
+                                {student.first_name && student.last_name 
+                                  ? `${student.first_name} ${student.last_name}`
+                                  : student.username || 'Sin nombre'
+                                }
                               </div>
                               <div className="text-xs text-gray-500">
-                                {student.user?.email}
+                                {student.email}
                               </div>
                             </div>
                           </label>

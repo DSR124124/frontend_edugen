@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { aiContentApi, GeneratedContent } from '../../api/endpoints'
+import { aiContentApi, academicApi, GeneratedContent } from '../../api/endpoints'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { GrapesJSEditor } from '../../components/ai/GrapesJSEditor'
 import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal'
+import { useProfessorSections } from '../../hooks/useProfessorSections'
+import { useTopics } from '../../hooks/useTopics'
+import { useAuthStore } from '../../store/auth'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useNotificationContext()
+  const { user, isAuthenticated } = useAuthStore()
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
+
+  // Obtener secciones y temas del profesor
+  const { sections, loading: loadingSections, error: sectionsError } = useProfessorSections()
+  const { topics, loading: loadingTopics, error: topicsError } = useTopics()
+  
 
   // Obtener contenidos generados
   const { data: generatedContents, isLoading, error } = useQuery({
@@ -81,17 +90,62 @@ export function GeneratedContentPage() {
     if (!assigningContent) return
 
     try {
-      // Aquí implementarías la lógica para asignar el material a la sección
-      // Por ahora simulamos la asignación
-      console.log('Asignando material:', {
-        content: assigningContent,
-        sectionId: data.sectionId,
-        title: data.title,
-        description: data.description,
-        format: data.format,
-        assignmentType: data.assignmentType,
-        selectedStudents: data.selectedStudents
-      })
+      // Verificar que las secciones estén cargadas
+      if (loadingSections) {
+        throw new Error('Las secciones aún se están cargando. Inténtalo de nuevo en unos momentos.')
+      }
+      
+      if (sectionsError) {
+        throw new Error(`Error al cargar secciones: ${sectionsError}`)
+      }
+      
+      if (!sections || sections.length === 0) {
+        throw new Error('No se encontraron secciones asignadas. Contacta al administrador.')
+      }
+      
+      // Obtener la sección (manejar tanto números como strings)
+      const section = sections.find(s => s.id == data.sectionId || s.id === data.sectionId)
+      
+      if (!section) {
+        throw new Error(`No se pudo encontrar la sección con ID ${data.sectionId}`)
+      }
+      
+      if (!section.course) {
+        throw new Error(`La sección ${section.name} no tiene un curso asociado`)
+      }
+
+      // Obtener el primer tema del curso (o crear uno si no existe)
+      let topic = topics.find(t => t.course === section.course.id)
+      if (!topic) {
+        // Crear un tema por defecto para el curso
+        const topicData = {
+          name: 'Tema Principal',
+          description: 'Tema principal del curso',
+          course: section.course.id
+        }
+        const topicResponse = await academicApi.createTopic(topicData)
+        topic = topicResponse.data
+      }
+
+      // Crear el material
+      const materialData = new FormData()
+      materialData.append('name', data.title)
+      materialData.append('description', data.description || '')
+      materialData.append('material_type', data.format === 'SCORM' ? 'DOCUMENT' : 'DOCUMENT')
+      materialData.append('topic', topic.id.toString())
+      materialData.append('professor', user?.id?.toString() || '') // Campo requerido
+      materialData.append('is_shared', 'true') // Material compartido para toda la sección
+      
+      // Si es SCORM, agregar el contenido como archivo
+      if (data.format === 'SCORM') {
+        // Crear un archivo temporal con el contenido SCORM
+        const scormContent = JSON.stringify(assigningContent)
+        const blob = new Blob([scormContent], { type: 'application/json' })
+        materialData.append('file', blob, 'scorm-content.json')
+      }
+
+      const materialResponse = await academicApi.createMaterial(materialData)
+      const material = materialResponse.data
 
       const assignmentMessage = data.assignmentType === 'general' 
         ? `El material "${data.title}" se ha asignado a toda la sección en formato ${data.format}`
@@ -99,8 +153,12 @@ export function GeneratedContentPage() {
 
       showSuccess('Material Asignado', assignmentMessage)
       handleCloseAssignModal()
+      
+      // Refrescar la lista de contenidos generados
+      queryClient.invalidateQueries({ queryKey: ['generated-content'] })
+      
     } catch (error) {
-      showError('Error', 'No se pudo asignar el material')
+      showError('Error', 'No se pudo asignar el material: ' + (error as Error).message)
     }
   }
 
@@ -294,6 +352,8 @@ export function GeneratedContentPage() {
         onClose={handleCloseAssignModal}
         onAssign={handleAssignToSection}
         content={assigningContent}
+        sections={sections}
+        topics={topics}
       />
     </div>
   )
