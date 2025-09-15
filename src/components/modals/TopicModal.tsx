@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Topic, academicApi } from '../../api/endpoints'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Textarea } from '../ui/Textarea'
+import { Select } from '../ui/Select'
 
 interface TopicModalProps {
   isOpen: boolean
@@ -193,190 +198,121 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-medium text-gray-900">
-            {topic ? 'Editar Tema' : 'Crear Tema'}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={loading}
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={topic ? 'Editar Tema' : 'Crear Tema'}
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Nombre del Tema"
+          value={formData.name}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          name="name"
+          placeholder="Ej: Introducción a las Matemáticas"
+          required
+          error={errors.name && touched.name ? errors.name : undefined}
+          disabled={loading || isSubmitting}
+        />
+        
+        {errors.duplicate_name && (
+          <div className="mt-1 flex items-center space-x-1">
+            <svg className="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
-          </button>
+            <p className="text-sm text-error">{errors.duplicate_name}</p>
+          </div>
+        )}
+        
+        {!errors.name && !errors.duplicate_name && touched.name && formData.name.trim() && (
+          <div className="mt-1 flex items-center space-x-1">
+            <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-success">Nombre válido</p>
+          </div>
+        )}
+        
+        {isCheckingDuplicates && (
+          <div className="mt-1 flex items-center space-x-1">
+            <svg className="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-sm text-primary">Verificando disponibilidad...</p>
+          </div>
+        )}
+
+        <Textarea
+          label="Descripción (opcional)"
+          value={formData.description}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          name="description"
+          rows={3}
+          placeholder="Descripción detallada del tema (opcional)"
+          helperText="Proporciona una descripción detallada del tema para ayudar a los estudiantes"
+          disabled={loading || isSubmitting}
+        />
+
+        <Select
+          label="Curso"
+          value={formData.course}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          name="course"
+          required
+          error={errors.course && touched.course ? errors.course : undefined}
+          disabled={loading || isSubmitting}
+          placeholder="Seleccionar curso"
+          options={[
+            { value: 0, label: 'Seleccionar curso', disabled: true },
+            ...courses.map((course) => ({
+              value: course.id,
+              label: `${course.name} (${course.code})`
+            }))
+          ]}
+        />
+        
+        {!errors.course && touched.course && formData.course !== 0 && (
+          <div className="mt-1 flex items-center space-x-1">
+            <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-success">Curso seleccionado</p>
+          </div>
+        )}
+
+        {/* Información sobre orden automático */}
+        <div className="bg-primary-50 border border-primary-200 p-3 rounded-md">
+          <p className="text-sm text-primary">
+            <strong>Nota:</strong> El orden de los temas se asigna automáticamente. 
+            Los temas se mostrarán en el orden en que fueron creados.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Tema <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                errors.name && touched.name
-                  ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-              placeholder="Ej: Introducción a las Matemáticas"
-              disabled={loading || isSubmitting}
-            />
-            {errors.name && touched.name && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-red-600">{errors.name}</p>
-              </div>
-            )}
-            {errors.duplicate_name && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-red-600">{errors.duplicate_name}</p>
-              </div>
-            )}
-            {!errors.name && !errors.duplicate_name && touched.name && formData.name.trim() && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-green-600">Nombre válido</p>
-              </div>
-            )}
-            {isCheckingDuplicates && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="animate-spin h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-sm text-blue-600">Verificando disponibilidad...</p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción <span className="text-gray-400">(opcional)</span>
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              placeholder="Descripción detallada del tema (opcional)"
-              disabled={loading || isSubmitting}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Proporciona una descripción detallada del tema para ayudar a los estudiantes
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-1">
-              Curso <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="course"
-              name="course"
-              value={formData.course}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                errors.course && touched.course
-                  ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-              disabled={loading || isSubmitting}
-            >
-              <option value={0}>Seleccionar curso</option>
-              {courses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.name} ({course.code})
-                </option>
-              ))}
-            </select>
-            {errors.course && touched.course && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-red-600">{errors.course}</p>
-              </div>
-            )}
-            {!errors.course && touched.course && formData.course !== 0 && (
-              <div className="mt-1 flex items-center space-x-1">
-                <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-green-600">Curso seleccionado</p>
-              </div>
-            )}
-          </div>
-
-          {/* Información sobre orden automático */}
-          <div className="bg-blue-50 p-3 rounded-md">
-            <p className="text-sm text-blue-800">
-              <strong>Nota:</strong> El orden de los temas se asigna automáticamente. 
-              Los temas se mostrarán en el orden en que fueron creados.
-            </p>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              disabled={loading || isSubmitting}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center space-x-2"
-              disabled={loading || isSubmitting || isCheckingDuplicates || !formData.name.trim() || formData.course === 0 || !!errors.duplicate_name}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Guardando...</span>
-                </>
-              ) : isCheckingDuplicates ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Verificando...</span>
-                </>
-              ) : (
-                <>
-                  <span>{topic ? 'Actualizar' : 'Crear'}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="outline"
+            disabled={loading || isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={isSubmitting || isCheckingDuplicates}
+            disabled={loading || isSubmitting || isCheckingDuplicates || !formData.name.trim() || formData.course === 0 || !!errors.duplicate_name}
+          >
+            {isSubmitting ? 'Guardando...' : isCheckingDuplicates ? 'Verificando...' : (topic ? 'Actualizar' : 'Crear')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

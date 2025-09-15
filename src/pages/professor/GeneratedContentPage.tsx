@@ -7,6 +7,16 @@ import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useTopics } from '../../hooks/useTopics'
 import { useAuthStore } from '../../store/auth'
+import { 
+  FiFileText, 
+  FiEdit3, 
+  FiTrash2, 
+  FiUpload, 
+  FiX, 
+  FiCalendar,
+  FiCheckCircle,
+  FiAlertTriangle
+} from 'react-icons/fi'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
@@ -200,114 +210,147 @@ export function GeneratedContentPage() {
   const contents = generatedContents?.data || []
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Contenidos Generados</h1>
-              <p className="text-gray-600 mt-1">Gestiona y edita todos los contenidos educativos generados con IA</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-sm text-gray-500">
-                {contents.length} contenido{contents.length !== 1 ? 's' : ''} generado{contents.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          </div>
+      <div className="flex items-center space-x-3 mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg">
+          <FiFileText className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="headline-2xl text-base-content">
+            Contenidos Generados
+          </h1>
+          <p className="text-small text-base-content/70">
+            Gestiona y edita todos los contenidos educativos generados con IA
+          </p>
         </div>
       </div>
 
       {/* Contenido Principal */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {contents.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📚</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay contenidos generados</h3>
-            <p className="text-gray-600">Los contenidos generados con IA aparecerán aquí</p>
+      {isLoading ? (
+        <div className="card p-4 mb-4">
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <h3 className="headline-lg text-base-content mb-2">Cargando Contenidos</h3>
+            <p className="text-small text-base-content/70">Obteniendo contenidos generados...</p>
           </div>
+        </div>
+      ) : error ? (
+        <div className="card p-4 mb-4">
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-error-100 rounded-full">
+                <FiAlertTriangle className="w-6 h-6 text-error" />
+              </div>
+              <div>
+                <h3 className="headline-xl text-base-content mb-1">Error al Cargar</h3>
+                <p className="text-small text-base-content/70">No se pudieron cargar los contenidos generados</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : contents.length === 0 ? (
+        <div className="card p-4 mb-4">
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-base-200 rounded-full">
+                <FiFileText className="w-6 h-6 text-base-content/40" />
+              </div>
+              <div>
+                <h3 className="headline-xl text-base-content mb-1">No hay contenidos generados</h3>
+                <p className="text-small text-base-content/70">Los contenidos generados con IA aparecerán aquí</p>
+              </div>
+            </div>
+          </div>
+        </div>
         ) : (
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="card p-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="headline-lg text-base-content flex items-center space-x-2">
+                <FiFileText className="w-5 h-5 text-primary" />
+                <span>Lista de Contenidos</span>
+              </h2>
+              <div className="text-small text-base-content/70">
+                {contents.length} contenido{contents.length !== 1 ? 's' : ''} generado{contents.length !== 1 ? 's' : ''}
+              </div>
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Título
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha de Creación
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
+              <table className="table table-zebra w-full">
+                <thead>
+                  <tr className="bg-base-200">
+                    <th className="text-base-content font-semibold">Título</th>
+                    <th className="text-base-content font-semibold">Tipo</th>
+                    <th className="text-base-content font-semibold">Fecha de Creación</th>
+                    <th className="text-base-content font-semibold">Estado</th>
+                    <th className="text-base-content font-semibold">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {contents.map((content) => (
-                    <tr key={content.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                              <span className="text-blue-600 text-lg">📄</span>
-                            </div>
+                    <tr key={content.id} className="hover:bg-base-50">
+                      <td className="font-medium text-base-content">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                            <FiFileText className="w-5 h-5 text-primary" />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
+                          <div>
+                            <div className="headline-small text-base-content">
                               {content.title || 'Sin título'}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-small text-base-content/70">
                               ID: {content.id}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <td className="text-base-content/70">
+                        <span className="badge badge-success badge-sm">
                           Contenido Educativo
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(content.created_at).toLocaleDateString('es-ES', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      <td className="text-base-content/70">
+                        <div className="flex items-center space-x-2">
+                          <FiCalendar className="w-4 h-4 text-primary" />
+                          <span className="text-small">
+                            {new Date(content.created_at).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <td className="text-center">
+                        <span className="badge badge-primary badge-sm">
+                          <FiCheckCircle className="w-3 h-3 mr-1" />
                           Generado
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
+                      <td className="text-center">
+                        <div className="flex items-center justify-center space-x-2">
                           <button
                             onClick={() => handleEditContent(content)}
-                            className="text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50 transition-colors"
+                            className="btn btn-ghost btn-sm flex items-center space-x-1"
                           >
-                            ✏️ Editar
+                            <FiEdit3 className="w-4 h-4" />
+                            <span>Editar</span>
                           </button>
                           <button
                             onClick={() => handleAssignMaterial(content)}
-                            className="text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50 transition-colors"
+                            className="btn btn-outline btn-sm flex items-center space-x-1"
                           >
-                            📤 Asignar Material
+                            <FiUpload className="w-4 h-4" />
+                            <span>Asignar</span>
                           </button>
                           <button
                             onClick={() => handleDeleteContent(content.id, content.title || 'Sin título')}
-                            className="text-red-600 hover:text-red-900 px-3 py-1 rounded-md hover:bg-red-50 transition-colors"
+                            className="btn btn-error btn-sm flex items-center space-x-1"
                             disabled={deleteContentMutation.isPending}
                           >
-                            🗑️ Eliminar
+                            <FiTrash2 className="w-4 h-4" />
+                            <span>Eliminar</span>
                           </button>
                         </div>
                       </td>
@@ -318,40 +361,47 @@ export function GeneratedContentPage() {
             </div>
           </div>
         )}
-      </div>
 
       {/* Modal del Editor */}
       {isEditorOpen && selectedContent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] mx-4 flex flex-col">
-            <div className="p-4 border-b bg-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-800">Editor de Contenido</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Editando: {selectedContent.title || 'Sin título'}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={handleCloseEditor}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center space-x-2"
-                  >
-                    <span>←</span>
-                    <span>Cerrar Editor</span>
-                  </button>
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-7xl h-[90vh] flex flex-col shadow-xl">
+              <div className="p-4 border-b border-base-300 bg-base-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-primary-100 rounded-lg">
+                      <FiEdit3 className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="headline-lg text-base-content">Editor de Contenido</h2>
+                      <p className="text-small text-base-content/70">
+                        Editando: {selectedContent.title || 'Sin título'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleCloseEditor}
+                      className="btn btn-ghost btn-sm flex items-center space-x-2"
+                    >
+                      <FiX className="w-4 h-4" />
+                      <span>Cerrar Editor</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex-1 bg-gray-50">
-              <div className="h-full">
-                <GrapesJSEditor
-                  content={selectedContent}
-                  onSave={handleSaveContent}
-                  useGrapesJS={true}
-                  onToggleGrapesJS={() => {}}
-                />
+              
+              <div className="flex-1 bg-base-200">
+                <div className="h-full">
+                  <GrapesJSEditor
+                    content={selectedContent}
+                    onSave={handleSaveContent}
+                    useGrapesJS={true}
+                    onToggleGrapesJS={() => {}}
+                  />
+                </div>
               </div>
             </div>
           </div>

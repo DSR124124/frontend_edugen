@@ -15,6 +15,7 @@ export function Header() {
   const getBreadcrumbItems = (): BreadcrumbItem[] => {
     const path = location.pathname
     
+    // Rutas del Director
     if (path === '/director') {
       return [
         { label: 'Dashboard', href: '/dashboard' },
@@ -55,6 +56,95 @@ export function Header() {
         { label: 'Dashboard', href: '/dashboard' },
         { label: 'Panel del Director', href: '/director' },
         { label: 'Institución', current: true }
+      ]
+    }
+    
+    // Rutas del Profesor
+    else if (path === '/professor') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', current: true }
+      ]
+    } else if (path === '/professor/courses') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Cursos', current: true }
+      ]
+    } else if (path === '/professor/topics') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Temas', current: true }
+      ]
+    } else if (path === '/professor/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Secciones', current: true }
+      ]
+    } else if (path === '/professor/students') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Estudiantes', current: true }
+      ]
+    } else if (path === '/professor/portfolios') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Gestión de Portafolios', current: true }
+      ]
+    }
+    
+    // Rutas de IA y Contenido
+    else if (path === '/ai-content') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Generador de Contenido IA', current: true }
+      ]
+    } else if (path === '/generated-content') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Contenido Generado', current: true }
+      ]
+    } else if (path === '/material-analytics') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Análisis de Materiales', current: true }
+      ]
+    }
+    
+    // Otras rutas
+    else if (path === '/courses') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Cursos', current: true }
+      ]
+    } else if (path === '/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Secciones', current: true }
+      ]
+    } else if (path === '/my-section') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mi Sección', current: true }
+      ]
+    } else if (path === '/portfolio') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mi Portafolio', current: true }
+      ]
+    } else if (path === '/student-portfolio') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Portafolio del Estudiante', current: true }
+      ]
+    } else if (path === '/my-materials') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mis Materiales', current: true }
       ]
     } else if (path === '/profile') {
       return [

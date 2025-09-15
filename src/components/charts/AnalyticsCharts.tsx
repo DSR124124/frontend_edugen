@@ -10,7 +10,16 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { Bar, Line, Pie } from 'react-chartjs-2'
+import { Bar, Line } from 'react-chartjs-2'
+import { 
+  FiEye, 
+  FiUsers, 
+  FiClock, 
+  FiCheckCircle, 
+  FiTrendingUp, 
+  FiBarChart,
+  FiActivity
+} from 'react-icons/fi'
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -74,10 +83,10 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white p-6 rounded-lg shadow">
+          <div key={i} className="card p-6 bg-base-100 border border-base-300">
             <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-base-300 rounded w-1/4 mb-4"></div>
+              <div className="h-64 bg-base-300 rounded"></div>
             </div>
           </div>
         ))}
@@ -87,8 +96,11 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
 
   if (!data) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Selecciona un material para ver los gráficos</p>
+      <div className="card p-8 bg-base-100 border border-base-300 text-center">
+        <div className="p-4 bg-info-100 rounded-full w-fit mx-auto mb-4">
+          <FiBarChart className="w-8 h-8 text-info" />
+        </div>
+        <p className="text-base-content/70">Selecciona un material para ver los gráficos</p>
       </div>
     )
   }
@@ -117,19 +129,18 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     ]
   }
 
-  // Preparar datos para gráfico de líneas - Tasa de finalización (simulada)
-  const completionRateData = {
+  // Preparar datos para gráfico de líneas - Duración promedio por día
+  const durationData = {
     labels: data.daily_stats.map(stat => {
       const date = new Date(stat.date)
       return date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })
     }),
     datasets: [
       {
-        label: 'Tasa de Finalización (%)',
-        data: data.daily_stats.map((stat, index) => {
-          // Simular tasa de finalización basada en views y duración
-          const baseRate = Math.min(100, (stat.views * 10) + (stat.duration / 60) * 2)
-          return Math.max(0, Math.min(100, baseRate + (index * 5)))
+        label: 'Duración Promedio (min)',
+        data: data.daily_stats.map(stat => {
+          // Calcular duración promedio en minutos basada en datos reales
+          return stat.views > 0 ? Math.round((stat.duration / stat.views) / 60) : 0
         }),
         borderColor: 'rgba(168, 85, 247, 1)',
         backgroundColor: 'rgba(168, 85, 247, 0.1)',
@@ -139,34 +150,6 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     ]
   }
 
-  // Preparar datos para gráfico de pie - Distribución de tipos de interacción
-  const interactionColors = [
-    'rgba(34, 197, 94, 0.8)',   // Verde para PLAY
-    'rgba(251, 191, 36, 0.8)',  // Amarillo para PAUSE
-    'rgba(59, 130, 246, 0.8)',  // Azul para SEEK
-    'rgba(16, 185, 129, 0.8)',  // Verde para COMPLETE
-    'rgba(239, 68, 68, 0.8)',   // Rojo para ABANDON
-  ]
-
-  // Calcular distribución de interacciones basada en datos reales
-  const totalInteractions = data.total_views * 3 // Estimación: 3 interacciones por vista
-  const interactionData = {
-    labels: ['Reproducir', 'Pausar', 'Buscar', 'Completar', 'Abandonar'],
-    datasets: [
-      {
-        data: [
-          Math.floor(totalInteractions * 0.4),  // PLAY
-          Math.floor(totalInteractions * 0.2),  // PAUSE
-          Math.floor(totalInteractions * 0.15), // SEEK
-          Math.floor(totalInteractions * 0.2),  // COMPLETE
-          Math.floor(totalInteractions * 0.05), // ABANDON
-        ],
-        backgroundColor: interactionColors,
-        borderWidth: 2,
-        borderColor: '#fff'
-      }
-    ]
-  }
 
   // Preparar datos para gráfico de barras - Rendimiento por estudiante
   const studentPerformanceData = {
@@ -262,130 +245,191 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     <div className="space-y-6">
       {/* Resumen de métricas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
+        <div className="card p-4 bg-primary-50 border border-primary-200">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <FiEye className="w-6 h-6 text-primary" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-blue-600">Total Visualizaciones</p>
-              <p className="text-2xl font-bold text-blue-900">{data.total_views}</p>
+              <p className="text-small font-medium text-primary">Total Visualizaciones</p>
+              <p className="headline-xl text-primary">{data.total_views}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-green-50 p-4 rounded-lg">
+        <div className="card p-4 bg-success-50 border border-success-200">
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
+            <div className="p-2 bg-success-100 rounded-lg">
+              <FiUsers className="w-6 h-6 text-success" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-green-600">Usuarios Únicos</p>
-              <p className="text-2xl font-bold text-green-900">{data.unique_viewers}</p>
+              <p className="text-small font-medium text-success">Usuarios Únicos</p>
+              <p className="headline-xl text-success">{data.unique_viewers}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-purple-50 p-4 rounded-lg">
+        <div className="card p-4 bg-info-50 border border-info-200">
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="p-2 bg-info-100 rounded-lg">
+              <FiClock className="w-6 h-6 text-info" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-purple-600">Duración Promedio</p>
-              <p className="text-2xl font-bold text-purple-900">
+              <p className="text-small font-medium text-info">Duración Promedio</p>
+              <p className="headline-xl text-info">
                 {Math.floor(data.average_duration / 60)}m {Math.floor(data.average_duration % 60)}s
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-orange-50 p-4 rounded-lg">
+        <div className="card p-4 bg-warning-50 border border-warning-200">
           <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="p-2 bg-warning-100 rounded-lg">
+              <FiCheckCircle className="w-6 h-6 text-warning" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-orange-600">Tasa de Finalización</p>
-              <p className="text-2xl font-bold text-orange-900">{data.completion_rate.toFixed(1)}%</p>
+              <p className="text-small font-medium text-warning">Tasa de Finalización</p>
+              <p className="headline-xl text-warning">{data.completion_rate.toFixed(1)}%</p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Tabla de Comparativa por Alumno */}
+      <div className="card p-6 bg-base-100 border border-base-300">
+        <div className="flex items-center space-x-2 mb-6">
+          <FiUsers className="w-5 h-5 text-primary" />
+          <h3 className="headline-lg text-base-content">Comparativa por Alumno</h3>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="table table-zebra w-full">
+            <thead>
+              <tr className="bg-base-200">
+                <th className="text-base-content font-semibold">Alumno</th>
+                <th className="text-base-content font-semibold">Sección</th>
+                <th className="text-base-content font-semibold">Grado</th>
+                <th className="text-base-content font-semibold">Sesiones</th>
+                <th className="text-base-content font-semibold">Duración Total</th>
+                <th className="text-base-content font-semibold">Duración Promedio</th>
+                <th className="text-base-content font-semibold">Tasa de Finalización</th>
+                <th className="text-base-content font-semibold">Última Visualización</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.student_details.map((student) => (
+                <tr key={student.student_id} className="hover:bg-base-50">
+                  <td className="font-medium text-base-content">
+                    {student.student_name}
+                  </td>
+                  <td className="text-base-content/70">
+                    {student.section_name}
+                  </td>
+                  <td className="text-base-content/70">
+                    {student.grade_level}
+                  </td>
+                  <td className="text-center">
+                    <span className="badge badge-primary badge-sm">
+                      {student.sessions_count}
+                    </span>
+                  </td>
+                  <td className="text-center">
+                    <span className="text-info font-medium">
+                      {Math.floor(student.total_duration / 60)}m {student.total_duration % 60}s
+                    </span>
+                  </td>
+                  <td className="text-center">
+                    <span className="text-warning font-medium">
+                      {student.sessions_count > 0 ? Math.floor((student.total_duration / student.sessions_count) / 60) : 0}m
+                    </span>
+                  </td>
+                  <td className="text-center">
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="w-16 bg-base-300 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            student.completion_rate >= 80 ? 'bg-success' :
+                            student.completion_rate >= 60 ? 'bg-info' :
+                            student.completion_rate >= 40 ? 'bg-warning' : 'bg-error'
+                          }`}
+                          style={{ width: `${Math.min(student.completion_rate, 100)}%` }}
+                        ></div>
+                      </div>
+                      <span className={`text-sm font-medium ${
+                        student.completion_rate >= 80 ? 'text-success' :
+                        student.completion_rate >= 60 ? 'text-info' :
+                        student.completion_rate >= 40 ? 'text-warning' : 'text-error'
+                      }`}>
+                        {student.completion_rate.toFixed(1)}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="text-base-content/70 text-sm">
+                    {student.last_viewed ? 
+                      new Date(student.last_viewed).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      }) : 
+                      'Nunca'
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        {data.student_details.length === 0 && (
+          <div className="text-center py-8">
+            <div className="p-4 bg-info-100 rounded-full w-fit mx-auto mb-4">
+              <FiUsers className="w-8 h-8 text-info" />
+            </div>
+            <p className="text-base-content/70">No hay datos de estudiantes disponibles</p>
+          </div>
+        )}
+      </div>
+
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de barras - Visualizaciones diarias */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Visualizaciones Diarias</h3>
+        <div className="card p-6 bg-base-100 border border-base-300">
+          <div className="flex items-center space-x-2 mb-4">
+            <FiBarChart className="w-5 h-5 text-primary" />
+            <h3 className="headline-lg text-base-content">Visualizaciones Diarias</h3>
+          </div>
           <div className="h-64">
             <Bar data={dailyViewsData} options={barChartOptions} />
           </div>
         </div>
 
-        {/* Gráfico de líneas - Tasa de finalización */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Evolución de Finalización</h3>
+        {/* Gráfico de líneas - Duración promedio */}
+        <div className="card p-6 bg-base-100 border border-base-300">
+          <div className="flex items-center space-x-2 mb-4">
+            <FiTrendingUp className="w-5 h-5 text-info" />
+            <h3 className="headline-lg text-base-content">Duración Promedio por Día</h3>
+          </div>
           <div className="h-64">
-            <Line data={completionRateData} options={lineChartOptions} />
+            <Line data={durationData} options={lineChartOptions} />
           </div>
         </div>
 
-        {/* Gráfico de pie - Tipos de interacción */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Distribución de Interacciones</h3>
-          <div className="h-64">
-            <Pie data={interactionData} options={chartOptions} />
-          </div>
-        </div>
 
         {/* Gráfico de barras - Rendimiento por estudiante */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Rendimiento por Estudiante</h3>
+        <div className="card p-6 bg-base-100 border border-base-300">
+          <div className="flex items-center space-x-2 mb-4">
+            <FiActivity className="w-5 h-5 text-warning" />
+            <h3 className="headline-lg text-base-content">Rendimiento por Estudiante</h3>
+          </div>
           <div className="h-64">
             <Bar data={studentPerformanceData} options={studentChartOptions} />
           </div>
         </div>
       </div>
 
-      {/* Análisis comparativo */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Análisis Comparativo</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">
-              {data.total_views > 0 ? ((data.unique_viewers / data.total_views) * 100).toFixed(1) : 0}%
-            </div>
-            <div className="text-sm text-gray-600">Engagement Rate</div>
-            <div className="text-xs text-gray-500">Usuarios únicos vs total visualizaciones</div>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">
-              {data.completion_rate > 70 ? 'Excelente' : data.completion_rate > 40 ? 'Bueno' : 'Necesita Mejora'}
-            </div>
-            <div className="text-sm text-gray-600">Calidad del Contenido</div>
-            <div className="text-xs text-gray-500">Basado en tasa de finalización</div>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">
-              {data.average_duration > 300 ? 'Alto' : data.average_duration > 120 ? 'Medio' : 'Bajo'}
-            </div>
-            <div className="text-sm text-gray-600">Nivel de Atención</div>
-            <div className="text-xs text-gray-500">Basado en duración promedio</div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

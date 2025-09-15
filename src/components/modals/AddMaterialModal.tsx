@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Student } from '../../api/endpoints'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Textarea } from '../ui/Textarea'
+import { 
+  FiFile, 
+  FiVideo, 
+  FiMusic, 
+  FiImage, 
+  FiLink, 
+  FiFileText,
+  FiBook,
+  FiUser,
+  FiUsers,
+  FiUpload
+} from 'react-icons/fi'
 
 interface AddMaterialModalProps {
   isOpen: boolean
@@ -32,13 +48,68 @@ interface FormErrors {
 }
 
 const MATERIAL_TYPES = [
-  { value: 'DOCUMENT', label: '📄 Documento', description: 'PDF, Word, PowerPoint, etc.' },
-  { value: 'VIDEO', label: '🎥 Video', description: 'MP4, AVI, MOV, etc.' },
-  { value: 'AUDIO', label: '🎵 Audio', description: 'MP3, WAV, etc.' },
-  { value: 'IMAGE', label: '🖼️ Imagen', description: 'JPG, PNG, GIF, etc.' },
-  { value: 'LINK', label: '🔗 Enlace', description: 'URL externa' },
-  { value: 'OTHER', label: '📎 Otro', description: 'Cualquier otro tipo de archivo' }
+  { 
+    value: 'DOCUMENT', 
+    label: 'Documento', 
+    description: 'PDF, Word, PowerPoint, etc.',
+    icon: FiFileText,
+    color: 'primary',
+    borderColor: '#005CFF',
+    bgColor: '#E6F2FF',
+    textColor: '#005CFF'
+  },
+  { 
+    value: 'VIDEO', 
+    label: 'Video', 
+    description: 'MP4, AVI, MOV, etc.',
+    icon: FiVideo,
+    color: 'error',
+    borderColor: '#FF3A24',
+    bgColor: '#FFEBE8',
+    textColor: '#FF3A24'
+  },
+  { 
+    value: 'AUDIO', 
+    label: 'Audio', 
+    description: 'MP3, WAV, etc.',
+    icon: FiMusic,
+    color: 'success',
+    borderColor: '#00BF4A',
+    bgColor: '#E8F8F0',
+    textColor: '#00BF4A'
+  },
+  { 
+    value: 'IMAGE', 
+    label: 'Imagen', 
+    description: 'JPG, PNG, GIF, etc.',
+    icon: FiImage,
+    color: 'warning',
+    borderColor: '#F7A325',
+    bgColor: '#FEF7E8',
+    textColor: '#F7A325'
+  },
+  { 
+    value: 'LINK', 
+    label: 'Enlace', 
+    description: 'URL externa',
+    icon: FiLink,
+    color: 'secondary',
+    borderColor: '#A142F5',
+    bgColor: '#F3E8FF',
+    textColor: '#A142F5'
+  },
+  { 
+    value: 'OTHER', 
+    label: 'Otro', 
+    description: 'Cualquier otro tipo de archivo',
+    icon: FiFile,
+    color: 'info',
+    borderColor: '#0074EE',
+    bgColor: '#E6F2FF',
+    textColor: '#0074EE'
+  }
 ]
+
 
 export function AddMaterialModal({ 
   isOpen, 
@@ -68,6 +139,7 @@ export function AddMaterialModal({
   
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [studentSearch, setStudentSearch] = useState('')
 
   useEffect(() => {
     if (isOpen) {
@@ -89,13 +161,25 @@ export function AddMaterialModal({
       })
       setTouched({})
       setIsSubmitting(false)
+      setStudentSearch('')
     }
   }, [isOpen])
 
-  const validateField = (fieldName: string, value: any): string => {
+  // Filtrar estudiantes basado en la búsqueda
+  const filteredStudents = students.filter(student => {
+    const searchTerm = studentSearch.toLowerCase()
+    return (
+      student.first_name.toLowerCase().includes(searchTerm) ||
+      student.last_name.toLowerCase().includes(searchTerm) ||
+      student.username.toLowerCase().includes(searchTerm) ||
+      (student.section?.name.toLowerCase().includes(searchTerm) || false)
+    )
+  })
+
+  const validateField = (fieldName: string, value: unknown): string => {
     switch (fieldName) {
       case 'name':
-        if (!value || !value.trim()) {
+        if (!value || typeof value !== 'string' || !value.trim()) {
           return 'El nombre del material es requerido'
         }
         if (value.trim().length < 3) {
@@ -113,15 +197,15 @@ export function AddMaterialModal({
         }
         return ''
       case 'url':
-        if (formData.material_type === 'LINK' && (!value || !value.trim())) {
+        if (formData.material_type === 'LINK' && (!value || typeof value !== 'string' || !value.trim())) {
           return 'Debe proporcionar una URL'
         }
-        if (formData.material_type === 'LINK' && value && !isValidUrl(value.trim())) {
+        if (formData.material_type === 'LINK' && value && typeof value === 'string' && !isValidUrl(value.trim())) {
           return 'Debe proporcionar una URL válida'
         }
         return ''
       case 'assigned_students':
-        if (!formData.is_shared && (!value || value.length === 0)) {
+        if (!formData.is_shared && (!value || !Array.isArray(value) || value.length === 0)) {
           return 'Debe seleccionar al menos un estudiante'
         }
         return ''
@@ -290,302 +374,379 @@ export function AddMaterialModal({
   if (!isOpen || !topic) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">
-              📚 Agregar Material
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Tema: <span className="font-medium">{topic.name}</span> - {topic.course_name}
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600"
-            disabled={loading || isSubmitting}
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Agregar Material"
+      size="lg"
+    >
+      <div className="mb-3 p-2 bg-primary-50 rounded-lg border border-primary-200">
+        <div className="flex items-center space-x-2 mb-1">
+          <FiBook className="w-4 h-4 text-primary" />
+          <span className="text-small font-semibold text-primary">Agregar Material</span>
         </div>
+        <p className="text-extra-small text-neutral-600">
+          <span className="font-medium text-neutral">Tema:</span> {topic.name} - {topic.course_name}
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Tipo de Material */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Tipo de Material <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {MATERIAL_TYPES.map((type) => (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Tipo de Material */}
+        <div>
+          <label className="label mb-2">
+            Tipo de Material <span className="text-error">*</span>
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {MATERIAL_TYPES.map((type) => {
+              const isSelected = formData.material_type === type.value
+              const hasError = errors.material_type && touched.material_type
+              
+              const getCardStyles = () => {
+                if (isSelected) {
+                  return {
+                    borderColor: type.borderColor,
+                    backgroundColor: type.bgColor
+                  }
+                } else if (hasError) {
+                  return {
+                    borderColor: '#FF3A24',
+                    backgroundColor: '#FFEBE8'
+                  }
+                } else {
+                  return {
+                    borderColor: '#E5E5E5',
+                    backgroundColor: '#FFFFFF'
+                  }
+                }
+              }
+              
+              return (
                 <label
                   key={type.value}
-                  className={`relative flex flex-col p-3 border rounded-lg cursor-pointer transition-colors ${
-                    formData.material_type === type.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : errors.material_type && touched.material_type
-                      ? 'border-red-500 bg-red-50'
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
+                  className="relative flex flex-col p-2 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm"
+                  style={getCardStyles()}
                 >
                   <input
                     type="radio"
                     name="material_type"
                     value={type.value}
-                    checked={formData.material_type === type.value}
+                    checked={isSelected}
                     onChange={handleChange}
                     className="sr-only"
                   />
                   <div className="text-center">
-                    <div className="text-2xl mb-1">{type.label.split(' ')[0]}</div>
-                    <div className="text-sm font-medium text-gray-900">{type.label.split(' ').slice(1).join(' ')}</div>
-                    <div className="text-xs text-gray-500 mt-1">{type.description}</div>
+                    <div 
+                      className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
+                      style={{
+                        backgroundColor: isSelected ? type.bgColor : '#F2F2F2'
+                      }}
+                    >
+                      <type.icon 
+                        className="w-4 h-4" 
+                        style={{ color: isSelected ? type.textColor : '#6B7280' }}
+                      />
+                    </div>
+                    <div className="text-small font-semibold text-base-content mb-1">{type.label}</div>
+                    <div className="text-extra-small text-base-content/70 leading-tight">{type.description}</div>
+                    {isSelected && (
+                      <div className="mt-1">
+                        <div 
+                          className="w-1.5 h-1.5 mx-auto rounded-full"
+                          style={{ backgroundColor: type.textColor }}
+                        ></div>
+                      </div>
+                    )}
                   </div>
                 </label>
-              ))}
-            </div>
-            {errors.material_type && touched.material_type && (
-              <p className="mt-1 text-sm text-red-600">{errors.material_type}</p>
-            )}
+              )
+            })}
           </div>
+          {errors.material_type && touched.material_type && (
+            <p className="mt-1 text-extra-small text-error">{errors.material_type}</p>
+          )}
+        </div>
 
-          {/* Nombre del Material */}
+        {/* Nombre del Material */}
+        <Input
+          label="Nombre del Material"
+          value={formData.name}
+          onChange={handleChange}
+          name="name"
+          placeholder="Ej: Guía de ejercicios de matemáticas"
+          required
+          error={errors.name && touched.name ? errors.name : undefined}
+          disabled={loading || isSubmitting}
+        />
+
+        {/* Descripción */}
+        <Textarea
+          label="Descripción (opcional)"
+          value={formData.description}
+          onChange={handleChange}
+          name="description"
+          rows={3}
+          placeholder="Descripción detallada del material"
+          disabled={loading || isSubmitting}
+        />
+
+        {/* Archivo o URL */}
+        {formData.material_type === 'LINK' ? (
+          <Input
+            label="URL del Material"
+            type="url"
+            value={formData.url}
+            onChange={handleChange}
+            name="url"
+            placeholder="https://ejemplo.com/material"
+            required
+            error={errors.url && touched.url ? errors.url : undefined}
+            disabled={loading || isSubmitting}
+          />
+        ) : (
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Material <span className="text-red-500">*</span>
+            <label htmlFor="file" className="block text-sm font-medium text-base-content mb-1">
+              Archivo <span className="text-error">*</span>
             </label>
             <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
+              type="file"
+              id="file"
+              name="file"
+              onChange={handleFileChange}
+              accept={getFileAccept(formData.material_type)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                errors.name && touched.name
-                  ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                  : 'border-gray-300 focus:ring-blue-500'
+                errors.file && touched.file
+                  ? 'border-error focus:ring-error bg-error-50'
+                  : 'border-base-300 focus:ring-primary'
               }`}
-              placeholder="Ej: Guía de ejercicios de matemáticas"
               disabled={loading || isSubmitting}
             />
-            {errors.name && touched.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+            {errors.file && touched.file && (
+              <p className="mt-1 text-extra-small text-error">{errors.file}</p>
             )}
+            <p className="mt-1 text-extra-small text-base-content/70">
+              Tamaño máximo: 10MB. Formatos permitidos: {getFileTypes(formData.material_type)}
+            </p>
           </div>
+        )}
 
-          {/* Descripción */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción <span className="text-gray-400">(opcional)</span>
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              placeholder="Descripción detallada del material"
-              disabled={loading || isSubmitting}
-            />
-          </div>
-
-          {/* Archivo o URL */}
-          {formData.material_type === 'LINK' ? (
-            <div>
-              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
-                URL del Material <span className="text-red-500">*</span>
-              </label>
+        {/* Tipo de Distribución */}
+        <div>
+          <label className="label mb-2">
+            Tipo de Distribución
+          </label>
+          <div className="space-y-2">
+            <label className={`flex items-start space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
+              formData.is_shared 
+                ? 'border-primary bg-primary-50' 
+                : 'border-base-300 hover:border-primary/50'
+            }`}>
               <input
-                type="url"
-                id="url"
-                name="url"
-                value={formData.url}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                  errors.url && touched.url
-                    ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                    : 'border-gray-300 focus:ring-blue-500'
-                }`}
-                placeholder="https://ejemplo.com/material"
-                disabled={loading || isSubmitting}
+                type="radio"
+                name="is_shared"
+                checked={formData.is_shared}
+                onChange={() => {
+                  setFormData(prev => ({ ...prev, is_shared: true }))
+                  const studentError = validateField('assigned_students', [])
+                  setErrors(prev => ({ ...prev, assigned_students: studentError }))
+                }}
+                className="mt-1 text-primary focus:ring-primary border-base-300"
               />
-              {errors.url && touched.url && (
-                <p className="mt-1 text-sm text-red-600">{errors.url}</p>
-              )}
-            </div>
-          ) : (
-            <div>
-              <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-1">
-                Archivo <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="file"
-                id="file"
-                name="file"
-                onChange={handleFileChange}
-                accept={getFileAccept(formData.material_type)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 transition-colors ${
-                  errors.file && touched.file
-                    ? 'border-red-500 focus:ring-red-500 bg-red-50'
-                    : 'border-gray-300 focus:ring-blue-500'
-                }`}
-                disabled={loading || isSubmitting}
-              />
-              {errors.file && touched.file && (
-                <p className="mt-1 text-sm text-red-600">{errors.file}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-500">
-                Tamaño máximo: 10MB. Formatos permitidos: {getFileTypes(formData.material_type)}
-              </p>
-            </div>
-          )}
-
-          {/* Tipo de Distribución */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Tipo de Distribución
-            </label>
-            <div className="space-y-3">
-              <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input
-                  type="radio"
-                  name="is_shared"
-                  checked={formData.is_shared}
-                  onChange={() => {
-                    setFormData(prev => ({ ...prev, is_shared: true }))
-                    // Validar estudiantes cuando se cambia a compartido
-                    const studentError = validateField('assigned_students', [])
-                    setErrors(prev => ({ ...prev, assigned_students: studentError }))
-                  }}
-                  className="mt-1"
-                />
-                <div>
-                  <div className="font-medium text-gray-900">📚 Material de Clase</div>
-                  <div className="text-sm text-gray-600">
-                    Se compartirá automáticamente con todos los estudiantes del curso en sus portafolios
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    formData.is_shared ? 'bg-primary-100' : 'bg-base-200'
+                  }`}>
+                    <FiBook className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-small font-semibold text-base-content">Material de Clase</div>
+                    <div className="text-extra-small text-primary font-medium">Recomendado</div>
                   </div>
                 </div>
-              </label>
-              
-              <label className="flex items-start space-x-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input
-                  type="radio"
-                  name="is_shared"
-                  checked={!formData.is_shared}
-                  onChange={() => {
-                    setFormData(prev => ({ ...prev, is_shared: false }))
-                    // Validar estudiantes cuando se cambia a personalizado
-                    const studentError = validateField('assigned_students', formData.assigned_students)
-                    setErrors(prev => ({ ...prev, assigned_students: studentError }))
-                  }}
-                  className="mt-1"
-                />
-                <div>
-                  <div className="font-medium text-gray-900">👤 Material Personalizado</div>
-                  <div className="text-sm text-gray-600">
-                    Selecciona estudiantes específicos para agregar a sus portafolios
+                <div className="text-extra-small text-base-content/70 leading-tight">
+                  Se compartirá automáticamente con todos los estudiantes del curso en sus portafolios
+                </div>
+                {formData.is_shared && (
+                  <div className="mt-1 flex items-center space-x-1 text-extra-small text-primary">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                    <span>Seleccionado</span>
+                  </div>
+                )}
+              </div>
+            </label>
+            
+            <label className={`flex items-start space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm ${
+              !formData.is_shared 
+                ? 'border-secondary bg-secondary-50' 
+                : 'border-base-300 hover:border-secondary/50'
+            }`}>
+              <input
+                type="radio"
+                name="is_shared"
+                checked={!formData.is_shared}
+                onChange={() => {
+                  setFormData(prev => ({ ...prev, is_shared: false }))
+                  const studentError = validateField('assigned_students', formData.assigned_students)
+                  setErrors(prev => ({ ...prev, assigned_students: studentError }))
+                }}
+                className="mt-1 text-secondary focus:ring-secondary border-base-300"
+              />
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    !formData.is_shared ? 'bg-secondary-100' : 'bg-base-200'
+                  }`}>
+                    <FiUser className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-small font-semibold text-base-content">Material Personalizado</div>
+                    <div className="text-extra-small text-secondary font-medium">Avanzado</div>
                   </div>
                 </div>
-              </label>
-            </div>
+                <div className="text-extra-small text-base-content/70 leading-tight">
+                  Selecciona estudiantes específicos para agregar a sus portafolios
+                </div>
+                {!formData.is_shared && (
+                  <div className="mt-1 flex items-center space-x-1 text-extra-small text-secondary">
+                    <div className="w-1.5 h-1.5 rounded-full bg-secondary"></div>
+                    <span>Seleccionado</span>
+                  </div>
+                )}
+              </div>
+            </label>
           </div>
+        </div>
 
-          {/* Selección de Estudiantes (solo para materiales personalizados) */}
-          {!formData.is_shared && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Estudiantes con este curso en su portafolio <span className="text-red-500">*</span>
-              </label>
-              <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-3">
-                {students.length > 0 ? (
-                  <div className="space-y-2">
-                    {students.map((student) => (
-                      <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+        {/* Selección de Estudiantes (solo para materiales personalizados) */}
+        {!formData.is_shared && (
+          <div>
+            <label className="label mb-2">
+              Estudiantes con este curso en su portafolio <span className="text-error">*</span>
+            </label>
+            
+            {/* Campo de búsqueda */}
+            <div className="mb-3">
+              <Input
+                type="text"
+                placeholder="Buscar estudiante por nombre, apellido o usuario..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                className="input"
+                disabled={loading || isSubmitting}
+              />
+            </div>
+            
+            <div className="max-h-32 overflow-y-auto border-2 border-base-300 rounded-lg p-3 bg-base-100">
+              {filteredStudents.length > 0 ? (
+                <div className="space-y-2">
+                  {filteredStudents.map((student) => {
+                    const isSelected = formData.assigned_students.includes(student.id)
+                    return (
+                      <label 
+                        key={student.id} 
+                        className={`flex items-center space-x-2 p-2 rounded-lg border-2 transition-all duration-200 cursor-pointer hover:shadow-sm ${
+                          isSelected 
+                            ? 'border-secondary bg-secondary-50' 
+                            : 'border-base-200 hover:border-secondary/50'
+                        }`}
+                      >
                         <input
                           type="checkbox"
-                          checked={formData.assigned_students.includes(student.id)}
+                          checked={isSelected}
                           onChange={() => handleStudentToggle(student.id)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-secondary focus:ring-secondary border-base-300 rounded"
                         />
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-900">
-                              {student.first_name} {student.last_name}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              @{student.username}
-                            </span>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-extra-small font-semibold ${
+                              isSelected ? 'bg-secondary-100 text-secondary' : 'bg-base-200 text-base-content/70'
+                            }`}>
+                              {student.first_name.charAt(0)}{student.last_name.charAt(0)}
+                            </div>
+                            <div>
+                              <span className="text-small font-medium text-base-content">
+                                {student.first_name} {student.last_name}
+                              </span>
+                              <span className="text-extra-small text-base-content/70 ml-1">
+                                @{student.username}
+                              </span>
+                            </div>
                           </div>
                           {student.section && (
-                            <div className="text-xs text-gray-500">
-                              📚 {student.section.name}
+                            <div className="mt-1 flex items-center space-x-1 text-extra-small text-base-content/70">
+                              <FiBook className="w-3 h-3" />
+                              <span>{student.section.name}</span>
+                            </div>
+                          )}
+                          {isSelected && (
+                            <div className="mt-1 flex items-center space-x-1 text-extra-small text-secondary">
+                              <div className="w-1 h-1 rounded-full bg-secondary"></div>
+                              <span>Seleccionado</span>
                             </div>
                           )}
                         </div>
                       </label>
-                    ))}
-                    <div className="mt-3 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Total: {students.length} estudiante{students.length !== 1 ? 's' : ''} con este curso
-                      </p>
+                    )
+                  })}
+                  <div className="mt-2 pt-2 border-t border-base-300">
+                    <div className="flex items-center justify-between text-extra-small">
+                      <span className="text-base-content/70">
+                        {studentSearch ? `Mostrando ${filteredStudents.length} de ${students.length} estudiantes` : `Total: ${students.length} estudiante${students.length !== 1 ? 's' : ''} con este curso`}
+                      </span>
+                      <span className="text-secondary font-medium">
+                        {formData.assigned_students.length} seleccionado{formData.assigned_students.length !== 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <div className="text-gray-400 mb-2">
-                      <svg className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-gray-500">No hay estudiantes con este curso en su portafolio</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Los estudiantes deben tener este curso asignado a su portafolio para aparecer aquí
-                    </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <div className="text-base-content/40 mb-2">
+                    <FiUsers className="mx-auto h-8 w-8" />
                   </div>
-                )}
-              </div>
-              {errors.assigned_students && touched.assigned_students && (
-                <p className="mt-1 text-sm text-red-600">{errors.assigned_students}</p>
+                  <p className="text-small text-base-content/70 mb-1">
+                    {studentSearch ? 'No se encontraron estudiantes con ese criterio de búsqueda' : 'No hay estudiantes con este curso en su portafolio'}
+                  </p>
+                  <p className="text-extra-small text-base-content/50">
+                    {studentSearch ? 'Intenta con otro término de búsqueda' : 'Los estudiantes deben tener este curso asignado a su portafolio para aparecer aquí'}
+                  </p>
+                </div>
               )}
             </div>
-          )}
-
-          {/* Botones */}
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              disabled={loading || isSubmitting}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center space-x-2"
-              disabled={loading || isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Agregando...</span>
-                </>
-              ) : (
-                <>
-                  <span>Agregar Material</span>
-                </>
-              )}
-            </button>
+            {errors.assigned_students && touched.assigned_students && (
+              <p className="mt-1 text-extra-small text-error">{errors.assigned_students}</p>
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+
+        {/* Botones */}
+        <div className="flex justify-end space-x-2 pt-4 border-t border-base-300">
+          <Button
+            type="button"
+            onClick={handleClose}
+            variant="outline"
+            disabled={loading || isSubmitting}
+            className="btn-secondary px-4 py-2"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={isSubmitting}
+            disabled={loading || isSubmitting}
+            className="btn-primary px-4 py-2"
+          >
+            {isSubmitting ? 'Agregando...' : (
+              <div className="flex items-center space-x-1">
+                <FiUpload className="w-4 h-4" />
+                <span>Agregar Material</span>
+              </div>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
