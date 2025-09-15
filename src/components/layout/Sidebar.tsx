@@ -16,14 +16,12 @@ import {
   FileText,
   BarChart3,
   Home,
-  Award,
 } from 'lucide-react'
 
 const studentNavigation = [
   { name: 'Inicio', href: '/dashboard', icon: Home },
   { name: 'Mi Sección', href: '/my-section', icon: Users },
   { name: 'Mi Portafolio', href: '/student-portfolio', icon: FolderOpen },
-  { name: 'Progreso', href: '/progress', icon: Award },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 

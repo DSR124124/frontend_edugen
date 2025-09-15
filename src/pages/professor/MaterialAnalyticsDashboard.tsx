@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, Material } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
+import { AnalyticsCharts } from '../../components/charts/AnalyticsCharts'
 
 interface Course {
   id: number
@@ -153,8 +154,20 @@ export function MaterialAnalyticsDashboard() {
     queryKey: ['topic-materials', selectedTopic],
     queryFn: async () => {
       if (!selectedTopic) return []
-      const response = await academicApi.getMaterialsByTopic(selectedTopic)
-      return response.data.results || response.data
+      try {
+        const response = await academicApi.getMaterialsByTopic(selectedTopic)
+        // Asegurar que siempre devolvemos un array
+        if (Array.isArray(response.data)) {
+          return response.data
+        } else if (response.data && Array.isArray(response.data.results)) {
+          return response.data.results
+        } else {
+          return []
+        }
+      } catch (error) {
+        console.error('Error loading materials:', error)
+        return []
+      }
     },
     enabled: !!selectedTopic
   })
@@ -185,9 +198,6 @@ export function MaterialAnalyticsDashboard() {
   }
 
 
-  const formatDurationMinutes = (seconds: number) => {
-    return Math.round(seconds / 60)
-  }
 
   const getTimeRangeLabel = (range: string) => {
     const labels = {
@@ -225,22 +235,6 @@ export function MaterialAnalyticsDashboard() {
     return labels[type as keyof typeof labels] || type
   }
 
-  // Calcular estadísticas agregadas
-  const aggregatedStats = useMemo(() => {
-    if (!materialAnalytics) return null
-
-    const totalMinutes = formatDurationMinutes(materialAnalytics.total_duration)
-    const avgMinutes = formatDurationMinutes(materialAnalytics.average_duration)
-    const completionRate = materialAnalytics.completion_rate
-
-    return {
-      totalMinutes,
-      avgMinutes,
-      completionRate,
-      totalViews: materialAnalytics.total_views,
-      uniqueViewers: materialAnalytics.unique_viewers
-    }
-  }, [materialAnalytics])
 
   return (
     <div className="space-y-6">
@@ -363,7 +357,7 @@ export function MaterialAnalyticsDashboard() {
               disabled={loadingMaterials || !selectedTopic}
             >
               <option value="">Seleccionar material...</option>
-              {materials?.map((material: Material) => (
+              {Array.isArray(materials) && materials.map((material: Material) => (
                 <option key={material.id} value={material.id}>
                   {getMaterialTypeIcon(material.material_type)} {material.name}
                 </option>
@@ -391,90 +385,6 @@ export function MaterialAnalyticsDashboard() {
       {/* Analytics del Material Seleccionado */}
       {selectedMaterial && materialAnalytics && (
         <>
-          {/* KPIs del Material */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Visualizaciones</p>
-                  <p className="text-2xl font-semibold text-gray-900">{aggregatedStats?.totalViews}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Estudiantes Únicos</p>
-                  <p className="text-2xl font-semibold text-gray-900">{aggregatedStats?.uniqueViewers}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Tiempo Total</p>
-                  <p className="text-2xl font-semibold text-gray-900">{aggregatedStats?.totalMinutes} min</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Tiempo Promedio</p>
-                  <p className="text-2xl font-semibold text-gray-900">{aggregatedStats?.avgMinutes} min</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Tasa de Finalización</p>
-                  <p className="text-2xl font-semibold text-gray-900">{aggregatedStats?.completionRate.toFixed(1)}%</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Información del Material */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center space-x-4">
@@ -489,135 +399,8 @@ export function MaterialAnalyticsDashboard() {
             </div>
           </div>
 
-          {/* Gráficos de Análisis Temporal */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Análisis por Días */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Actividad por Días</h4>
-              <div className="space-y-4">
-                {materialAnalytics.daily_stats?.slice(-7).map((day: DailyStats) => (
-                  <div key={day.date} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-blue-600">
-                          {new Date(day.date).getDate()}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {new Date(day.date).toLocaleDateString('es-ES', { 
-                            weekday: 'short', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-600">{day.unique_viewers} estudiantes</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900">{day.views} vistas</p>
-                      <p className="text-sm text-gray-500">{formatDurationMinutes(day.duration)} min</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Análisis por Semanas */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Actividad por Semanas</h4>
-              <div className="space-y-4">
-                {materialAnalytics.weekly_stats?.slice(-4).map((week: WeeklyStats, index: number) => (
-                  <div key={week.week} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-green-600">{index + 1}</span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">Semana {week.week}</p>
-                        <p className="text-sm text-gray-600">{week.unique_viewers} estudiantes</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900">{week.views} vistas</p>
-                      <p className="text-sm text-gray-500">{formatDurationMinutes(week.duration)} min</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Detalles por Estudiante */}
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h4 className="text-lg font-semibold text-gray-900">Detalles por Estudiante</h4>
-              <p className="text-sm text-gray-600 mt-1">Tiempo de visualización individual</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estudiante
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sección/Grado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tiempo Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sesiones
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Finalización
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Última Vista
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {materialAnalytics.student_details?.map((student: StudentDetail) => (
-                    <tr key={student.student_id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{student.student_name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          <div className="font-medium">{student.section_name}</div>
-                          <div className="text-gray-500">{student.grade_level}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDurationMinutes(student.total_duration)} min</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{student.sessions_count}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full" 
-                              style={{ width: `${student.completion_rate}%` }}
-                            />
-                          </div>
-                          <span className="text-sm text-gray-900">{student.completion_rate.toFixed(1)}%</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {student.last_viewed ? new Date(student.last_viewed).toLocaleDateString('es-ES') : 'Nunca'}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* Gráficos Analíticos */}
+          <AnalyticsCharts data={materialAnalytics} loading={loadingAnalytics} />
         </>
       )}
 

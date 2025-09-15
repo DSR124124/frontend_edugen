@@ -15,22 +15,49 @@ export const useMaterialTracking = () => {
 
   // Función para enviar tracking al backend
   const sendTracking = useCallback(async (data: MaterialTrackingData) => {
-    if (user?.role !== 'ALUMNO') return
+    if (user?.role !== 'ALUMNO') {
+      console.log('Tracking disabled: User is not a student, role:', user?.role)
+      return
+    }
 
     try {
+      // Validar datos antes de enviar
+      if (!data.material_id || data.material_id <= 0) {
+        console.warn('Invalid material ID for tracking:', data.material_id)
+        return
+      }
+
+      console.log('Sending tracking data:', data)
       const response = await materialTrackingApi.trackMaterial(data)
-      if (response.data.session_id) {
+      console.log('Tracking response:', response.data)
+      
+      if (response.data?.session_id) {
         setCurrentSession(response.data.session_id)
       }
       return response.data
     } catch (error) {
       console.error('Error tracking material:', error)
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        status: (error as any)?.response?.status,
+        data: (error as any)?.response?.data
+      })
+      // No lanzar el error para evitar interrumpir la experiencia del usuario
+      return null
     }
   }, [user?.role])
 
   // Iniciar tracking de un material
   const startTracking = useCallback(async (materialId: number) => {
-    if (user?.role !== 'ALUMNO') return
+    if (user?.role !== 'ALUMNO') {
+      console.log('Tracking disabled: User is not a student')
+      return
+    }
+
+    if (!materialId || materialId <= 0) {
+      console.warn('Invalid material ID for tracking:', materialId)
+      return
+    }
 
     setIsTracking(true)
     startTime.current = Date.now()

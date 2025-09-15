@@ -323,13 +323,14 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
         return <SCORMContentRenderer fileUrl={material.file} />
       }
       
-      // Para otros tipos de documentos, usar iframe
+      // Para otros tipos de documentos, usar iframe con altura completa
       return (
-        <div className="w-full h-full">
+        <div className="w-full h-full min-h-[80vh]">
           <iframe
             src={material.file}
-            className="w-full h-full rounded-lg border"
+            className="w-full h-full min-h-[80vh] rounded-lg border-0"
             title={material.name}
+            style={{ minHeight: '80vh' }}
           />
         </div>
       )
@@ -441,7 +442,7 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
               </div>
             )}
 
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[75vh]">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden min-h-[85vh]">
               <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <svg className="w-5 h-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
