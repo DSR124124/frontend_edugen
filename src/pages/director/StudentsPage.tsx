@@ -37,17 +37,18 @@ export function StudentsPage() {
     loadUsers()
   }, [loadUsers]) // Remove loadUsers dependency to prevent infinite loop
 
-  const handleCreateUser = async (studentData: {
+  const handleCreateUser = async (userData: {
     username: string
     email: string
     first_name: string
     last_name: string
     password: string
+    role: 'PROFESOR' | 'ALUMNO'
     assigned_sections_ids: number[]
-    role: 'ALUMNO'
+    specialty?: string
   }) => {
     try {
-      await createUser(studentData)
+      await createUser(userData)
       setShowCreateUser(false)
       showSuccess('Éxito', 'Estudiante creado correctamente')
     } catch {

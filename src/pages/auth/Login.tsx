@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
+import { useNotificationContext } from "../../contexts/NotificationContext";
 import { authApi } from "../../api/endpoints";
 import estudiantesImage from "../../assets/images/backgrounds/estudiantes.jpg?url";
 import logoImage from "../../assets/images/logos/logo.png?url";
@@ -11,22 +12,29 @@ export function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuthStore();
+  const { showSuccess, showError } = useNotificationContext();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const response = await authApi.login(formData);
       const { user, access, refresh } = response.data;
 
       login(user, access, refresh);
+      
+      // Mostrar notificación de éxito
+      showSuccess(
+        "¡Inicio de Sesión Exitoso!",
+        `Bienvenido de vuelta, ${user.first_name} ${user.last_name}. Has iniciado sesión correctamente.`,
+        4000
+      );
+      
       navigate("/dashboard");
     } catch (err: unknown) {
       const errorMessage =
@@ -34,7 +42,13 @@ export function Login() {
           ? (err as { response?: { data?: { error?: string } } }).response?.data
               ?.error
           : "Error al iniciar sesión";
-      setError(errorMessage || "Error al iniciar sesión");
+      
+      // Mostrar notificación de error
+      showError(
+        "❌ Error al Iniciar Sesión",
+        errorMessage || "Credenciales incorrectas. Verifica tu usuario y contraseña.",
+        5000
+      );
     } finally {
       setLoading(false);
     }
@@ -285,18 +299,6 @@ export function Login() {
                 </div>
               </div>
 
-              {error && (
-                <div
-                  className="text-sm p-3 rounded-lg text-center"
-                  style={{
-                    backgroundColor: "rgba(255, 58, 36, 0.2)",
-                    border: "1px solid rgba(255, 58, 36, 0.3)",
-                    color: "var(--color-error-content)",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"

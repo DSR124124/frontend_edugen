@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../store/auth'
 import { useUIStore } from '../../store/ui'
+import { useNotificationContext } from '../../contexts/NotificationContext'
 import { User, LogOut, Menu, X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
 import { useLocation } from 'react-router-dom'
@@ -7,6 +8,7 @@ import { useLocation } from 'react-router-dom'
 export function Header() {
   const { user, logout } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { showSuccess } = useNotificationContext()
   const location = useLocation()
 
   // Generar breadcrumb basado en la ruta actual
@@ -70,6 +72,20 @@ export function Header() {
 
   const breadcrumbItems = getBreadcrumbItems()
 
+  const handleLogout = () => {
+    // Mostrar notificación de cierre de sesión exitoso
+    showSuccess(
+      "¡Sesión Cerrada Exitosamente!",
+      `Hasta luego, ${user?.first_name || 'Usuario'}. Tu sesión ha sido cerrada correctamente.`,
+      3000
+    )
+    
+    // Esperar un momento para que se vea la notificación antes de cerrar sesión
+    setTimeout(() => {
+      logout()
+    }, 500) // 0.5 segundos de delay
+  }
+
   return (
     <header className="bg-white shadow-sm border-b relative z-40" style={{ borderColor: 'var(--color-base-300)' }}>
       <div className="flex items-center justify-between px-6 py-4">
@@ -107,7 +123,7 @@ export function Header() {
           </div>
           
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none"
             style={{
               color: 'var(--color-base-content)',

@@ -32,30 +32,30 @@ export function Notification({ id, type, title, message, duration = 5000, onClos
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-500" />
+        return <CheckCircle className="h-5 w-5 text-success" />
       case 'error':
-        return <XCircle className="h-5 w-5 text-red-500" />
+        return <XCircle className="h-5 w-5 text-error" />
       case 'warning':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />
+        return <AlertCircle className="h-5 w-5 text-warning" />
       case 'info':
-        return <AlertCircle className="h-5 w-5 text-blue-500" />
+        return <AlertCircle className="h-5 w-5 text-info" />
       default:
-        return <AlertCircle className="h-5 w-5 text-gray-500" />
+        return <AlertCircle className="h-5 w-5 text-base-content" />
     }
   }
 
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200'
+        return 'bg-success-100 border-success-200'
       case 'error':
-        return 'bg-red-50 border-red-200'
+        return 'bg-error-100 border-error-200'
       case 'warning':
-        return 'bg-yellow-50 border-yellow-200'
+        return 'bg-warning-100 border-warning-200'
       case 'info':
-        return 'bg-blue-50 border-blue-200'
+        return 'bg-info-100 border-info-200'
       default:
-        return 'bg-gray-50 border-gray-200'
+        return 'bg-base-100 border-base-300'
     }
   }
 
@@ -73,17 +73,17 @@ export function Notification({ id, type, title, message, duration = 5000, onClos
             {getIcon()}
           </div>
           <div className="ml-3 flex-1">
-            <h3 className="text-sm font-medium text-gray-900">
+            <h3 className="text-sm font-medium text-base-content">
               {title}
             </h3>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-base-content/70">
               {message}
             </p>
           </div>
           <div className="ml-4 flex-shrink-0">
             <button
               onClick={handleClose}
-              className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="inline-flex text-base-content/50 hover:text-base-content focus:outline-none"
             >
               <X className="h-4 w-4" />
             </button>
