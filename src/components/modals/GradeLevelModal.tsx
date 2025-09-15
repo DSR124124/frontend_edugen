@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { GradeLevel } from '../../api/endpoints'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
 
 interface GradeLevelModalProps {
   isOpen: boolean
@@ -41,65 +44,51 @@ export function GradeLevelModal({ isOpen, onClose, gradeLevel, onSave, loading }
     await onSave(formData)
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">
-          {gradeLevel ? 'Editar Grado' : 'Crear Grado'}
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Grado
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: 1er Grado, 2do Grado"
-              required
-            />
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={gradeLevel ? 'Editar Grado' : 'Crear Grado'}
+      size="sm"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Nombre del Grado"
+          name="name"
+          value={formData.name || ''}
+          onChange={handleChange}
+          placeholder="Ej: 1er Grado, 2do Grado"
+          required
+        />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nivel
-            </label>
-            <input
-              type="number"
-              name="level"
-              value={formData.level || 1}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="1"
-              required
-            />
-          </div>
+        <Input
+          label="Nivel"
+          type="number"
+          name="level"
+          value={formData.level || 1}
+          onChange={handleChange}
+          min="1"
+          required
+        />
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading}
-            >
-              {loading ? 'Guardando...' : (gradeLevel ? 'Actualizar' : 'Crear')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="outline"
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={loading}
+          >
+            {loading ? 'Guardando...' : (gradeLevel ? 'Actualizar' : 'Crear')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

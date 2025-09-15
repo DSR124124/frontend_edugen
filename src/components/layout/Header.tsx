@@ -1,57 +1,97 @@
 import { useAuthStore } from '../../store/auth'
 import { useUIStore } from '../../store/ui'
-import { User, LogOut, Menu } from 'lucide-react'
-import logoImage from '../../assets/images/logos/logo.png?url'
+import { User, LogOut, Menu, X } from 'lucide-react'
+import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
+import { useLocation } from 'react-router-dom'
 
 export function Header() {
   const { user, logout } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
+  const location = useLocation()
+
+  // Generar breadcrumb basado en la ruta actual
+  const getBreadcrumbItems = (): BreadcrumbItem[] => {
+    const path = location.pathname
+    
+    if (path === '/director') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', current: true }
+      ]
+    } else if (path === '/director/grades') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Grados', current: true }
+      ]
+    } else if (path === '/director/terms') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Períodos', current: true }
+      ]
+    } else if (path === '/director/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Secciones', current: true }
+      ]
+    } else if (path === '/director/students') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Estudiantes', current: true }
+      ]
+    } else if (path === '/director/professors') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Profesores', current: true }
+      ]
+    } else if (path === '/director/institution') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Institución', current: true }
+      ]
+    } else if (path === '/profile') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Perfil', current: true }
+      ]
+    } else if (path === '/dashboard') {
+      return [
+        { label: 'Dashboard', current: true }
+      ]
+    }
+    
+    return []
+  }
+
+  const breadcrumbItems = getBreadcrumbItems()
 
   return (
-    <header className="bg-white shadow-sm border-b" style={{ borderColor: 'var(--color-base-300)' }}>
+    <header className="bg-white shadow-sm border-b relative z-40" style={{ borderColor: 'var(--color-base-300)' }}>
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center space-x-4">
+          {/* Botón único para mostrar/ocultar sidebar */}
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-md transition-colors"
-            style={{ 
-              color: 'var(--color-base-content)',
-              backgroundColor: 'transparent'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-base-200)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            title={sidebarOpen ? "Ocultar menú" : "Mostrar menú"}
+            className="p-2 rounded-md transition-colors hover:bg-gray-200 relative group"
+            title={sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
           >
-            <Menu className="h-5 w-5" />
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            
+            {/* Tooltip personalizado */}
+            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
+              <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+            </div>
           </button>
           
-          {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center p-1" style={{ backgroundColor: 'var(--color-primary-50)' }}>
-              <img
-                src={logoImage}
-                alt="EduGen Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <h1 className="headline-xl" style={{ color: 'var(--color-primary)' }}>EDUGEN</h1>
-          </div>
-          
-          {/* Botón para ocultar sidebar cuando está abierto */}
-          {sidebarOpen && (
-            <button
-              onClick={toggleSidebar}
-              className="ml-6 px-4 py-2 text-sm font-medium rounded-md transition-colors"
-              style={{
-                color: 'var(--color-base-content)',
-                backgroundColor: 'var(--color-base-200)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-base-300)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--color-base-200)'}
-              title="Ocultar navegación"
-            >
-              Ocultar Nav
-            </button>
+          {/* Breadcrumb */}
+          {breadcrumbItems.length > 0 && (
+            <Breadcrumb items={breadcrumbItems} />
           )}
         </div>
 

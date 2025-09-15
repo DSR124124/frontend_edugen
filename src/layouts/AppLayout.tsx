@@ -12,16 +12,18 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--color-base-200)' }}>
-      <Header />
       <div className="flex">
         <Sidebar />
-        <main className={`flex-1 transition-all duration-300 ${
+        <div className={`flex-1 transition-all duration-300 ${
           sidebarOpen ? 'ml-64' : 'ml-0'
         }`}>
-          <div className="p-6">
-            {children}
-          </div>
-        </main>
+          <Header />
+          <main>
+            <div className="p-6">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )

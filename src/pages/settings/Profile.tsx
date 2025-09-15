@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/auth'
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { getUserRoleDisplayName, getInitials } from '../../utils/helpers'
 
 export function Profile() {
   const { user, updateUser } = useAuthStore()
@@ -25,108 +29,130 @@ export function Profile() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Mi Perfil</h1>
-        <p className="text-gray-600">Gestiona tu información personal</p>
+        <h1 className="headline-2xl text-base-content">Mi Perfil</h1>
+        <p className="text-base-content/70 mt-2">Gestiona tu información personal</p>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Información Personal</h3>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="bg-primary text-primary-content px-4 py-2 rounded-md hover:bg-primary-focus"
-          >
-            {isEditing ? 'Cancelar' : 'Editar'}
-          </button>
-        </div>
+      {/* User Avatar and Basic Info */}
+      <Card variant="elevated">
+        <CardContent>
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold" style={{ 
+              backgroundColor: user?.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
+              color: user?.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
+            }}>
+              {user ? getInitials(user.first_name, user.last_name) : 'U'}
+            </div>
+            <div className="flex-1">
+              <h2 className="headline-xl text-base-content">
+                {user?.first_name} {user?.last_name}
+              </h2>
+              <p className="text-base-content/70">@{user?.username}</p>
+              <div className="mt-2">
+                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full" style={{
+                  backgroundColor: user?.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
+                  color: user?.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
+                }}>
+                  {user?.role ? getUserRoleDisplayName(user.role) : 'Usuario'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  id="first_name"
+      {/* Personal Information */}
+      <Card variant="elevated">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-base-content">Información Personal</CardTitle>
+            <Button
+              onClick={() => setIsEditing(!isEditing)}
+              variant={isEditing ? "outline" : "primary"}
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              }
+            >
+              {isEditing ? 'Cancelar' : 'Editar'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Nombre"
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
-              </div>
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                  Apellido
-                </label>
-                <input
-                  type="text"
-                  id="last_name"
+                <Input
+                  label="Apellido"
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  required
                 />
               </div>
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
+              <Input
+                label="Email"
                 name="email"
+                type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                required
               />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary-focus"
-              >
-                Guardar
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.first_name}</p>
+              <div className="flex justify-end space-x-3 pt-4 border-t" style={{ borderColor: 'var(--color-base-300)' }}>
+                <Button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  variant="outline"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                >
+                  Guardar Cambios
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="label">Nombre</label>
+                  <p className="text-regular text-base-content">{user?.first_name}</p>
+                </div>
+                <div>
+                  <label className="label">Apellido</label>
+                  <p className="text-regular text-base-content">{user?.last_name}</p>
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Apellido</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.last_name}</p>
+                <label className="label">Email</label>
+                <p className="text-regular text-base-content">{user?.email}</p>
+              </div>
+              <div>
+                <label className="label">Usuario</label>
+                <p className="text-regular text-base-content">@{user?.username}</p>
+              </div>
+              <div>
+                <label className="label">Rol</label>
+                <p className="text-regular text-base-content">{user?.role ? getUserRoleDisplayName(user.role) : 'Usuario'}</p>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Usuario</label>
-              <p className="mt-1 text-sm text-gray-900">{user?.username}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Rol</label>
-              <p className="mt-1 text-sm text-gray-900 capitalize">{user?.role?.toLowerCase()}</p>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

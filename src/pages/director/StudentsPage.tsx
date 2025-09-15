@@ -6,6 +6,8 @@ import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
 import { useNotificationContext } from '../../contexts/NotificationContext'
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 
 export function StudentsPage() {
   const {
@@ -48,7 +50,7 @@ export function StudentsPage() {
       await createUser(studentData)
       setShowCreateUser(false)
       showSuccess('Éxito', 'Estudiante creado correctamente')
-    } catch (err) {
+    } catch {
       showError('Error', 'Error al crear el estudiante')
     }
   }
@@ -65,7 +67,7 @@ export function StudentsPage() {
         setShowConfirmDelete(false)
         setUserToDelete(null)
         showSuccess('Éxito', 'Estudiante eliminado correctamente')
-      } catch (err) {
+      } catch {
         showError('Error', 'Error al eliminar el estudiante')
       }
     }
@@ -97,7 +99,7 @@ export function StudentsPage() {
       setEditingUser(null)
       
       showSuccess('Éxito', 'Usuario actualizado correctamente')
-    } catch (error) {
+    } catch {
       showError('Error', 'Error al actualizar el usuario')
     }
   }
@@ -112,185 +114,208 @@ export function StudentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Gestión de Estudiantes
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Administra los estudiantes de tu institución
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="headline-2xl text-base-content">
+          Gestión de Estudiantes
+        </h1>
+        <p className="text-base-content/70 mt-2">
+          Administra los estudiantes de tu institución
+        </p>
+      </div>
 
-        {/* Stats Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+      {/* Stats Card */}
+      <Card variant="elevated">
+        <CardContent>
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Estudiantes</p>
-              <p className="text-2xl font-semibold text-gray-900">{students.length}</p>
+              <p className="text-small font-medium text-base-content/70">Total Estudiantes</p>
+              <p className="headline-2xl text-base-content">{students.length}</p>
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Students Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Estudiantes</h2>
-              <button
-                onClick={() => setShowCreateUser(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      {/* Students Section */}
+      <Card variant="elevated">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-base-content">Estudiantes</CardTitle>
+            <Button
+              onClick={() => setShowCreateUser(true)}
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              }
+            >
+              Crear Estudiante
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="mt-2 text-base-content/70">Cargando...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-error">{error}</p>
+              <Button
+                onClick={() => loadUsers()}
+                variant="outline"
+                className="mt-2"
               >
-                Crear Estudiante
-              </button>
+                Reintentar
+              </Button>
             </div>
-          </div>
-
-          <div className="p-6">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Cargando...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-600">{error}</p>
-                <button
-                  onClick={() => loadUsers()}
-                  className="mt-2 text-blue-600 hover:text-blue-800"
-                >
-                  Reintentar
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estudiante
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Sección
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Acciones
-                      </th>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-base-300">
+                <thead className="bg-base-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Estudiante
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Sección
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-base-100 divide-y divide-base-300">
+                  {students.map((student) => (
+                    <tr key={student.id} className="hover:bg-base-200/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                              <span className="text-sm font-medium text-primary">
+                                {student.first_name.charAt(0)}{student.last_name.charAt(0)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-base-content">
+                              {student.first_name} {student.last_name}
+                            </div>
+                            <div className="text-sm text-base-content/70">
+                              @{student.username}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
+                        {student.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
+                        {student.assigned_sections && student.assigned_sections.length > 0 
+                          ? student.assigned_sections.map(section => 
+                              `${section.name} (${section.grade_level_name || 'Sin grado'})`
+                            ).join(', ')
+                          : 'Sin secciones asignadas'
+                        }
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={() => handleViewUser(student)}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            }
+                          >
+                            Ver
+                          </Button>
+                          <Button
+                            onClick={() => handleEditUser(student)}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            }
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteUser(student.id)}
+                            variant="danger"
+                            size="sm"
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            }
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {students.map((student) => (
-                      <tr key={student.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <span className="text-sm font-medium text-blue-700">
-                                  {student.first_name.charAt(0)}{student.last_name.charAt(0)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {student.first_name} {student.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                @{student.username}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {student.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {student.assigned_sections && student.assigned_sections.length > 0 
-                            ? student.assigned_sections.map(section => 
-                                `${section.name} (${section.grade_level_name || 'Sin grado'})`
-                              ).join(', ')
-                            : 'Sin secciones asignadas'
-                          }
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleViewUser(student)}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Ver
-                            </button>
-                            <button
-                              onClick={() => handleEditUser(student)}
-                              className="text-green-600 hover:text-green-900 font-medium"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(student.id)}
-                              className="text-red-600 hover:text-red-900 font-medium"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Create Student Modal */}
-        <CreateUserModal
-          isOpen={showCreateUser}
-          onClose={() => setShowCreateUser(false)}
-          onSave={handleCreateUser}
-          loading={loading}
-          userType="ALUMNO"
-        />
+      {/* Create Student Modal */}
+      <CreateUserModal
+        isOpen={showCreateUser}
+        onClose={() => setShowCreateUser(false)}
+        onSave={handleCreateUser}
+        loading={loading}
+        userType="ALUMNO"
+      />
 
-        {/* User Detail Modal */}
-        <UserDetailModal
-          isOpen={showUserDetail}
-          onClose={() => setShowUserDetail(false)}
-          user={selectedUser}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUserFromModal}
-        />
+      {/* User Detail Modal */}
+      <UserDetailModal
+        isOpen={showUserDetail}
+        onClose={() => setShowUserDetail(false)}
+        user={selectedUser}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUserFromModal}
+      />
 
-        {/* Edit User Modal */}
-        <EditUserModal
-          isOpen={showEditUser}
-          onClose={handleCloseEditUser}
-          user={editingUser}
-          onSave={handleSaveUser}
-          loading={loading}
-        />
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={showEditUser}
+        onClose={handleCloseEditUser}
+        user={editingUser}
+        onSave={handleSaveUser}
+        loading={loading}
+      />
 
-        {/* Confirm Delete Modal */}
-        <ConfirmModal
-          isOpen={showConfirmDelete}
-          onClose={cancelDeleteUser}
-          onConfirm={confirmDeleteUser}
-          title="Eliminar Estudiante"
-          message="¿Estás seguro de que quieres eliminar este estudiante? Esta acción no se puede deshacer."
-          confirmText="Eliminar"
-          cancelText="Cancelar"
-          loading={loading}
-        />
-      </div>
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={cancelDeleteUser}
+        onConfirm={confirmDeleteUser}
+        title="Eliminar Estudiante"
+        message="¿Estás seguro de que quieres eliminar este estudiante? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={loading}
+      />
     </div>
   )
 }

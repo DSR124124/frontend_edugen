@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { useDirectorInstitution } from '../../hooks/useDirectorAcademic'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { Institution } from '../../api/endpoints'
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { Textarea } from '../../components/ui/Textarea'
 
 export function InstitutionPage() {
   const { institution, isLoading, error, updateInstitution } = useDirectorInstitution()
@@ -48,7 +52,7 @@ export function InstitutionPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -56,13 +60,14 @@ export function InstitutionPage() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error al cargar la información de la institución</p>
-        <button
+        <p className="text-error">Error al cargar la información de la institución</p>
+        <Button
           onClick={() => window.location.reload()}
-          className="mt-2 text-blue-600 hover:text-blue-800"
+          variant="outline"
+          className="mt-2"
         >
           Reintentar
-        </button>
+        </Button>
       </div>
     )
   }
@@ -70,7 +75,7 @@ export function InstitutionPage() {
   if (!institution) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">No se encontró información de la institución</p>
+        <p className="text-base-content/70">No se encontró información de la institución</p>
       </div>
     )
   }
@@ -78,175 +83,152 @@ export function InstitutionPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Información de la Institución</h1>
+        <h1 className="headline-2xl text-base-content">Información de la Institución</h1>
         {!isEditing && (
-          <button
+          <Button
             onClick={handleEdit}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            leftIcon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            }
           >
             Editar Información
-          </button>
+          </Button>
         )}
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Datos de la Institución</h2>
-        </div>
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle className="text-base-content">Datos de la Institución</CardTitle>
+        </CardHeader>
         
-        <div className="p-6">
+        <CardContent>
           {isEditing ? (
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre de la Institución
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Código
-                  </label>
-                  <input
-                    type="text"
-                    name="code"
-                    value={formData.code || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dirección
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address || ''}
+                <Input
+                  label="Nombre de la Institución"
+                  name="name"
+                  value={formData.name || ''}
                   onChange={handleChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+
+                <Input
+                  label="Código"
+                  name="code"
+                  value={formData.code || ''}
+                  onChange={handleChange}
+                  required
+                />
+
+                <Input
+                  label="Teléfono"
+                  type="tel"
+                  name="phone"
+                  value={formData.phone || ''}
+                  onChange={handleChange}
+                />
+
+                <Input
+                  label="Email"
+                  type="email"
+                  name="email"
+                  value={formData.email || ''}
+                  onChange={handleChange}
                 />
               </div>
 
+              <Textarea
+                label="Dirección"
+                name="address"
+                value={formData.address || ''}
+                onChange={handleChange}
+                rows={3}
+              />
+
               <div className="flex justify-end space-x-3 pt-4">
-                <button
+                <Button
                   type="button"
                   onClick={handleCancel}
-                  className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
+                  variant="outline"
                   disabled={updateInstitution.isPending}
                 >
                   Cancelar
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleSave}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  loading={updateInstitution.isPending}
                   disabled={updateInstitution.isPending}
                 >
                   {updateInstitution.isPending ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
+                </Button>
               </div>
             </form>
           ) : (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Nombre de la Institución
                   </label>
-                  <p className="text-lg font-semibold text-gray-900">{institution.name}</p>
+                  <p className="text-large font-semibold text-base-content">{institution.name}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Código
                   </label>
-                  <p className="text-lg font-semibold text-gray-900">{institution.code}</p>
+                  <p className="text-large font-semibold text-base-content">{institution.code}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Teléfono
                   </label>
-                  <p className="text-lg text-gray-900">{institution.phone || 'No especificado'}</p>
+                  <p className="text-large text-base-content">{institution.phone || 'No especificado'}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Email
                   </label>
-                  <p className="text-lg text-gray-900">{institution.email || 'No especificado'}</p>
+                  <p className="text-large text-base-content">{institution.email || 'No especificado'}</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-500 mb-1">
+                <label className="label text-base-content/70">
                   Dirección
                 </label>
-                <p className="text-lg text-gray-900">{institution.address || 'No especificada'}</p>
+                <p className="text-large text-base-content">{institution.address || 'No especificada'}</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-base-300">
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Fecha de Creación
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-small text-base-content/70">
                     {new Date(institution.created_at).toLocaleDateString()}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-500 mb-1">
+                  <label className="label text-base-content/70">
                     Última Actualización
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-small text-base-content/70">
                     {new Date(institution.updated_at).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
