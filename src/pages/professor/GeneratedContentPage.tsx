@@ -15,7 +15,8 @@ import {
   FiX, 
   FiCalendar,
   FiCheckCircle,
-  FiAlertTriangle
+  FiAlertTriangle,
+  FiEye
 } from 'react-icons/fi'
 
 export function GeneratedContentPage() {
@@ -26,6 +27,8 @@ export function GeneratedContentPage() {
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [viewingContent, setViewingContent] = useState<GeneratedContent | null>(null)
 
   // Obtener secciones y temas del profesor
   const { sections, loading: loadingSections, error: sectionsError } = useProfessorSections()
@@ -55,6 +58,11 @@ export function GeneratedContentPage() {
     setIsEditorOpen(true)
   }
 
+  const handleViewContent = (content: GeneratedContent) => {
+    setViewingContent(content)
+    setIsViewModalOpen(true)
+  }
+
   const handleDeleteContent = (id: number, title: string) => {
     if (window.confirm(`¿Estás seguro de que quieres eliminar "${title}"?`)) {
       deleteContentMutation.mutate(id)
@@ -66,14 +74,19 @@ export function GeneratedContentPage() {
     setSelectedContent(null)
   }
 
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false)
+    setViewingContent(null)
+  }
+
   const handleSaveContent = async (updatedContent: unknown) => {
     if (selectedContent) {
       try {
-        await aiContentApi.updateGeneratedContent(selectedContent.id, updatedContent as any)
+        await aiContentApi.updateGeneratedContent(selectedContent.id, updatedContent as Record<string, unknown>)
         queryClient.invalidateQueries({ queryKey: ['generated-content'] })
         showSuccess('Contenido Actualizado', 'El contenido se ha guardado exitosamente')
         handleCloseEditor()
-      } catch (error) {
+      } catch {
         showError('Error', 'No se pudo guardar el contenido')
       }
     }
@@ -331,6 +344,13 @@ export function GeneratedContentPage() {
                       <td className="text-center">
                         <div className="flex items-center justify-center space-x-2">
                           <button
+                            onClick={() => handleViewContent(content)}
+                            className="btn btn-ghost btn-sm flex items-center space-x-1"
+                          >
+                            <FiEye className="w-4 h-4" />
+                            <span>Ver</span>
+                          </button>
+                          <button
                             onClick={() => handleEditContent(content)}
                             className="btn btn-ghost btn-sm flex items-center space-x-1"
                           >
@@ -417,6 +437,57 @@ export function GeneratedContentPage() {
         sections={sections}
         topics={topics}
       />
+
+      {/* Modal de Visualización de Contenido */}
+      {isViewModalOpen && viewingContent && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col shadow-xl">
+              <div className="p-4 border-b border-base-300 bg-base-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-primary-100 rounded-lg">
+                      <FiEye className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="headline-lg text-base-content">Vista Previa del Contenido</h2>
+                      <p className="text-small text-base-content/70">
+                        {viewingContent.title || 'Sin título'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={handleCloseViewModal}
+                      className="btn btn-ghost btn-sm flex items-center space-x-2"
+                    >
+                      <FiX className="w-4 h-4" />
+                      <span>Cerrar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex-1 bg-base-200 p-6 overflow-y-auto">
+                <div className="prose prose-lg max-w-none">
+                  <div className="bg-white rounded-lg p-6 shadow-sm">
+                    <h3 className="text-xl font-bold mb-4 text-gray-900">
+                      {viewingContent.title || 'Sin título'}
+                    </h3>
+                    <div 
+                      className="text-gray-700 leading-relaxed"
+                      dangerouslySetInnerHTML={{ 
+                        __html: viewingContent.html_content || 'No hay contenido disponible' 
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

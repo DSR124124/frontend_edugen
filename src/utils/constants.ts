@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'https://d40ecad5f3db.ngrok-free.app/api/v1/',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://edugen-backend-yqi8si-eb5351-45-41-205-100.traefik.me/api/v1/',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 } as const
