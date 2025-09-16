@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { User } from '../api/endpoints'
+import { useUIStore } from './ui'
 
 export interface AuthState {
   user: User | null
@@ -29,6 +30,10 @@ export const useAuthStore = create<AuthState>()(
         })
         localStorage.setItem('access_token', accessToken)
         localStorage.setItem('refresh_token', refreshToken)
+        
+        // Abrir sidebar automáticamente al hacer login
+        const { setSidebarOpen } = useUIStore.getState()
+        setSidebarOpen(true)
       },
 
       logout: () => {

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1/',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://edugen-backend-yqi8si-eb5351-45-41-205-100.traefik.me/api/v1/',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 } as const
@@ -51,6 +51,10 @@ export const PAGINATION = {
 // Form Validation
 export const VALIDATION = {
   PASSWORD_MIN_LENGTH: 8,
+  PASSWORD_MAX_LENGTH: 128,
   USERNAME_MIN_LENGTH: 3,
+  USERNAME_MAX_LENGTH: 30,
+  NAME_MIN_LENGTH: 2,
+  NAME_MAX_LENGTH: 50,
   EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
 } as const

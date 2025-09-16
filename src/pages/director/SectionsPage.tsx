@@ -5,6 +5,8 @@ import { directorApi } from '../../api/endpoints'
 import { Section } from '../../api/endpoints'
 import { SectionModal } from '../../components/modals/SectionModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 
 export function SectionsPage() {
   const {
@@ -36,7 +38,7 @@ export function SectionsPage() {
       try {
         const response = await directorApi.getSectionOptions()
         setSectionOptions(response.data)
-      } catch (error) {
+      } catch {
         showError('Error', 'Error al cargar las opciones para crear secciones')
       }
     }
@@ -48,7 +50,7 @@ export function SectionsPage() {
       await createSection.mutateAsync(data)
       setShowCreateModal(false)
       showSuccess('Éxito', 'Sección creada correctamente')
-    } catch (error) {
+    } catch {
       showError('Error', 'Error al crear la sección')
     }
   }
@@ -66,7 +68,7 @@ export function SectionsPage() {
       setShowEditModal(false)
       setEditingSection(null)
       showSuccess('Éxito', 'Sección actualizada correctamente')
-    } catch (error) {
+    } catch {
       showError('Error', 'Error al actualizar la sección')
     }
   }
@@ -83,7 +85,7 @@ export function SectionsPage() {
         setShowConfirmDelete(false)
         setSectionToDelete(null)
         showSuccess('Éxito', 'Sección eliminada correctamente')
-      } catch (error) {
+      } catch {
         showError('Error', 'Error al eliminar la sección')
       }
     }
@@ -97,7 +99,7 @@ export function SectionsPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -105,71 +107,92 @@ export function SectionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Gestión de Secciones</h1>
-        <button
+        <h1 className="headline-2xl text-base-content">Gestión de Secciones</h1>
+        <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+          leftIcon={
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          }
         >
           Crear Sección
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
+      <Card variant="elevated">
+        <CardHeader>
+          <CardTitle className="text-base-content">Lista de Secciones</CardTitle>
+        </CardHeader>
+        <CardContent>
           {sections.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">No hay secciones registradas</p>
+              <p className="text-base-content/70">No hay secciones registradas</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-base-300">
+                <thead className="bg-base-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                       Nombre
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                       Grado
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                       Capacidad
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                       Fecha de Creación
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-base-100 divide-y divide-base-300">
                   {sections.map((section) => (
-                    <tr key={section.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={section.id} className="hover:bg-base-200/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-base-content">
                         {section.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
                         {section.grade_level?.name || `Grado ${section.grade_level}`}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
                         {section.capacity}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
                         {new Date(section.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleEditSection(section)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSection(section.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={() => handleEditSection(section)}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            }
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteSection(section.id)}
+                            variant="danger"
+                            size="sm"
+                            leftIcon={
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            }
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -177,8 +200,8 @@ export function SectionsPage() {
               </table>
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Modal de crear sección */}
       <SectionModal

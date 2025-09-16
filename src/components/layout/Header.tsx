@@ -1,50 +1,233 @@
 import { useAuthStore } from '../../store/auth'
 import { useUIStore } from '../../store/ui'
-import { User, LogOut, Menu } from 'lucide-react'
+import { useNotificationContext } from '../../contexts/NotificationContext'
+import { User, LogOut, Menu, X } from 'lucide-react'
+import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
+import { useLocation } from 'react-router-dom'
 
 export function Header() {
   const { user, logout } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
+  const { showSuccess } = useNotificationContext()
+  const location = useLocation()
+
+  // Generar breadcrumb basado en la ruta actual
+  const getBreadcrumbItems = (): BreadcrumbItem[] => {
+    const path = location.pathname
+    
+    // Rutas del Director
+    if (path === '/director') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', current: true }
+      ]
+    } else if (path === '/director/grades') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Grados', current: true }
+      ]
+    } else if (path === '/director/terms') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Períodos', current: true }
+      ]
+    } else if (path === '/director/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Secciones', current: true }
+      ]
+    } else if (path === '/director/students') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Estudiantes', current: true }
+      ]
+    } else if (path === '/director/professors') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Profesores', current: true }
+      ]
+    } else if (path === '/director/institution') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Director', href: '/director' },
+        { label: 'Institución', current: true }
+      ]
+    }
+    
+    // Rutas del Profesor
+    else if (path === '/professor') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', current: true }
+      ]
+    } else if (path === '/professor/courses') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Cursos', current: true }
+      ]
+    } else if (path === '/professor/topics') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Temas', current: true }
+      ]
+    } else if (path === '/professor/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Secciones', current: true }
+      ]
+    } else if (path === '/professor/students') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Mis Estudiantes', current: true }
+      ]
+    } else if (path === '/professor/portfolios') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Panel del Profesor', href: '/professor' },
+        { label: 'Gestión de Portafolios', current: true }
+      ]
+    }
+    
+    // Rutas de IA y Contenido
+    else if (path === '/ai-content') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Generador de Contenido IA', current: true }
+      ]
+    } else if (path === '/generated-content') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Contenido Generado', current: true }
+      ]
+    } else if (path === '/material-analytics') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Análisis de Materiales', current: true }
+      ]
+    }
+    
+    // Otras rutas
+    else if (path === '/courses') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Cursos', current: true }
+      ]
+    } else if (path === '/sections') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Secciones', current: true }
+      ]
+    } else if (path === '/my-section') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mi Sección', current: true }
+      ]
+    } else if (path === '/portfolio') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mi Portafolio', current: true }
+      ]
+    } else if (path === '/student-portfolio') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Portafolio del Estudiante', current: true }
+      ]
+    } else if (path === '/my-materials') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Mis Materiales', current: true }
+      ]
+    } else if (path === '/profile') {
+      return [
+        { label: 'Dashboard', href: '/dashboard' },
+        { label: 'Perfil', current: true }
+      ]
+    } else if (path === '/dashboard') {
+      return [
+        { label: 'Dashboard', current: true }
+      ]
+    }
+    
+    return []
+  }
+
+  const breadcrumbItems = getBreadcrumbItems()
+
+  const handleLogout = () => {
+    // Mostrar notificación de cierre de sesión exitoso
+    showSuccess(
+      "¡Sesión Cerrada Exitosamente!",
+      `Hasta luego, ${user?.first_name || 'Usuario'}. Tu sesión ha sido cerrada correctamente.`,
+      3000
+    )
+    
+    // Esperar un momento para que se vea la notificación antes de cerrar sesión
+    setTimeout(() => {
+      logout()
+    }, 500) // 0.5 segundos de delay
+  }
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b relative z-40" style={{ borderColor: 'var(--color-base-300)' }}>
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center space-x-4">
+          {/* Botón único para mostrar/ocultar sidebar */}
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-md hover:bg-gray-100"
-            title={sidebarOpen ? "Ocultar menú" : "Mostrar menú"}
+            className="p-2 rounded-md transition-colors hover:bg-gray-200 relative group"
+            title={sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
           >
-            <Menu className="h-5 w-5" />
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            
+            {/* Tooltip personalizado */}
+            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              {sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
+              <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+            </div>
           </button>
-          <h1 className="headline-xl text-base-content">EDUGEN</h1>
           
-          {/* Botón para ocultar sidebar cuando está abierto */}
-          {sidebarOpen && (
-            <button
-              onClick={toggleSidebar}
-              className="ml-6 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              title="Ocultar navegación"
-            >
-              Ocultar Nav
-            </button>
+          {/* Breadcrumb */}
+          {breadcrumbItems.length > 0 && (
+            <Breadcrumb items={breadcrumbItems} />
           )}
         </div>
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="h-5 w-5 text-blue-600" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-100)' }}>
+              <User className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
             </div>
             <div className="text-sm">
-              <p className="font-semibold text-gray-900">{user?.first_name} {user?.last_name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role?.toLowerCase()}</p>
+              <p className="font-semibold" style={{ color: 'var(--color-base-content)' }}>{user?.first_name} {user?.last_name}</p>
+              <p className="text-xs capitalize" style={{ color: 'var(--color-base-content)' }}>{user?.role?.toLowerCase()}</p>
             </div>
           </div>
           
           <button
-            onClick={logout}
-            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            onClick={handleLogout}
+            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none"
+            style={{
+              color: 'var(--color-base-content)',
+              backgroundColor: 'var(--color-base-100)',
+              border: `1px solid var(--color-base-300)`
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-base-200)'
+              e.currentTarget.style.borderColor = 'var(--color-primary-300)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-base-100)'
+              e.currentTarget.style.borderColor = 'var(--color-base-300)'
+            }}
           >
             <LogOut className="h-4 w-4" />
             <span>Salir</span>

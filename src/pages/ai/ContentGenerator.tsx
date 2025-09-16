@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { aiContentApi, GeneratedContent } from '../../api/endpoints'
 import { DeepSeekChat } from '../../components/ai/DeepSeekChat'
 import { GrapesJSEditor } from '../../components/ai/GrapesJSEditor'
@@ -25,6 +25,7 @@ interface Requirements {
 
 export function ContentGenerator() {
   const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
   const [currentConversation, setCurrentConversation] = useState<number | null>(null)
   const [requirements, setRequirements] = useState<Requirements | null>(null)
   const [step, setStep] = useState<'chat' | 'generate' | 'edit'>('chat')
@@ -39,6 +40,8 @@ export function ContentGenerator() {
     progress: 0,
     message: 'Generando contenido educativo...'
   })
+  const [isAutoCreating, setIsAutoCreating] = useState(false)
+  const [showGrapesJSSection, setShowGrapesJSSection] = useState(false)
 
   // Crear nueva conversación
   const createConversationMutation = useMutation({
@@ -50,6 +53,60 @@ export function ContentGenerator() {
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
     }
   })
+
+  // Enviar mensaje inicial con parámetros
+  const sendInitialMessageMutation = useMutation({
+    mutationFn: (data: { content: string }) => {
+      if (!currentConversation) throw new Error('No conversation selected')
+      return aiContentApi.sendMessage(currentConversation, data)
+    },
+    onSuccess: () => {
+      // Invalidar mensajes para actualizar la conversación
+      queryClient.invalidateQueries({ queryKey: ['messages', currentConversation] })
+    }
+  })
+
+  // Efecto para manejar parámetros de URL y crear conversación automáticamente
+  useEffect(() => {
+    const topic = searchParams.get('topic')
+    const topicName = searchParams.get('topicName')
+    const courseName = searchParams.get('courseName')
+    const educationalLevel = searchParams.get('educationalLevel')
+    const resourceType = searchParams.get('resourceType')
+    const additionalRequirements = searchParams.get('additionalRequirements')
+
+    // Si hay parámetros de URL, crear conversación automáticamente
+    if (topic && topicName && courseName && educationalLevel && resourceType && !isAutoCreating) {
+      setIsAutoCreating(true)
+      
+      // Crear conversación con título descriptivo
+      const conversationTitle = `Material: ${topicName} - ${courseName}`
+      
+      createConversationMutation.mutate(
+        { title: conversationTitle },
+        {
+          onSuccess: () => {
+            // Construir mensaje inicial con los parámetros
+            const initialMessage = `Hola! Necesito generar material educativo con los siguientes parámetros:
+
+📚 **Tema:** ${topicName}
+🎓 **Curso:** ${courseName}
+📊 **Nivel Educativo:** ${educationalLevel}
+📝 **Tipo de Recurso:** ${resourceType}${additionalRequirements ? `\n➕ **Requisitos Adicionales:** ${additionalRequirements}` : ''}
+
+Por favor, ayúdame a refinar estos requisitos y generar el material educativo personalizado.`
+
+            // Enviar mensaje inicial
+            setTimeout(() => {
+              sendInitialMessageMutation.mutate({ content: initialMessage })
+              // Marcar como completada la creación automática
+              setIsAutoCreating(false)
+            }, 1000)
+          }
+        }
+      )
+    }
+  }, [searchParams, isAutoCreating, createConversationMutation, sendInitialMessageMutation])
 
   // Obtener conversaciones del usuario
   const { data: conversations, error: conversationsError } = useQuery({
@@ -141,7 +198,7 @@ export function ContentGenerator() {
       const conversation = conversationsData.find(c => c.id === currentConversation)
       if (conversation && conversation.requirements) {
         generateContentMutation.mutate({
-          requirements: conversation.requirements,
+          requirements: conversation.requirements as Requirements,
           title: `Contenido generado - ${new Date().toLocaleString()}`
         })
       }
@@ -158,16 +215,7 @@ export function ContentGenerator() {
     return typeof content === 'string' && content.trim() !== ''
   }
 
-  const handleBackToGenerate = () => {
-    setStep('generate')
-    setGeneratedContent(null)
-  }
 
-  const handleBackToChatFromEditor = () => {
-    setStep('chat')
-    setGeneratedContent(null)
-    // Mantener la conversación actual y los requirements
-  }
 
   const handleDeleteConversation = (conversationId: number, conversationTitle: string) => {
     setDeleteModal({
@@ -190,6 +238,22 @@ export function ContentGenerator() {
 
   return (
     <div className="h-screen flex bg-gray-100">
+      {/* Indicador de creación automática */}
+      {isAutoCreating && (
+        <div className="absolute top-0 left-0 right-0 bg-blue-50 border-l-4 border-blue-400 p-4 z-50">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                <strong>Creando conversación automática...</strong> Se está configurando una nueva conversación con los parámetros del tema y curso seleccionados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Sidebar con conversaciones */}
       <div className="w-80 bg-white border-r flex flex-col">
         <div className="p-4 border-b space-y-3">
@@ -451,14 +515,14 @@ export function ContentGenerator() {
           </div>
         )}
         
-        {step === 'edit' && generatedContent && (
+        {step === 'edit' && generatedContent && !showGrapesJSSection && (
           <div className="flex-1 flex flex-col">
             <div className="p-4 border-b bg-white">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-800">Editor de Contenido Educativo</h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    Edita tu contenido educativo generado con GrapesJS
+                    Edita tu contenido educativo generado
                   </p>
                   {currentConversation && (
                     <div className="mt-2 flex items-center text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
@@ -467,24 +531,15 @@ export function ContentGenerator() {
                     </div>
                   )}
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex items-center space-x-3">
                   <button
-                    onClick={handleBackToGenerate}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                    onClick={() => {
+                      setShowGrapesJSSection(true)
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center space-x-2"
                   >
-                    ← Volver a Generar
-                  </button>
-                  <button
-                    onClick={handleBackToChatFromEditor}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    💬 Continuar Chat
-                  </button>
-                  <button
-                    onClick={handleBackToChat}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    🆕 Nueva Conversación
+                    <span>🎨</span>
+                    <span>Usar GrapesJS</span>
                   </button>
                 </div>
               </div>
@@ -497,6 +552,54 @@ export function ContentGenerator() {
                   onSave={() => {
                     // Aquí guardarías el contenido editado
                   }}
+                  useGrapesJS={false}
+                  onToggleGrapesJS={() => setShowGrapesJSSection(true)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Nueva Sección GrapesJS */}
+        {showGrapesJSSection && generatedContent && (
+          <div className="flex-1 flex flex-col">
+            <div className="p-4 border-b bg-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">Editor Visual GrapesJS</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Editor visual avanzado para crear contenido educativo interactivo
+                  </p>
+                  {currentConversation && (
+                    <div className="mt-2 flex items-center text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                      <span className="mr-1">💬</span>
+                      <span>Conversación activa: #{currentConversation}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => {
+                      setShowGrapesJSSection(false)
+                    }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center space-x-2"
+                  >
+                    <span>←</span>
+                    <span>Volver al Editor Simple</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex-1 bg-gray-50">
+              <div className="h-full">
+                <GrapesJSEditor
+                  content={generatedContent}
+                  onSave={() => {
+                    // Aquí guardarías el contenido editado
+                  }}
+                  useGrapesJS={true}
+                  onToggleGrapesJS={() => setShowGrapesJSSection(false)}
                 />
               </div>
             </div>

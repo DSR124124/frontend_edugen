@@ -27,5 +27,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "public/editor-text-format.js", "public/editor-layout-design.js", "public/editor-multimedia.js", "public/editor-educational-content.js"]
 }

@@ -7,14 +7,29 @@ import { AssignCourseModal } from '../../components/modals/AssignCourseModal'
 import { EditCourseModal } from '../../components/modals/EditCourseModal'
 import { ViewCourseModal } from '../../components/modals/ViewCourseModal'
 import { DeleteCourseModal } from '../../components/modals/DeleteCourseModal'
+import { Button } from '../../components/ui/Button'
+import { 
+  FiBook,
+  FiUsers,
+  FiCheckCircle,
+  FiPlus,
+  FiEye,
+  FiEdit,
+  FiUserPlus,
+  FiTrash2,
+  FiInfo,
+  FiRefreshCw
+} from 'react-icons/fi'
 
 interface Course {
   id: number
   name: string
   code: string
-  description?: string
+  description: string
   institution: number
   created_at: string
+  credits: number
+  updated_at: string
 }
 
 
@@ -102,7 +117,7 @@ export function MyCourses() {
       setShowAssignModal(false)
       setSelectedCourse(null)
       showSuccess('Curso Asignado', 'El curso se ha asignado exitosamente a los salones seleccionados')
-    } catch (err: unknown) {
+    } catch {
       showError('Error al Asignar Curso', 'Error al asignar el curso a los salones seleccionados')
     } finally {
       setLoading(false)
@@ -187,11 +202,25 @@ export function MyCourses() {
 
   if ((loading && courses.length === 0) || sectionsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Cargando datos...</p>
+      <div className="space-y-4">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 bg-primary-100 rounded-lg">
+            <FiBook className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="headline-2xl text-base-content">
+              Mis Cursos
+            </h1>
+            <p className="text-small text-base-content/70">
+              Gestiona los cursos que has creado y dictas
+            </p>
+          </div>
+        </div>
+        <div className="card p-4 mb-4">
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+            <h3 className="headline-lg text-base-content mb-2">Cargando Cursos</h3>
+            <p className="text-small text-base-content/70">Obteniendo información de tus cursos...</p>
           </div>
         </div>
       </div>
@@ -200,16 +229,34 @@ export function MyCourses() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="space-y-4">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="p-2 bg-primary-100 rounded-lg">
+            <FiBook className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="headline-2xl text-base-content">
+              Mis Cursos
+            </h1>
+            <p className="text-small text-base-content/70">
+              Gestiona los cursos que has creado y dictas
+            </p>
+          </div>
+        </div>
+        <div className="card p-4 mb-4">
           <div className="text-center py-8">
-            <p className="text-red-600">Error: {error}</p>
-            <button
+            <div className="p-3 bg-error-100 rounded-full w-fit mx-auto mb-4">
+              <FiInfo className="w-6 h-6 text-error" />
+            </div>
+            <h3 className="headline-lg text-base-content mb-2">Error al Cargar</h3>
+            <p className="text-small text-base-content/70 mb-4">{error}</p>
+            <Button
               onClick={loadData}
-              className="mt-2 text-blue-600 hover:text-blue-800"
+              variant="outline"
+              leftIcon={<FiRefreshCw className="w-4 h-4" />}
             >
               Reintentar
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -217,174 +264,261 @@ export function MyCourses() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Mis Cursos
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Gestiona los cursos que dictas
-              </p>
-            </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Crear Curso
-            </button>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-primary-100 rounded-lg">
+            <FiBook className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="headline-2xl text-base-content">
+              Mis Cursos
+            </h1>
+            <p className="text-small text-base-content/70">
+              Gestiona los cursos que has creado y dictas
+            </p>
           </div>
         </div>
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          variant="primary"
+          leftIcon={<FiPlus className="w-4 h-4" />}
+        >
+          Crear Curso
+        </Button>
+      </div>
 
-        {/* Stats Card */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="card p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <div className="p-3 bg-primary-100 rounded-lg">
+              <FiBook className="w-6 h-6 text-primary" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Cursos</p>
-              <p className="text-2xl font-semibold text-gray-900">{courses.length}</p>
+              <p className="text-small font-medium text-base-content/70">Total Cursos</p>
+              <p className="text-2xl font-semibold text-base-content">{courses.length}</p>
             </div>
           </div>
         </div>
-
-        {/* Courses Grid */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Cursos Creados</h2>
+        
+        <div className="card p-4">
+          <div className="flex items-center">
+            <div className="p-3 bg-success-100 rounded-lg">
+              <FiCheckCircle className="w-6 h-6 text-success" />
+            </div>
+            <div className="ml-4">
+              <p className="text-small font-medium text-base-content/70">Cursos Activos</p>
+              <p className="text-2xl font-semibold text-base-content">{courses.length}</p>
+            </div>
           </div>
+        </div>
+        
+        <div className="card p-4">
+          <div className="flex items-center">
+            <div className="p-3 bg-secondary-100 rounded-lg">
+              <FiUsers className="w-6 h-6 text-secondary" />
+            </div>
+            <div className="ml-4">
+              <p className="text-small font-medium text-base-content/70">Secciones Asignadas</p>
+              <p className="text-2xl font-semibold text-base-content">{professorSections?.length || 0}</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <div className="p-6">
-            {courses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {courses.map((course) => (
-                  <div key={course.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium text-gray-900">{course.name}</h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Activo
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Código</p>
-                        <p className="text-sm text-gray-900">{course.code}</p>
-                      </div>
-                      
-                      {course.description && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Descripción</p>
-                          <p className="text-sm text-gray-900">{course.description}</p>
-                        </div>
-                      )}
-                      
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Creado</p>
-                        <p className="text-sm text-gray-900">
-                          {new Date(course.created_at).toLocaleDateString('es-ES')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <button 
-                          onClick={() => openViewModal(course)}
-                          className="bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
-                        >
-                          Ver Detalles
-                        </button>
-                        <button 
-                          onClick={() => openEditModal(course)}
-                          className="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-yellow-200 transition-colors"
-                        >
-                          Editar
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button 
-                          onClick={() => openAssignModal(course)}
-                          className="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-                        >
-                          Asignar a Salones
-                        </button>
-                        <button 
-                          onClick={() => openDeleteModal(course)}
-                          className="bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-200 transition-colors"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">📚</div>
-                <p className="text-gray-500 text-lg">No tienes cursos creados</p>
-                <p className="text-gray-400 text-sm">Crea tu primer curso para comenzar</p>
-              </div>
-            )}
+      {/* Courses Grid */}
+      <div className="card p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="headline-lg text-base-content flex items-center space-x-2">
+            <FiBook className="w-5 h-5 text-primary" />
+            <span>Cursos Creados</span>
+          </h2>
+          <div className="text-small text-base-content/70">
+            {courses.length} {courses.length === 1 ? 'curso' : 'cursos'} encontrado{courses.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* Modals */}
-        <CreateCourseModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateCourse}
-          loading={loading}
-        />
-
-        <AssignCourseModal
-          isOpen={showAssignModal}
-          onClose={() => setShowAssignModal(false)}
-          onSubmit={handleAssignCourse}
-          loading={loading}
-          course={selectedCourse as any}
-          sections={professorSections || []}
-        />
-
-        <EditCourseModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false)
-            setSelectedCourse(null)
-          }}
-          onSubmit={handleUpdateCourse}
-          loading={loading}
-          course={selectedCourse as any}
-        />
-
-        <ViewCourseModal
-          isOpen={showViewModal}
-          onClose={() => {
-            setShowViewModal(false)
-            setSelectedCourse(null)
-          }}
-          course={selectedCourse as any}
-          sections={professorSections || []}
-        />
-
-        <DeleteCourseModal
-          isOpen={showDeleteModal}
-          onClose={() => {
-            setShowDeleteModal(false)
-            setSelectedCourse(null)
-          }}
-          onConfirm={handleDeleteCourse}
-          loading={loading}
-          course={selectedCourse as any}
-        />
+        {courses.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-base-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Curso
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Código
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Descripción
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Créditos
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Creado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-base-100 divide-y divide-base-300">
+                {courses.map((course) => (
+                  <tr key={course.id} className="hover:bg-base-200/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                          <FiBook className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-base-content">{course.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-base-content font-mono bg-base-200 px-2 py-1 rounded">
+                        {course.code}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-base-content max-w-xs truncate" title={course.description}>
+                        {course.description}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm text-base-content">
+                        {course.credits || 0}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-base-content">
+                        {new Date(course.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
+                        <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                        Activo
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button 
+                          onClick={() => openViewModal(course)}
+                          variant="ghost"
+                          size="sm"
+                          leftIcon={<FiEye className="w-4 h-4" />}
+                        >
+                          Ver
+                        </Button>
+                        <Button 
+                          onClick={() => openEditModal(course)}
+                          variant="ghost"
+                          size="sm"
+                          leftIcon={<FiEdit className="w-4 h-4" />}
+                        >
+                          Editar
+                        </Button>
+                        <Button 
+                          onClick={() => openAssignModal(course)}
+                          variant="primary"
+                          size="sm"
+                          leftIcon={<FiUserPlus className="w-4 h-4" />}
+                        >
+                          Asignar
+                        </Button>
+                        <Button 
+                          onClick={() => openDeleteModal(course)}
+                          variant="danger"
+                          size="sm"
+                          leftIcon={<FiTrash2 className="w-4 h-4" />}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="p-3 bg-base-200 rounded-full">
+                <FiBook className="w-6 h-6 text-base-content/40" />
+              </div>
+              <div>
+                <h3 className="headline-xl text-base-content mb-1">¡Aún no tienes cursos creados!</h3>
+                <p className="text-small text-base-content/70 mb-4">Comienza tu experiencia docente creando tu primer curso.</p>
+                <div className="flex items-center justify-center space-x-2 text-small text-base-content/70">
+                  <FiInfo className="w-4 h-4" />
+                  <span>Podrás gestionar clases, asignar contenido y organizar material educativo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Modals */}
+      <CreateCourseModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateCourse}
+        loading={loading}
+      />
+
+      <AssignCourseModal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        onSubmit={handleAssignCourse}
+        loading={loading}
+        course={selectedCourse}
+        sections={professorSections || []}
+      />
+
+      <EditCourseModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false)
+          setSelectedCourse(null)
+        }}
+        onSubmit={handleUpdateCourse}
+        loading={loading}
+        course={selectedCourse}
+      />
+
+      <ViewCourseModal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false)
+          setSelectedCourse(null)
+        }}
+        course={selectedCourse}
+        sections={professorSections || []}
+      />
+
+      <DeleteCourseModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setSelectedCourse(null)
+        }}
+        onConfirm={handleDeleteCourse}
+        loading={loading}
+        course={selectedCourse}
+      />
     </div>
   )
 }

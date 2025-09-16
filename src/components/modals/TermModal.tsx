@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Term } from '../../api/endpoints'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
 
 interface TermModalProps {
   isOpen: boolean
@@ -49,93 +52,74 @@ export function TermModal({ isOpen, onClose, term, onSave, loading }: TermModalP
     await onSave(formData)
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">
-          {term ? 'Editar Período' : 'Crear Período'}
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Período
-            </label>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={term ? 'Editar Período' : 'Crear Período'}
+      size="sm"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Nombre del Período"
+          name="name"
+          value={formData.name || ''}
+          onChange={handleChange}
+          placeholder="Ej: 2025-I, 2025-II"
+          required
+        />
+
+        <Input
+          label="Fecha de Inicio"
+          type="date"
+          name="start_date"
+          value={formData.start_date || ''}
+          onChange={handleChange}
+          required
+        />
+
+        <Input
+          label="Fecha de Fin"
+          type="date"
+          name="end_date"
+          value={formData.end_date || ''}
+          onChange={handleChange}
+          required
+        />
+
+        <div>
+          <label className="flex items-center">
             <input
-              type="text"
-              name="name"
-              value={formData.name || ''}
+              type="checkbox"
+              name="is_active"
+              checked={formData.is_active || false}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: 2025-I, 2025-II"
-              required
+              className="mr-2 rounded border-base-300 text-primary focus:ring-primary"
             />
-          </div>
+            <span className="text-sm font-medium text-base-content">
+              Período Activo
+            </span>
+          </label>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha de Inicio
-            </label>
-            <input
-              type="date"
-              name="start_date"
-              value={formData.start_date || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha de Fin
-            </label>
-            <input
-              type="date"
-              name="end_date"
-              value={formData.end_date || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                name="is_active"
-                checked={formData.is_active || false}
-                onChange={handleChange}
-                className="mr-2"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                Período Activo
-              </span>
-            </label>
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 bg-gray-200 rounded-md hover:bg-gray-300"
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading}
-            >
-              {loading ? 'Guardando...' : (term ? 'Actualizar' : 'Crear')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="outline"
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={loading}
+          >
+            {loading ? 'Guardando...' : (term ? 'Actualizar' : 'Crear')}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

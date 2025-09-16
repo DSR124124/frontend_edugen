@@ -72,10 +72,8 @@ export function GeneratedContentPage() {
         setIsEditorOpen(false)
         setSelectedContent(null)
         // Mostrar notificación de éxito
-        console.log('✅ Contenido guardado exitosamente')
-      } catch (error) {
-        console.error('Error al guardar contenido:', error)
-        console.error(`❌ Error al guardar contenido: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      } catch {
+        // Error handling is done by the UI notification system
       }
     }
   }

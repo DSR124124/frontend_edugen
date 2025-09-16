@@ -3,6 +3,20 @@ import { useSearchParams } from 'react-router-dom'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useStudentsBySection } from '../../hooks/useStudentsBySection'
 import { StudentProfileModal } from '../../components/modals/StudentProfileModal'
+import { 
+  FiUsers, 
+  FiBook, 
+  FiAward, 
+  FiCalendar, 
+  FiMail,
+  FiClock,
+  FiCheckCircle,
+  FiXCircle,
+  FiEye,
+  FiRefreshCw,
+  FiAlertCircle,
+  FiInfo
+} from 'react-icons/fi'
 
 interface Student {
   id: number
@@ -64,227 +78,263 @@ export function MyStudents() {
 
   if (sectionsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Cargando secciones...</p>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+        <p className="text-small text-base-content/70">Cargando secciones...</p>
       </div>
     )
   }
 
   if (studentsError) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-8">
-            <p className="text-red-600">Error: {studentsError}</p>
-            <button
-              onClick={() => selectedSectionId && getStudentsBySection(selectedSectionId)}
-              className="mt-2 text-blue-600 hover:text-blue-800"
-            >
-              Reintentar
-            </button>
-          </div>
+      <div className="flex flex-col items-center justify-center py-12">
+        <div className="p-3 bg-error-100 rounded-full mb-4">
+          <FiAlertCircle className="w-6 h-6 text-error" />
         </div>
+        <h3 className="headline-xl text-base-content mb-2">Error al cargar</h3>
+        <p className="text-small text-base-content/70 mb-4">{studentsError}</p>
+        <button
+          onClick={() => selectedSectionId && getStudentsBySection(selectedSectionId)}
+          className="btn-primary flex items-center space-x-2"
+        >
+          <FiRefreshCw className="w-4 h-4" />
+          <span>Reintentar</span>
+        </button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center space-x-3 mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg">
+          <FiUsers className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="headline-2xl text-base-content">
             Mis Estudiantes
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-small text-base-content/70">
             Gestiona los estudiantes de tus secciones
           </p>
         </div>
+      </div>
 
-        {/* Section Selector */}
-        {professorSections && professorSections.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Seleccionar Sección</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {professorSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => setSelectedSectionId(section.id)}
-                  className={`p-4 border rounded-lg text-left transition-colors ${
-                    selectedSectionId === section.id
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <h3 className="font-medium">{section.name}</h3>
-                  {section.course && (
-                    <p className="text-sm text-gray-600">{section.course.name}</p>
-                  )}
-                  {section.grade_level && (
-                    <p className="text-sm text-gray-500">{section.grade_level.name}</p>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-
-        {/* Section Info and Stats */}
-        {studentsData && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-medium text-gray-900">
-                  {studentsData.section.name}
-                </h2>
-                {studentsData.section.course_name && (
-                  <p className="text-sm text-gray-600">Curso: {studentsData.section.course_name}</p>
-                )}
-                {studentsData.section.grade_level_name && (
-                  <p className="text-sm text-gray-600">Grado: {studentsData.section.grade_level_name}</p>
-                )}
-                {studentsData.section.term_name && (
-                  <p className="text-sm text-gray-600">Período: {studentsData.section.term_name}</p>
-                )}
-              </div>
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+      {/* Section Selector */}
+      {professorSections && professorSections.length > 0 && (
+        <div className="card p-4 mb-4">
+          <h2 className="headline-lg text-base-content mb-3">Seleccionar Sección</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {professorSections.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setSelectedSectionId(section.id)}
+                className={`p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-sm ${
+                  selectedSectionId === section.id
+                    ? 'border-primary bg-primary-50 text-primary'
+                    : 'border-base-300 hover:border-primary/50 hover:bg-base-50'
+                }`}
+              >
+                <div className="flex items-center space-x-2 mb-2">
+                  <FiUsers className="w-4 h-4" />
+                  <h3 className="headline-small font-medium">{section.name}</h3>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Estudiantes</p>
-                  <p className="text-2xl font-semibold text-gray-900">{studentsData.total_students}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Students Table */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Lista de Estudiantes</h2>
-          </div>
-
-          <div className="p-6">
-            {studentsLoading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Cargando estudiantes...</p>
-              </div>
-            ) : studentsData && studentsData.students.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estudiante
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Fecha de Matrícula
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estado
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {studentsData.students.map((student) => (
-                      <tr key={student.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                                <span className="text-sm font-medium text-green-700">
-                                  {student.first_name.charAt(0)}{student.last_name.charAt(0)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {student.first_name} {student.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                @{student.username}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {student.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(student.enrolled_at).toLocaleDateString('es-ES')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            student.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {student.is_active ? 'Activo' : 'Inactivo'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button 
-                              onClick={() => handleViewProfile(student)}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Ver Perfil
-                            </button>
-                            <button className="text-green-600 hover:text-green-900 font-medium">
-                              Calificaciones
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">👥</div>
-                <p className="text-gray-500 text-lg">
-                  {!selectedSectionId 
-                    ? 'Selecciona una sección para ver los estudiantes'
-                    : 'No hay estudiantes matriculados en esta sección'
-                  }
-                </p>
-                <p className="text-gray-400 text-sm">
-                  {!selectedSectionId 
-                    ? 'Elige una sección de la lista superior'
-                    : 'Los estudiantes aparecerán aquí cuando se matriculen'
-                  }
-                </p>
-              </div>
-            )}
+                {section.course && (
+                  <div className="flex items-center space-x-1 text-small text-base-content/70">
+                    <FiBook className="w-3 h-3" />
+                    <span>{section.course.name}</span>
+                  </div>
+                )}
+                {section.grade_level && (
+                  <div className="flex items-center space-x-1 text-small text-base-content/70">
+                    <FiAward className="w-3 h-3" />
+                    <span>{section.grade_level.name}</span>
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Student Profile Modal */}
-        <StudentProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={handleCloseProfile}
-          student={selectedStudent}
-          sectionId={selectedSectionId || 0}
-        />
+
+      {/* Section Info and Stats */}
+      {studentsData && (
+        <div className="card p-4 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="headline-lg text-base-content mb-2">
+                {studentsData.section.name}
+              </h2>
+              <div className="space-y-1">
+                {studentsData.section.course_name && (
+                  <div className="flex items-center space-x-2 text-small text-base-content/70">
+                    <FiBook className="w-3 h-3 text-primary" />
+                    <span><strong>Curso:</strong> {studentsData.section.course_name}</span>
+                  </div>
+                )}
+                {studentsData.section.grade_level_name && (
+                  <div className="flex items-center space-x-2 text-small text-base-content/70">
+                    <FiAward className="w-3 h-3 text-primary" />
+                    <span><strong>Grado:</strong> {studentsData.section.grade_level_name}</span>
+                  </div>
+                )}
+                {studentsData.section.term_name && (
+                  <div className="flex items-center space-x-2 text-small text-base-content/70">
+                    <FiCalendar className="w-3 h-3 text-primary" />
+                    <span><strong>Período:</strong> {studentsData.section.term_name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-success-100 rounded-lg">
+                <FiCheckCircle className="w-5 h-5 text-success" />
+              </div>
+              <div>
+                <p className="text-small font-medium text-base-content/70">Total Estudiantes</p>
+                <p className="headline-xl text-base-content">{studentsData.total_students}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Students Table */}
+      <div className="card">
+        <div className="p-4 border-b border-base-300">
+          <h2 className="headline-lg text-base-content">Lista de Estudiantes</h2>
+        </div>
+
+        <div className="p-4">
+          {studentsLoading ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+              <p className="text-small text-base-content/70">Cargando estudiantes...</p>
+            </div>
+          ) : studentsData && studentsData.students.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-base-300">
+                <thead className="bg-base-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-extra-small font-medium text-base-content/70 uppercase tracking-wider">
+                      Estudiante
+                    </th>
+                    <th className="px-4 py-3 text-left text-extra-small font-medium text-base-content/70 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-left text-extra-small font-medium text-base-content/70 uppercase tracking-wider">
+                      Fecha de Matrícula
+                    </th>
+                    <th className="px-4 py-3 text-left text-extra-small font-medium text-base-content/70 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-4 py-3 text-left text-extra-small font-medium text-base-content/70 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-base-content/5 divide-y divide-base-300">
+                  {studentsData.students.map((student) => (
+                    <tr key={student.id} className="hover:bg-base-content/10 transition-colors">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                              <span className="text-small font-medium text-primary">
+                                {student.first_name.charAt(0)}{student.last_name.charAt(0)}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-small font-medium text-base-content">
+                              {student.first_name} {student.last_name}
+                            </div>
+                            <div className="text-extra-small text-base-content/70">
+                              @{student.username}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2 text-small text-base-content/70">
+                          <FiMail className="w-3 h-3" />
+                          <span>{student.email}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2 text-small text-base-content/70">
+                          <FiClock className="w-3 h-3" />
+                          <span>{new Date(student.enrolled_at).toLocaleDateString('es-ES')}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-extra-small font-medium ${
+                          student.is_active 
+                            ? 'bg-success-100 text-success' 
+                            : 'bg-error-100 text-error'
+                        }`}>
+                          {student.is_active ? (
+                            <>
+                              <FiCheckCircle className="w-3 h-3 mr-1" />
+                              Activo
+                            </>
+                          ) : (
+                            <>
+                              <FiXCircle className="w-3 h-3 mr-1" />
+                              Inactivo
+                            </>
+                          )}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <button 
+                          onClick={() => handleViewProfile(student)}
+                          className="btn-primary text-extra-small px-3 py-1 flex items-center space-x-1"
+                        >
+                          <FiEye className="w-3 h-3" />
+                          <span>Ver Perfil</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="p-3 bg-base-200 rounded-full">
+                  <FiInfo className="w-6 h-6 text-base-content/40" />
+                </div>
+                <div>
+                  <h3 className="headline-xl text-base-content mb-1">
+                    {!selectedSectionId 
+                      ? 'Selecciona una sección para ver los estudiantes'
+                      : 'No hay estudiantes matriculados en esta sección'
+                    }
+                  </h3>
+                  <p className="text-small text-base-content/70">
+                    {!selectedSectionId 
+                      ? 'Elige una sección de la lista superior'
+                      : 'Los estudiantes aparecerán aquí cuando se matriculen'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Student Profile Modal */}
+      <StudentProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={handleCloseProfile}
+        student={selectedStudent}
+        sectionId={selectedSectionId || 0}
+      />
     </div>
   )
 }

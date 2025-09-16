@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
+import { useNotificationContext } from "../../contexts/NotificationContext";
 import { authApi } from "../../api/endpoints";
 import estudiantesImage from "../../assets/images/backgrounds/estudiantes.jpg?url";
+import logoImage from "../../assets/images/logos/logo.png?url";
 
 export function Login() {
   const [formData, setFormData] = useState({
@@ -10,22 +12,29 @@ export function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuthStore();
+  const { showSuccess, showError } = useNotificationContext();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
       const response = await authApi.login(formData);
       const { user, access, refresh } = response.data;
 
       login(user, access, refresh);
+      
+      // Mostrar notificación de éxito
+      showSuccess(
+        "¡Inicio de Sesión Exitoso!",
+        `Bienvenido de vuelta, ${user.first_name} ${user.last_name}. Has iniciado sesión correctamente.`,
+        4000
+      );
+      
       navigate("/dashboard");
     } catch (err: unknown) {
       const errorMessage =
@@ -33,7 +42,13 @@ export function Login() {
           ? (err as { response?: { data?: { error?: string } } }).response?.data
               ?.error
           : "Error al iniciar sesión";
-      setError(errorMessage || "Error al iniciar sesión");
+      
+      // Mostrar notificación de error
+      showError(
+        "❌ Error al Iniciar Sesión",
+        errorMessage || "Credenciales incorrectas. Verifica tu usuario y contraseña.",
+        5000
+      );
     } finally {
       setLoading(false);
     }
@@ -67,44 +82,36 @@ export function Login() {
         />
 
         <div className="relative z-10 p-12 flex flex-col justify-center text-white">
-          <h2 className="headline-4xl mb-6">Sistema Educativo EduGen</h2>
-          <p className="text-large mb-12 max-w-lg">
-            Plataforma integral para la gestión educativa que conecta
-            directores, profesores y estudiantes en un entorno digital moderno y
-            eficiente.
-          </p>
+          <h2 className="text-6xl font-bold mb-8 leading-tight text-white drop-shadow-2xl" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>Sistema Educativo EduGen</h2>
+          <div className="mb-12 max-w-2xl">
+            <div className="bg-secondary/20 backdrop-blur-sm rounded-xl p-8 border border-secondary/30">
+              <p className="text-2xl leading-relaxed font-medium text-white drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
+                Plataforma integral para la gestión educativa que conecta
+                directores, profesores y estudiantes en un entorno digital moderno y
+                eficiente.
+              </p>
+            </div>
+          </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div
-              className="bg-white/20 backdrop-blur-sm rounded-lg p-4"
-              style={{
-                backgroundColor: "var(--color-secondary)",
-                backgroundSize: "cover",
-              }}
-            >
-              <div className="w-8 h-8 bg-white/30 rounded-lg flex items-center justify-center mb-3">
+          <div className="grid grid-cols-2 gap-8">
+            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
+              <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-4">
                 <svg
-                  className="w-5 h-5"
+                  className="w-7 h-7 text-secondary"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
                   <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.429 3.054 9.087 9.087 0 01-1.944.761z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">Administración</h3>
-              <p className="text-sm opacity-90">Gestión académica completa</p>
+              <h3 className="text-xl font-bold mb-2 text-white">Administración</h3>
+              <p className="text-base text-white/80">Gestión académica completa</p>
             </div>
 
-            <div
-              className="bg-white/20 backdrop-blur-sm rounded-lg p-4"
-              style={{
-                backgroundColor: "var(--color-secondary)",
-                backgroundSize: "cover",
-              }}
-            >
-              <div className="w-8 h-8 bg-white/30 rounded-lg flex items-center justify-center mb-3">
+            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
+              <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-4">
                 <svg
-                  className="w-5 h-5"
+                  className="w-7 h-7 text-secondary"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -115,20 +122,14 @@ export function Login() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">Portafolios</h3>
-              <p className="text-sm opacity-90">Seguimiento digital</p>
+              <h3 className="text-xl font-bold mb-2 text-white">Portafolios</h3>
+              <p className="text-base text-white/80">Seguimiento digital</p>
             </div>
 
-            <div
-              className="bg-white/20 backdrop-blur-sm rounded-lg p-4"
-              style={{
-                backgroundColor: "var(--color-secondary)",
-                backgroundSize: "cover",
-              }}
-            >
-              <div className="w-8 h-8 bg-white/30 rounded-lg flex items-center justify-center mb-3">
+            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
+              <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-4">
                 <svg
-                  className="w-5 h-5"
+                  className="w-7 h-7 text-secondary"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -139,20 +140,14 @@ export function Login() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">IA Educativa</h3>
-              <p className="text-sm opacity-90">Contenido automatizado</p>
+              <h3 className="text-xl font-bold mb-2 text-white">IA Educativa</h3>
+              <p className="text-base text-white/80">Contenido automatizado</p>
             </div>
 
-            <div
-              className="bg-white/20 backdrop-blur-sm rounded-lg p-4"
-              style={{
-                backgroundColor: "var(--color-secondary)",
-                backgroundSize: "cover",
-              }}
-            >
-              <div className="w-8 h-8 bg-white/30 rounded-lg flex items-center justify-center mb-3">
+            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
+              <div className="w-12 h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-4">
                 <svg
-                  className="w-5 h-5"
+                  className="w-7 h-7 text-secondary"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -163,8 +158,8 @@ export function Login() {
                   />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">SCORM</h3>
-              <p className="text-sm opacity-90">Exportación estándar</p>
+              <h3 className="text-xl font-bold mb-2 text-white">SCORM</h3>
+              <p className="text-base text-white/80">Exportación estándar</p>
             </div>
           </div>
         </div>
@@ -182,14 +177,12 @@ export function Login() {
           >
             {/* Logo */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="w-20 h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 p-2 border-2 border-white/30">
+                <img
+                  src={logoImage}
+                  alt="EduGen Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h2 className="headline-2xl text-white mb-2">¡Bienvenido!</h2>
               <p className="text-white/80">Accede a tu plataforma educativa</p>
@@ -286,18 +279,6 @@ export function Login() {
                 </div>
               </div>
 
-              {error && (
-                <div
-                  className="text-sm p-3 rounded-lg text-center"
-                  style={{
-                    backgroundColor: "rgba(255, 58, 36, 0.2)",
-                    border: "1px solid rgba(255, 58, 36, 0.3)",
-                    color: "var(--color-error-content)",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
 
               <button
                 type="submit"

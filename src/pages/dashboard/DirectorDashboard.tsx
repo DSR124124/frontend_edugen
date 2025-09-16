@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { useDirectorUsers } from '../../hooks/useDirectorUsers'
 import { useAuthStore } from '../../store/auth'
+import { useNotificationContext } from '../../contexts/NotificationContext'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
+import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 
 export function DirectorDashboard() {
   const { user } = useAuthStore()
+  const { showSuccess, showError } = useNotificationContext()
   const {
     users,
     loading,
@@ -24,31 +29,68 @@ export function DirectorDashboard() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [userToDelete, setUserToDelete] = useState<number | null>(null)
-  const [newUser, setNewUser] = useState({
-    username: '',
-    email: '',
-    first_name: '',
-    last_name: '',
-    role: 'PROFESOR' as 'PROFESOR' | 'ALUMNO',
-    password: '',
-  })
+  const [userType, setUserType] = useState<'PROFESOR' | 'ALUMNO'>('PROFESOR')
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   // Users are loaded automatically by the hook
 
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Calcular datos de paginación
+  const totalUsers = users.length
+  const totalPages = Math.ceil(totalUsers / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentUsers = users.slice(startIndex, endIndex)
+
+  // Funciones de paginación
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const handleCreateUser = async (userData: any) => {
     try {
-      await createUser(newUser)
-      setNewUser({
-        username: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        role: 'PROFESOR',
-        password: '',
-      })
+      const newUser = await createUser(userData)
+      
+      // Mostrar notificación de éxito con detalles específicos
+      if (userData.role === 'PROFESOR') {
+        showSuccess(
+          '🎉 ¡Profesor Registrado Exitosamente!',
+          `El profesor ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de docentes activos.`,
+          6000
+        )
+      } else {
+        showSuccess(
+          '🎉 ¡Estudiante Registrado Exitosamente!',
+          `El estudiante ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de estudiantes.`,
+          6000
+        )
+      }
+      
+      // Cerrar el modal
       setShowCreateUser(false)
-    } catch (err) {
+      
+      // La lista se actualiza automáticamente gracias al hook useDirectorUsers
+      
+    } catch (err: any) {
+      showError(
+        '❌ Error al Registrar Usuario',
+        err.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
+        5000
+      )
     }
   }
 
@@ -61,9 +103,19 @@ export function DirectorDashboard() {
     if (userToDelete) {
       try {
         await deleteUser(userToDelete)
+        showSuccess(
+          'Usuario Eliminado',
+          'El usuario ha sido eliminado correctamente.',
+          3000
+        )
         setShowConfirmDelete(false)
         setUserToDelete(null)
-      } catch (err) {
+      } catch (err: any) {
+        showError(
+          'Error al Eliminar Usuario',
+          err.response?.data?.detail || 'No se pudo eliminar el usuario.',
+          5000
+        )
       }
     }
   }
@@ -94,9 +146,17 @@ export function DirectorDashboard() {
       setEditingUser(null)
       
       // Mostrar notificación de éxito
-      console.log('Éxito', 'Usuario actualizado correctamente')
-    } catch (error) {
-      console.error('Error', 'Error al actualizar el usuario')
+      showSuccess(
+        'Usuario Actualizado',
+        'Los datos del usuario han sido actualizados correctamente.',
+        3000
+      )
+    } catch (error: any) {
+      showError(
+        'Error al Actualizar Usuario',
+        error.response?.data?.detail || 'No se pudo actualizar el usuario.',
+        5000
+      )
     }
   }
 
@@ -110,358 +170,319 @@ export function DirectorDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--color-base-200)' }}>
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Panel del Director
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Bienvenido, {user?.first_name} {user?.last_name}
-          </p>
-        </div>
-
-        {/* Quick Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/institution'}>
-            <div className="flex items-center">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Institución</p>
-                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/grades'}>
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Grados</p>
-                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/terms'}>
-            <div className="flex items-center">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <svg className="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Períodos</p>
-                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/sections'}>
-            <div className="flex items-center">
-              <div className="p-2 bg-pink-100 rounded-lg">
-                <svg className="w-6 h-6 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Secciones</p>
-                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/director/professors'}>
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <svg className="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Profesores</p>
-                <p className="text-lg font-semibold text-gray-900">Gestionar</p>
-              </div>
-            </div>
-          </div>
+        <div>
+          <h1 className="headline-2xl text-base-content">Panel del Director</h1>
+          <p className="text-base-content/70 mt-2">Bienvenido, {user?.first_name} {user?.last_name}</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card variant="elevated">
+            <CardContent>
+              <div className="flex items-center">
+                <div className="p-3 rounded-lg bg-primary-100">
+                  <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-base-content/70">Total Usuarios</p>
+                  <p className="headline-2xl text-base-content">{users.length}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Usuarios</p>
-                <p className="text-2xl font-semibold text-gray-900">{users.length}</p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <Card variant="elevated">
+            <CardContent>
+              <div className="flex items-center">
+                <div className="p-3 rounded-lg bg-success-100">
+                  <svg className="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-base-content/70">Profesores</p>
+                  <p className="headline-2xl text-base-content">
+                    {users.filter(u => u.role === 'PROFESOR').length}
+                  </p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Profesores</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter(u => u.role === 'PROFESOR').length}
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <Card variant="elevated">
+            <CardContent>
+              <div className="flex items-center">
+                <div className="p-3 rounded-lg bg-secondary-100">
+                  <svg className="w-6 h-6 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm text-base-content/70">Estudiantes</p>
+                  <p className="headline-2xl text-base-content">
+                    {users.filter(u => u.role === 'ALUMNO').length}
+                  </p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Estudiantes</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {users.filter(u => u.role === 'ALUMNO').length}
-                </p>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Users Section */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <Card variant="elevated">
+          <CardHeader>
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Usuarios</h2>
-              <button
-                onClick={() => setShowCreateUser(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Crear Usuario
-              </button>
+              <CardTitle className="text-base-content">Usuarios</CardTitle>
+              <div className="flex space-x-3">
+                <Button
+                  onClick={() => {
+                    setUserType('PROFESOR')
+                    setShowCreateUser(true)
+                  }}
+                  variant="primary"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  }
+                >
+                  Crear Profesor
+                </Button>
+                <Button
+                  onClick={() => {
+                    setUserType('ALUMNO')
+                    setShowCreateUser(true)
+                  }}
+                  variant="secondary"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.083 12.083 0 01.665-6.479L12 14z" />
+                    </svg>
+                  }
+                >
+                  Crear Estudiante
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
 
-          <div className="p-6">
             {loading ? (
               <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Cargando...</p>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p className="mt-2 text-base-content">Cargando usuarios...</p>
               </div>
             ) : error ? (
               <div className="text-center py-8">
-                <p className="text-red-600">{error}</p>
-                <button
+                <p className="text-error mb-4">{error}</p>
+                <Button
                   onClick={() => window.location.reload()}
-                  className="mt-2 text-blue-600 hover:text-blue-800"
+                  variant="outline"
                 >
                   Reintentar
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-base-300">
+                  <thead className="bg-base-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                         Usuario
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                         Rol
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                  <tbody className="bg-base-100 divide-y divide-base-300">
+                    {currentUsers.map((user, index) => {
+                      // Verificar si el usuario es recién creado (último en la lista)
+                      const isNewUser = index === users.length - 1
+                      const createdDate = new Date(user.created_at)
+                      const isRecentlyCreated = (Date.now() - createdDate.getTime()) < 30000 // 30 segundos
+                      
+                      return (
+                        <tr key={user.id} className={`hover:bg-base-200/50 ${isNewUser && isRecentlyCreated ? 'border-l-4 border-success bg-success-100' : ''}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ 
+                                  backgroundColor: user.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
+                                  color: user.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
+                                }}>
+                                  <span className="text-sm font-medium">
+                                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className="text-sm font-medium text-base-content">
+                                    {user.first_name} {user.last_name}
+                                  </div>
+                                  {isNewUser && isRecentlyCreated && (
+                                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-success-100 text-success">
+                                      ✨ Nuevo
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-base-content/70">
+                                  @{user.username}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{
+                                backgroundColor: user.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
+                                color: user.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
+                              }}>
+                                {user.role === 'PROFESOR' ? '👨‍🏫 Profesor' : '👨‍🎓 Estudiante'}
+                              </span>
+                              {user.specialty && (
+                                <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-base-200 text-base-content">
+                                  {user.specialty_display || user.specialty}
                                 </span>
-                              </div>
+                              )}
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.first_name} {user.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                @{user.username}
-                              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex space-x-2">
+                              <Button
+                                onClick={() => handleViewUser(user)}
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                }
+                              >
+                                Ver
+                              </Button>
+                              <Button
+                                onClick={() => handleEditUser(user)}
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                }
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteUser(user.id)}
+                                variant="danger"
+                                size="sm"
+                                leftIcon={
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                }
+                              >
+                                Eliminar
+                              </Button>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            user.role === 'PROFESOR' 
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleViewUser(user)}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Ver
-                            </button>
-                            <button
-                              onClick={() => handleEditUser(user)}
-                              className="text-green-600 hover:text-green-900 font-medium"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="text-red-600 hover:text-red-900 font-medium"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
-          </div>
-        )}
-          </div>
-      </div>
+              </div>
+            )}
+          </CardContent>
+
+          {/* Controles de Paginación */}
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-base-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-base-content/70">
+                    Mostrando {startIndex + 1} a {Math.min(endIndex, totalUsers)} de {totalUsers} usuarios
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  {/* Botón Anterior */}
+                  <Button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    variant="outline"
+                    size="sm"
+                  >
+                    ← Anterior
+                  </Button>
+
+                  {/* Números de página */}
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      // Mostrar solo algunas páginas alrededor de la actual
+                      const showPage = page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
+                      
+                      if (!showPage) {
+                        if (page === currentPage - 2 || page === currentPage + 2) {
+                          return <span key={page} className="px-2 py-1 text-sm text-base-content/70">...</span>
+                        }
+                        return null
+                      }
+
+                      return (
+                        <Button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          variant={currentPage === page ? "primary" : "outline"}
+                          size="sm"
+                        >
+                          {page}
+                        </Button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Botón Siguiente */}
+                  <Button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Siguiente →
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
 
         {/* Create User Modal */}
-        {showCreateUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Crear Nuevo Usuario
-                </h3>
-                <form onSubmit={handleCreateUser} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Nombre
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.first_name}
-                        onChange={(e) => setNewUser({...newUser, first_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Apellido
-                      </label>
-                      <input
-                        type="text"
-                        value={newUser.last_name}
-                        onChange={(e) => setNewUser({...newUser, last_name: e.target.value})}
-                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Rol
-                    </label>
-                    <select
-                      value={newUser.role}
-                      onChange={(e) => setNewUser({...newUser, role: e.target.value as 'PROFESOR' | 'ALUMNO'})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                    >
-                      <option value="PROFESOR">Profesor</option>
-                      <option value="ALUMNO">Alumno</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Contraseña
-                    </label>
-                    <input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                      required
+        <CreateUserModal
+          isOpen={showCreateUser}
+          onClose={() => setShowCreateUser(false)}
+          onSave={handleCreateUser}
+          loading={loading}
+          userType={userType}
         />
-      </div>
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateUser(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                    >
-                      Crear Usuario
-                    </button>
-        </div>
-                </form>
-          </div>
-        </div>
-          </div>
-        )}
 
         {/* User Detail Modal */}
         <UserDetailModal

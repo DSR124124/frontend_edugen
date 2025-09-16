@@ -11,8 +11,13 @@ export interface User {
   specialty?: string
   specialty_display?: string
   institution?: number
-  section?: number
-  section_name?: string
+  section?: {
+    id: number
+    name: string
+    course_name?: string
+    grade_level_name?: string
+    term_name?: string
+  }
   assigned_sections?: Array<{id: number, name: string, grade_level_name?: string, term_name?: string}>
   created_at: string
 }
@@ -106,6 +111,38 @@ export interface Topic {
   updated_at: string
 }
 
+export interface Material {
+  id: number
+  name: string
+  description?: string
+  material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'
+  file?: string
+  url?: string
+  topic: number
+  topic_name: string
+  course_id: number
+  course_name: string
+  course_code: string
+  professor: number
+  professor_name: string
+  is_shared: boolean // true = material de clase, false = personalizado
+  assigned_students?: number[] // IDs de estudiantes para materiales personalizados
+  created_at: string
+  updated_at: string
+}
+
+export interface Student {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  username: string
+  section?: {
+    id: number
+    name: string
+  }
+}
+
 // AI Content Generator Types
 export interface Conversation {
   id: number
@@ -113,7 +150,7 @@ export interface Conversation {
   user_name: string
   session_id: string
   title: string
-  requirements: any
+  requirements: Record<string, unknown>
   is_active: boolean
   created_at: string
   updated_at: string
@@ -133,7 +170,7 @@ export interface ContentTemplate {
   name: string
   description: string
   prompt_template: string
-  grapesjs_config: any
+  grapesjs_config: Record<string, unknown>
   is_active: boolean
   created_at: string
 }
@@ -147,7 +184,7 @@ export interface GeneratedContent {
   html_content: string
   css_content: string
   js_content: string
-  grapesjs_components: any
+  grapesjs_components: Record<string, unknown>
   is_public: boolean
   created_at: string
   updated_at: string
@@ -270,6 +307,9 @@ export const academicApi = {
   getStudentsBySection: (sectionId: number) => 
     http.get(`academic/sections/${sectionId}/students/`),
   
+  getStudentsByCourse: (courseId: number) => 
+    http.get(`academic/courses/${courseId}/students/`),
+  
   getGradeLevels: () => 
     http.get('institutions/grade-levels/'),
   
@@ -306,8 +346,127 @@ export const academicApi = {
   
   deleteTopic: (id: number) => 
     http.delete(`academic/topics/${id}/`),
+
+  // Materials endpoints
+  getMaterials: () => 
+    http.get<Material[]>('academic/materials/'),
+  
+  getMaterialsByTopic: (topicId: number) => 
+    http.get<{results: Material[]}>(`academic/materials/?topic=${topicId}`),
+  
+  createMaterial: (data: FormData) => 
+    http.post<Material>('academic/materials/', data),
+  
+  updateMaterial: (id: number, data: FormData) => 
+    http.put<Material>(`academic/materials/${id}/`, data),
+  
+  deleteMaterial: (id: number) => 
+    http.delete(`academic/materials/${id}/`),
+
+  // Material Analytics endpoints
+  getMaterialAnalytics: () =>
+    http.get<MaterialAnalytics[]>('academic/material-analytics/'),
+  
+  getMaterialAnalyticsByCourse: (courseId: number) =>
+    http.get<any[]>(`academic/material-analytics/by-course/${courseId}/`),
+  
+  getMaterialDetailedAnalytics: (materialId: number, timeRange: string = '30d') =>
+    http.get(`academic/material-analytics/material/${materialId}/detailed/?time_range=${timeRange}`),
 }
 
+// Material Tracking interfaces
+export interface MaterialViewingSession {
+  id: number
+  student: number
+  student_name: string
+  material: number
+  material_name: string
+  started_at: string
+  ended_at?: string
+  duration_seconds: number
+  duration_formatted: string
+  is_completed: boolean
+  progress_percentage: number
+  last_activity: string
+}
+
+export interface MaterialInteraction {
+  id: number
+  session: number
+  interaction_type: 'PLAY' | 'PAUSE' | 'SEEK' | 'DOWNLOAD' | 'COMPLETE' | 'ABANDON'
+  timestamp: string
+  metadata: Record<string, any>
+  student_name: string
+  material_name: string
+}
+
+export interface MaterialAnalytics {
+  id: number
+  material: number
+  material_name: string
+  total_views: number
+  unique_viewers: number
+  total_duration: number
+  total_duration_formatted: string
+  average_duration: number
+  average_duration_formatted: string
+  completion_rate: number
+  last_updated: string
+}
+
+export interface MaterialWithAnalytics extends Material {
+  analytics?: MaterialAnalytics
+}
+
+export interface MaterialTrackingData {
+  material_id: number
+  action: 'start' | 'pause' | 'resume' | 'seek' | 'complete' | 'abandon'
+  progress_percentage?: number
+  duration_seconds?: number
+  metadata?: Record<string, any>
+}
+
+export interface ProfessorAnalytics {
+  total_materials: number
+  analytics: {
+    total_views: number
+    total_unique_viewers: number
+    total_duration: number
+    avg_completion_rate: number
+  }
+  popular_materials: MaterialAnalytics[]
+  active_students: Array<{
+    student__username: string
+    student__first_name: string
+    student__last_name: string
+    total_sessions: number
+    total_duration: number
+  }>
+}
+
+// Material Tracking endpoints
+export const materialTrackingApi = {
+  // Track material viewing
+  trackMaterial: (data: MaterialTrackingData) => 
+    http.post('academic/material-tracking/track/', data),
+  
+  // Get student materials with analytics
+  getMyMaterials: () => 
+    http.get<MaterialWithAnalytics[]>('academic/material-tracking/my-materials/'),
+  
+  // Get professor analytics
+  getProfessorAnalytics: () => 
+    http.get<ProfessorAnalytics>('academic/material-tracking/professor-analytics/'),
+  
+  // Get viewing sessions
+  getViewingSessions: () => 
+    http.get<MaterialViewingSession[]>('academic/material-sessions/'),
+  
+  // Get material interactions
+  getMaterialInteractions: () => 
+    http.get<MaterialInteraction[]>('academic/material-interactions/'),
+  
+}
 
 // Analytics endpoints
 export const analyticsApi = {
@@ -507,18 +666,18 @@ export const aiContentApi = {
 
   // Requirements
   extractRequirements: (conversationId: number) =>
-    http.post<{ requirements: any; message: string }>(
+    http.post<{ requirements: Record<string, unknown>; message: string }>(
       `ai/conversations/${conversationId}/extract-requirements/`
     ),
 
   // Content Generation
-  generateContent: (conversationId: number, data: { requirements: any; title: string }) =>
+  generateContent: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content/`,
       data
     ),
 
-  generateContentStreaming: (conversationId: number, data: { requirements: any; title: string }) =>
+  generateContentStreaming: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content-streaming/`,
       data
@@ -538,7 +697,7 @@ export const aiContentApi = {
   getGeneratedContentById: (id: number) =>
     http.get<GeneratedContent>(`ai/generated-content/${id}/`),
 
-  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: any }) =>
+  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: Record<string, unknown> }) =>
     http.patch<GeneratedContent>(`ai/generated-content/${id}/`, data),
 
   deleteGeneratedContent: (id: number) =>

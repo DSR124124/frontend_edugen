@@ -1,5 +1,17 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/auth'
+import { Button } from '../../components/ui/Button'
+import { Input } from '../../components/ui/Input'
+import { getUserRoleDisplayName, getInitials } from '../../utils/helpers'
+import { 
+  FiUser,
+  FiEdit,
+  FiSave,
+  FiX,
+  FiMail,
+  FiAtSign,
+  FiAward
+} from 'react-icons/fi'
 
 export function Profile() {
   const { user, updateUser } = useAuthStore()
@@ -24,105 +36,151 @@ export function Profile() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Mi Perfil</h1>
-        <p className="text-gray-600">Gestiona tu información personal</p>
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center space-x-3 mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg">
+          <FiUser className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="headline-2xl text-base-content">
+            Mi Perfil
+          </h1>
+          <p className="text-small text-base-content/70">
+            Gestiona tu información personal
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Información Personal</h3>
-          <button
+      {/* User Avatar and Basic Info */}
+      <div className="card p-4">
+        <div className="flex items-center space-x-4">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold bg-primary-100 text-primary">
+            {user ? getInitials(user.first_name, user.last_name) : 'U'}
+          </div>
+          <div className="flex-1">
+            <h2 className="headline-xl text-base-content">
+              {user?.first_name} {user?.last_name}
+            </h2>
+            <p className="text-small text-base-content/70">@{user?.username}</p>
+            <div className="mt-2">
+              <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary">
+                <FiAward className="w-3 h-3 mr-1" />
+                {user?.role ? getUserRoleDisplayName(user.role) : 'Usuario'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Personal Information */}
+      <div className="card p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="headline-lg text-base-content flex items-center space-x-2">
+            <FiUser className="w-5 h-5 text-primary" />
+            <span>Información Personal</span>
+          </h2>
+          <Button
             onClick={() => setIsEditing(!isEditing)}
-            className="bg-primary text-primary-content px-4 py-2 rounded-md hover:bg-primary-focus"
+            variant={isEditing ? "outline" : "primary"}
+            leftIcon={isEditing ? <FiX className="w-4 h-4" /> : <FiEdit className="w-4 h-4" />}
           >
             {isEditing ? 'Cancelar' : 'Editar'}
-          </button>
+          </Button>
         </div>
 
         {isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                  Nombre
-                </label>
-                <input
-                  type="text"
-                  id="first_name"
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                  Apellido
-                </label>
-                <input
-                  type="text"
-                  id="last_name"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
+              <Input
+                label="Nombre"
+                name="first_name"
+                value={formData.first_name}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+              <Input
+                label="Apellido"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                required
               />
             </div>
-            <div className="flex justify-end space-x-3">
-              <button
+            <Input
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            <div className="flex justify-end space-x-3 pt-4 border-t border-base-300">
+              <Button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                variant="outline"
+                leftIcon={<FiX className="w-4 h-4" />}
               >
                 Cancelar
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                className="px-4 py-2 bg-primary text-primary-content rounded-md hover:bg-primary-focus"
+                variant="primary"
+                leftIcon={<FiSave className="w-4 h-4" />}
               >
-                Guardar
-              </button>
+                Guardar Cambios
+              </Button>
             </div>
           </form>
         ) : (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.first_name}</p>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-primary-100 rounded-lg">
+                  <FiUser className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <label className="text-small font-medium text-base-content/70">Nombre</label>
+                  <p className="text-regular text-base-content">{user?.first_name}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-primary-100 rounded-lg">
+                  <FiUser className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <label className="text-small font-medium text-base-content/70">Apellido</label>
+                  <p className="text-regular text-base-content">{user?.last_name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-success-100 rounded-lg">
+                <FiMail className="w-4 h-4 text-success" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Apellido</label>
-                <p className="mt-1 text-sm text-gray-900">{user?.last_name}</p>
+                <label className="text-small font-medium text-base-content/70">Email</label>
+                <p className="text-regular text-base-content">{user?.email}</p>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <p className="mt-1 text-sm text-gray-900">{user?.email}</p>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-info-100 rounded-lg">
+                <FiAtSign className="w-4 h-4 text-info" />
+              </div>
+              <div>
+                <label className="text-small font-medium text-base-content/70">Usuario</label>
+                <p className="text-regular text-base-content">@{user?.username}</p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Usuario</label>
-              <p className="mt-1 text-sm text-gray-900">{user?.username}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Rol</label>
-              <p className="mt-1 text-sm text-gray-900 capitalize">{user?.role?.toLowerCase()}</p>
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-warning-100 rounded-lg">
+                <FiAward className="w-4 h-4 text-warning" />
+              </div>
+              <div>
+                <label className="text-small font-medium text-base-content/70">Rol</label>
+                <p className="text-regular text-base-content">{user?.role ? getUserRoleDisplayName(user.role) : 'Usuario'}</p>
+              </div>
             </div>
           </div>
         )}

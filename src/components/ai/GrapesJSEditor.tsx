@@ -5,6 +5,8 @@ import { ContentEditor } from './ContentEditor'
 interface GrapesJSEditorProps {
   content: GeneratedContent
   onSave: (content: unknown) => void
+  useGrapesJS?: boolean
+  onToggleGrapesJS?: () => void
 }
 
 interface CommandsConfig {
@@ -26,17 +28,14 @@ interface GrapesJSEditor {
   destroy: () => void
 }
 
-export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
+export function GrapesJSEditor({ content, onSave, useGrapesJS = false, onToggleGrapesJS }: GrapesJSEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [editor, setEditor] = useState<GrapesJSEditor | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [useSimpleEditor, setUseSimpleEditor] = useState(true) // Usar editor simple por defecto
-
-  // Solo inicializar GrapesJS si no se está usando el editor simple
+  // Solo inicializar GrapesJS si se activó desde el botón
   useEffect(() => {
-    if (useSimpleEditor) {
+    if (!useGrapesJS) {
       setIsLoading(false)
       return
     }
@@ -44,13 +43,12 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
     // Timeout para evitar que se quede cargando indefinidamente
     const timeout = setTimeout(() => {
       if (isLoading) {
-        setUseSimpleEditor(true)
         setIsLoading(false)
       }
     }, 10000) // 10 segundos de timeout
 
     const initEditor = async () => {
-      if (editorRef.current && !editor && !useSimpleEditor) {
+      if (editorRef.current && !editor && useGrapesJS) {
         try {
           // Importar GrapesJS dinámicamente
           const grapesjs = await import('grapesjs')
@@ -241,7 +239,6 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
           setIsLoading(false)
         } catch {
           clearTimeout(timeout)
-          setUseSimpleEditor(true)
           setIsLoading(false)
         }
       }
@@ -255,40 +252,8 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
         editor.destroy()
       }
     }
-  }, [editor, content, isLoading, useSimpleEditor])
+  }, [editor, content, isLoading, useGrapesJS])
 
-  const handleSave = async () => {
-    if (editor && !isSaving) {
-      setIsSaving(true)
-      try {
-        const html = editor.getHtml()
-        const css = editor.getCss() || ''
-        const components = editor.getComponents()
-        
-        const updatedContent = {
-          html,
-          css,
-          components,
-          title: content.title,
-          id: content.id
-        }
-        
-        await onSave(updatedContent)
-        
-        // Mostrar mensaje de éxito
-        editor.Modal.setTitle('¡Guardado!')
-        editor.Modal.setContent('El contenido educativo ha sido guardado exitosamente.')
-        editor.Modal.open()
-      } catch (error) {
-        console.error('Error al guardar contenido:', error)
-        editor.Modal.setTitle('Error')
-        editor.Modal.setContent(`Hubo un error al guardar el contenido: ${error instanceof Error ? error.message : 'Error desconocido'}. Inténtalo de nuevo.`)
-        editor.Modal.open()
-      } finally {
-        setIsSaving(false)
-      }
-    }
-  }
 
   const handlePreview = () => {
     if (editor) {
@@ -308,26 +273,10 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
     )
   }
 
-  // Si se decidió usar el editor simple, mostrar el editor simple
-  if (useSimpleEditor) {
+  // Si no se activó GrapesJS, mostrar el editor simple
+  if (!useGrapesJS) {
     return (
       <div className="h-full flex flex-col">
-        {/* Toolbar para cambiar de editor */}
-        <div className="p-2 border-b bg-gray-50">
-          <div className="flex items-center justify-end">
-            <button
-              onClick={() => {
-                setUseSimpleEditor(false)
-                setIsLoading(true)
-                setEditor(null)
-              }}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-              title="Cambiar a GrapesJS"
-            >
-              🎨 Usar GrapesJS
-            </button>
-          </div>
-        </div>
         <div className="flex-1">
           <ContentEditor content={content} onSave={onSave} />
         </div>
@@ -354,7 +303,11 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
               Intentar GrapesJS de nuevo
             </button>
             <button
-              onClick={() => setUseSimpleEditor(true)}
+              onClick={() => {
+                if (onToggleGrapesJS) {
+                  onToggleGrapesJS()
+                }
+              }}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
               Usar Editor Simple
@@ -375,7 +328,11 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
           </h3>
           <div className="flex space-x-2">
             <button
-              onClick={() => setUseSimpleEditor(true)}
+              onClick={() => {
+                if (onToggleGrapesJS) {
+                  onToggleGrapesJS()
+                }
+              }}
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
               title="Cambiar a editor simple"
             >
@@ -383,27 +340,9 @@ export function GrapesJSEditor({ content, onSave }: GrapesJSEditorProps) {
             </button>
             <button
               onClick={handlePreview}
-              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
-              disabled={isSaving}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
             >
               Vista Previa
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            >
-              {isSaving ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Guardando...</span>
-                </>
-              ) : (
-                <>
-                  <span>💾</span>
-                  <span>Guardar Cambios</span>
-                </>
-              )}
             </button>
           </div>
         </div>
