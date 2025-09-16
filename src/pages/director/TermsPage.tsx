@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useDirectorTerms } from '../../hooks/useDirectorAcademic'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { Term } from '../../api/endpoints'
 import { TermModal } from '../../components/modals/TermModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { LoadingState, EmptyTermsState } from '../../components/common'
 
 export function TermsPage() {
   const {
@@ -76,11 +77,7 @@ export function TermsPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <LoadingState message="Cargando períodos académicos..." />
   }
 
   return (
@@ -105,9 +102,9 @@ export function TermsPage() {
         </CardHeader>
         <CardContent>
           {terms.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-base-content/70">No hay períodos registrados</p>
-            </div>
+            <EmptyTermsState 
+              onAddTerm={() => setShowCreateModal(true)}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-base-300">

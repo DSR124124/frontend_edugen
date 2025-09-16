@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { MaterialViewer } from '../../components/modals/MaterialViewer'
 import { Users } from 'lucide-react'
+import { LoadingState, EmptyState } from '../../components/common'
 
 export function MySectionMaterials() {
   const { user } = useAuthStore()
@@ -68,31 +69,16 @@ export function MySectionMaterials() {
   }
 
   if (loadingSection || loadingCourses) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Cargando sección...</p>
-        </div>
-      </div>
-    )
+    return <LoadingState message="Cargando sección..." />
   }
 
   if (!section) {
     return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-gray-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No tienes acceso a materiales</h2>
-            <p className="text-gray-600 mb-4">
-              Contacta a tu administrador para obtener acceso.
-            </p>
-          </div>
-        </div>
-      </div>
+      <EmptyState 
+        title="No tienes acceso a materiales"
+        description="Contacta a tu administrador para obtener acceso."
+        icon={<Users className="w-full h-full text-base-content/40" />}
+      />
     )
   }
 

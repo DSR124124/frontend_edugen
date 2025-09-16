@@ -12,11 +12,9 @@ import {
   FiClock,
   FiCheckCircle,
   FiXCircle,
-  FiEye,
-  FiRefreshCw,
-  FiAlertCircle,
-  FiInfo
+  FiEye
 } from 'react-icons/fi'
+import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 
 interface Student {
   id: number
@@ -77,30 +75,16 @@ export function MyStudents() {
   }
 
   if (sectionsLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-        <p className="text-small text-base-content/70">Cargando secciones...</p>
-      </div>
-    )
+    return <LoadingState message="Cargando secciones..." />
   }
 
   if (studentsError) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="p-3 bg-error-100 rounded-full mb-4">
-          <FiAlertCircle className="w-6 h-6 text-error" />
-        </div>
-        <h3 className="headline-xl text-base-content mb-2">Error al cargar</h3>
-        <p className="text-small text-base-content/70 mb-4">{studentsError}</p>
-        <button
-          onClick={() => selectedSectionId && getStudentsBySection(selectedSectionId)}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <FiRefreshCw className="w-4 h-4" />
-          <span>Reintentar</span>
-        </button>
-      </div>
+      <ErrorState 
+        error={studentsError}
+        onRetry={() => selectedSectionId && getStudentsBySection(selectedSectionId)}
+        retryLabel="Reintentar"
+      />
     )
   }
 
@@ -209,10 +193,7 @@ export function MyStudents() {
 
         <div className="p-4">
           {studentsLoading ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-              <p className="text-small text-base-content/70">Cargando estudiantes...</p>
-            </div>
+            <LoadingState message="Cargando estudiantes..." />
           ) : studentsData && studentsData.students.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-base-300">
@@ -303,27 +284,16 @@ export function MyStudents() {
               </table>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="flex flex-col items-center space-y-3">
-                <div className="p-3 bg-base-200 rounded-full">
-                  <FiInfo className="w-6 h-6 text-base-content/40" />
-                </div>
-                <div>
-                  <h3 className="headline-xl text-base-content mb-1">
-                    {!selectedSectionId 
-                      ? 'Selecciona una sección para ver los estudiantes'
-                      : 'No hay estudiantes matriculados en esta sección'
-                    }
-                  </h3>
-                  <p className="text-small text-base-content/70">
-                    {!selectedSectionId 
-                      ? 'Elige una sección de la lista superior'
-                      : 'Los estudiantes aparecerán aquí cuando se matriculen'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
+            <EmptyState 
+              title={!selectedSectionId 
+                ? 'Selecciona una sección para ver los estudiantes'
+                : 'No hay estudiantes matriculados en esta sección'
+              }
+              description={!selectedSectionId 
+                ? 'Elige una sección de la lista superior'
+                : 'Los estudiantes aparecerán aquí cuando se matriculen'
+              }
+            />
           )}
         </div>
       </div>

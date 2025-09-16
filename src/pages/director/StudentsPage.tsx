@@ -5,9 +5,10 @@ import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { LoadingState, ErrorState, EmptyStudentsState } from '../../components/common'
 
 export function StudentsPage() {
   const {
@@ -162,21 +163,17 @@ export function StudentsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-2 text-base-content/70">Cargando...</p>
-            </div>
+            <LoadingState message="Cargando estudiantes..." />
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-error">{error}</p>
-              <Button
-                onClick={() => loadUsers()}
-                variant="outline"
-                className="mt-2"
-              >
-                Reintentar
-              </Button>
-            </div>
+            <ErrorState 
+              error={error}
+              onRetry={() => loadUsers()}
+              retryLabel="Reintentar"
+            />
+          ) : students.length === 0 ? (
+            <EmptyStudentsState 
+              onAddStudent={() => setShowCreateUser(true)}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-base-300">

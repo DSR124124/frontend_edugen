@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { MaterialViewer } from '../../components/modals/MaterialViewer'
 import { BookOpen, FileText, Eye, Users } from 'lucide-react'
+import { EmptyState } from '../../components/common'
 
 // Local Course interface for this component
 interface Course {
@@ -50,7 +51,7 @@ export function StudentPortfolio() {
       try {
         const response = await academicApi.getTopics()
         return response.data || []
-      } catch (error) {
+      } catch {
         return []
       }
     },
@@ -70,7 +71,7 @@ export function StudentPortfolio() {
         const materialsArray = Array.isArray(response.data) ? response.data : response.data?.results || []
         
         return { data: { results: materialsArray } }
-      } catch (error) {
+      } catch {
         return { data: { results: [] } }
       }
     },
@@ -108,19 +109,11 @@ export function StudentPortfolio() {
 
   if (!user?.section) {
     return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-gray-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No tienes acceso al portafolio</h2>
-            <p className="text-gray-600">
-              Contacta a tu administrador para obtener acceso.
-            </p>
-          </div>
-        </div>
-      </div>
+      <EmptyState 
+        title="No tienes acceso al portafolio"
+        description="Contacta a tu administrador para obtener acceso."
+        icon={<Users className="w-full h-full text-base-content/40" />}
+      />
     )
   }
 

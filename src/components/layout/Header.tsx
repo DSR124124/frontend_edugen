@@ -1,6 +1,6 @@
 import { useAuthStore } from '../../store/auth'
 import { useUIStore } from '../../store/ui'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { User, LogOut, Menu, X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
 import { useLocation } from 'react-router-dom'
@@ -167,7 +167,7 @@ export function Header() {
     showSuccess(
       "¡Sesión Cerrada Exitosamente!",
       `Hasta luego, ${user?.first_name || 'Usuario'}. Tu sesión ha sido cerrada correctamente.`,
-      3000
+      { duration: 3000 }
     )
     
     // Esperar un momento para que se vea la notificación antes de cerrar sesión

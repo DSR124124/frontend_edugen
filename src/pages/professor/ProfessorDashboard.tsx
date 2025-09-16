@@ -7,10 +7,9 @@ import {
   FiUsers,
   FiFileText,
   FiCalendar,
-  FiAward,
-  FiInfo,
-  FiRefreshCw
+  FiAward
 } from 'react-icons/fi'
+import { PageLoadingState, PageErrorState, EmptyState } from '../../components/common'
 
 // Professor Dashboard Component
 
@@ -22,67 +21,16 @@ export function ProfessorDashboard() {
 
 
   if (professorLoading || sectionsLoading || materialsLoading || studentsLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-primary-100 rounded-lg">
-            <FiBook className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="headline-2xl text-base-content">
-              Dashboard del Profesor
-            </h1>
-            <p className="text-small text-base-content/70">
-              Gestiona tus secciones y estudiantes
-            </p>
-          </div>
-        </div>
-        <div className="card p-4 mb-4">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <h3 className="headline-lg text-base-content mb-2">Cargando Dashboard</h3>
-            <p className="text-small text-base-content/70">Obteniendo información de tus secciones y estudiantes...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <PageLoadingState message="Cargando dashboard del profesor..." />
   }
 
   if (professorError || sectionsError || materialsError || studentsError) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-primary-100 rounded-lg">
-            <FiBook className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="headline-2xl text-base-content">
-              Dashboard del Profesor
-            </h1>
-            <p className="text-small text-base-content/70">
-              Gestiona tus secciones y estudiantes
-            </p>
-          </div>
-        </div>
-        <div className="card p-4 mb-4">
-          <div className="text-center py-8">
-            <div className="p-3 bg-error-100 rounded-full w-fit mx-auto mb-4">
-              <FiInfo className="w-6 h-6 text-error" />
-            </div>
-            <h3 className="headline-lg text-base-content mb-2">Error al Cargar</h3>
-            <p className="text-small text-base-content/70 mb-4">
-              {professorError || sectionsError || materialsError?.message || studentsError?.message}
-            </p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="btn btn-outline btn-primary"
-            >
-              <FiRefreshCw className="w-4 h-4 mr-2" />
-              Reintentar
-            </button>
-          </div>
-        </div>
-      </div>
+      <PageErrorState 
+        error={professorError || sectionsError || materialsError?.message || studentsError?.message || 'Error desconocido'}
+        onRetry={() => window.location.reload()}
+        onHome={() => window.location.href = '/dashboard'}
+      />
     )
   }
 
@@ -196,21 +144,11 @@ export function ProfessorDashboard() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 bg-base-200 rounded-full">
-                <FiBook className="w-6 h-6 text-base-content/40" />
-              </div>
-              <div>
-                <h3 className="headline-xl text-base-content mb-1">No tienes secciones asignadas</h3>
-                <p className="text-small text-base-content/70 mb-4">Contacta al director para que te asigne secciones</p>
-                <div className="flex items-center justify-center space-x-2 text-small text-base-content/70">
-                  <FiInfo className="w-4 h-4" />
-                  <span>Una vez asignado, podrás gestionar tus estudiantes y materiales</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <EmptyState 
+            title="No tienes secciones asignadas"
+            description="Contacta al director para que te asigne secciones. Una vez asignado, podrás gestionar tus estudiantes y materiales."
+            icon={<FiBook className="w-full h-full text-base-content/40" />}
+          />
         )}
       </div>
     </div>

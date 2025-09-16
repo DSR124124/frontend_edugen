@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useDirectorInstitution } from '../../hooks/useDirectorAcademic'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { Institution } from '../../api/endpoints'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { Textarea } from '../../components/ui/Textarea'
+import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 
 export function InstitutionPage() {
   const { institution, isLoading, error, updateInstitution } = useDirectorInstitution()
@@ -37,7 +38,7 @@ export function InstitutionPage() {
       setIsEditing(false)
       setFormData({})
       showSuccess('Éxito', 'Información de la institución actualizada correctamente')
-    } catch (error) {
+    } catch {
       showError('Error', 'Error al actualizar la información de la institución')
     }
   }
@@ -50,33 +51,25 @@ export function InstitutionPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <LoadingState message="Cargando información de la institución..." />
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-error">Error al cargar la información de la institución</p>
-        <Button
-          onClick={() => window.location.reload()}
-          variant="outline"
-          className="mt-2"
-        >
-          Reintentar
-        </Button>
-      </div>
+      <ErrorState 
+        error={error}
+        onRetry={() => window.location.reload()}
+        retryLabel="Reintentar"
+      />
     )
   }
 
   if (!institution) {
     return (
-      <div className="text-center py-8">
-        <p className="text-base-content/70">No se encontró información de la institución</p>
-      </div>
+      <EmptyState 
+        title="No se encontró información de la institución"
+        description="Contacta al administrador del sistema para configurar la información de tu institución."
+      />
     )
   }
 

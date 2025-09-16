@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { academicApi } from '../../api/endpoints'
+import { LoadingState } from '../../components/common'
 
 export function Courses() {
   const { data: courses, isLoading } = useQuery({
@@ -8,7 +9,7 @@ export function Courses() {
   })
 
   if (isLoading) {
-    return <div className="text-center py-8">Cargando cursos...</div>
+    return <LoadingState message="Cargando cursos..." />
   }
 
   return (
@@ -24,7 +25,7 @@ export function Courses() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses?.results?.map((course: any) => (
+        {courses?.results?.map((course: { id: number; name: string; description?: string; code?: string; credits?: number }) => (
           <div key={course.id} className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">{course.name}</h3>
             <p className="text-sm text-gray-600 mb-4">{course.description}</p>

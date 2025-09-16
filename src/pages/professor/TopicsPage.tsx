@@ -8,7 +8,7 @@ import { GenerateAIMaterialModal } from '../../components/modals/GenerateAIMater
 import { ViewMaterialsModal } from '../../components/modals/ViewMaterialsModal'
 import { Topic, Student } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { 
   FiBook, 
   FiTarget, 
@@ -21,6 +21,7 @@ import {
   FiZap,
   FiCalendar
 } from 'react-icons/fi'
+import { LoadingState, EmptyState } from '../../components/common'
 
 export function TopicsPage() {
   const { topics, loading, createTopic, updateTopic, deleteTopic, loadTopicsByCourse } = useTopics()
@@ -245,10 +246,7 @@ export function TopicsPage() {
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-          <p className="text-small text-base-content/70">Cargando cursos...</p>
-        </div>
+        <LoadingState message="Cargando cursos..." />
       </div>
     )
   }
@@ -269,17 +267,11 @@ export function TopicsPage() {
             </p>
           </div>
         </div>
-        <div className="text-center py-12">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="p-3 bg-base-200 rounded-full">
-              <FiBook className="w-6 h-6 text-base-content/40" />
-            </div>
-            <div>
-              <h3 className="headline-xl text-base-content mb-1">No tienes cursos creados</h3>
-              <p className="text-small text-base-content/70">Primero debes crear cursos para poder agregar temas.</p>
-            </div>
-          </div>
-        </div>
+        <EmptyState 
+          title="No tienes cursos creados"
+          description="Primero debes crear cursos para poder agregar temas."
+          icon={<FiBook className="w-full h-full text-base-content/40" />}
+        />
       </div>
     )
   }
