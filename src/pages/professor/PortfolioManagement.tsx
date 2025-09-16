@@ -11,12 +11,11 @@ import {
   FiFolder,
   FiEye,
   FiCheckCircle,
-  FiAlertCircle,
-  FiRefreshCw,
   FiClock,
   FiSearch,
   FiFilter
 } from 'react-icons/fi'
+import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 
 export function PortfolioManagement() {
   const { sections: professorSections, loading: sectionsLoading } = useProfessorSections()
@@ -55,31 +54,16 @@ export function PortfolioManagement() {
 
 
   if (sectionsLoading) {
-    return (
-      <div className="space-y-3">
-        <div className="flex flex-col items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-3"></div>
-          <p className="text-small text-base-content/70">Cargando secciones...</p>
-        </div>
-      </div>
-    )
+    return <LoadingState message="Cargando secciones..." />
   }
 
   if (!professorSections || professorSections.length === 0) {
     return (
-      <div className="space-y-3">
-        <div className="text-center py-8">
-          <div className="flex flex-col items-center space-y-2">
-            <div className="p-2 bg-base-200 rounded-full">
-              <FiUsers className="w-5 h-5 text-base-content/40" />
-            </div>
-            <div>
-              <h3 className="headline-lg text-base-content mb-1">No tienes secciones asignadas</h3>
-              <p className="text-small text-base-content/70">Contacta al director para que te asigne secciones.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <EmptyState 
+        title="No tienes secciones asignadas"
+        description="Contacta al director para que te asigne secciones."
+        icon={<FiUsers className="w-full h-full text-base-content/40" />}
+      />
     )
   }
 
@@ -194,39 +178,19 @@ export function PortfolioManagement() {
 
           <div className="p-3">
             {portfoliosLoading ? (
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-3"></div>
-                <p className="text-small text-base-content/70">Cargando portafolios...</p>
-              </div>
+              <LoadingState message="Cargando portafolios..." />
             ) : portfoliosError ? (
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="p-2 bg-error-100 rounded-full mb-3">
-                  <FiAlertCircle className="w-5 h-5 text-error" />
-                </div>
-                <h3 className="headline-lg text-base-content mb-2">Error al cargar</h3>
-                <p className="text-small text-base-content/70 mb-3">{portfoliosError}</p>
-                <button
-                  onClick={() => selectedSectionId && loadPortfoliosBySection(selectedSectionId)}
-                  className="btn-primary flex items-center space-x-2 text-small px-3 py-1"
-                >
-                  <FiRefreshCw className="w-3 h-3" />
-                  <span>Reintentar</span>
-                </button>
-              </div>
+              <ErrorState 
+                error={portfoliosError}
+                onRetry={() => selectedSectionId && loadPortfoliosBySection(selectedSectionId)}
+                retryLabel="Reintentar"
+              />
             ) : portfolios.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="p-2 bg-base-200 rounded-full">
-                    <FiFolder className="w-5 h-5 text-base-content/40" />
-                  </div>
-                  <div>
-                    <h3 className="headline-lg text-base-content mb-1">No hay portafolios</h3>
-                    <p className="text-small text-base-content/70">
-                      Los portafolios se crearán automáticamente cuando asignes actividades a los estudiantes.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <EmptyState 
+                title="No hay portafolios"
+                description="Los portafolios se crearán automáticamente cuando asignes actividades a los estudiantes."
+                icon={<FiFolder className="w-full h-full text-base-content/40" />}
+              />
             ) : filteredPortfolios.length === 0 ? (
               <div className="text-center py-8">
                 <div className="flex flex-col items-center space-y-2">

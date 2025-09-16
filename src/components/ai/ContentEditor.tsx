@@ -80,7 +80,8 @@ export function ContentEditor({ content }: ContentEditorProps) {
       {/* Notificaciones */}
       <NotificationContainer 
         notifications={notifications} 
-        onRemove={removeNotification} 
+        onRemove={removeNotification}
+        onUpdate={() => {}} 
       />
     </div>
   )

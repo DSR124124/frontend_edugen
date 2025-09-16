@@ -21,6 +21,7 @@ import {
   FiAward,
   FiInfo
 } from 'react-icons/fi'
+import { EmptyState } from '../../components/common'
 
 interface Course {
   id: number
@@ -217,15 +218,11 @@ export function MaterialAnalyticsDashboard() {
             </p>
           </div>
         </div>
-        <div className="card p-4 mb-4 max-w-md mx-auto">
-          <div className="text-center">
-            <div className="p-3 bg-error-100 rounded-full w-fit mx-auto mb-4">
-              <FiAlertTriangle className="w-6 h-6 text-error" />
-            </div>
-            <h3 className="headline-lg text-base-content mb-2">Acceso Denegado</h3>
-            <p className="text-small text-base-content/70">Solo los profesores pueden acceder a esta página.</p>
-          </div>
-        </div>
+        <EmptyState 
+          title="Acceso Denegado"
+          description="Solo los profesores pueden acceder a esta página."
+          icon={<FiAlertTriangle className="w-full h-full text-error" />}
+        />
       </div>
     )
   }

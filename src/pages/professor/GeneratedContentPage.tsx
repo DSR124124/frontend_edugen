@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, academicApi, GeneratedContent } from '../../api/endpoints'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GrapesJSEditor } from '../../components/ai/GrapesJSEditor'
 import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
@@ -18,6 +18,7 @@ import {
   FiAlertTriangle,
   FiEye
 } from 'react-icons/fi'
+import { PageLoadingState, PageErrorState } from '../../components/common'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
@@ -198,25 +199,16 @@ export function GeneratedContentPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando contenidos generados...</p>
-        </div>
-      </div>
-    )
+    return <PageLoadingState message="Cargando contenidos generados..." />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error al cargar contenidos</h2>
-          <p className="text-gray-600">No se pudieron cargar los contenidos generados</p>
-        </div>
-      </div>
+      <PageErrorState 
+        error={error}
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ['generated-content'] })}
+        onHome={() => window.location.href = '/dashboard'}
+      />
     )
   }
 

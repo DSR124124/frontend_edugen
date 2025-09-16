@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { portfolioApi, artifactApi, PortfolioCourse } from '../../api/endpoints'
 import { useState } from 'react'
+import { LoadingState } from '../../components/common'
 
 export function MyPortfolio() {
   const [selectedCourse, setSelectedCourse] = useState<PortfolioCourse | null>(null)
@@ -19,7 +20,7 @@ export function MyPortfolio() {
   const portfolio = portfolios?.[0]
 
   if (isLoading || artifactsLoading) {
-    return <div className="text-center py-8">Cargando portafolio...</div>
+    return <LoadingState message="Cargando portafolio..." />
   }
 
   return (

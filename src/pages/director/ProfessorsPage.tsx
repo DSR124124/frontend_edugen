@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDirectorApi } from '../../hooks/useDirectorApi'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
@@ -8,6 +8,7 @@ import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { LoadingState, ErrorState, EmptyProfessorsState } from '../../components/common'
 
 export function ProfessorsPage() {
   const {
@@ -161,21 +162,17 @@ export function ProfessorsPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-2 text-base-content/70">Cargando...</p>
-            </div>
+            <LoadingState message="Cargando profesores..." />
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-error">{error}</p>
-              <Button
-                onClick={() => loadUsers()}
-                variant="outline"
-                className="mt-2"
-              >
-                Reintentar
-              </Button>
-            </div>
+            <ErrorState 
+              error={error}
+              onRetry={() => loadUsers()}
+              retryLabel="Reintentar"
+            />
+          ) : professors.length === 0 ? (
+            <EmptyProfessorsState 
+              onAddProfessor={() => setShowCreateUser(true)}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-base-300">

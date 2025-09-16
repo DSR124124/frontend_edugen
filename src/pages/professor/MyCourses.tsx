@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { academicApi } from '../../api/endpoints'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { CreateCourseModal } from '../../components/modals/CreateCourseModal'
 import { AssignCourseModal } from '../../components/modals/AssignCourseModal'
 import { EditCourseModal } from '../../components/modals/EditCourseModal'
@@ -16,10 +16,9 @@ import {
   FiEye,
   FiEdit,
   FiUserPlus,
-  FiTrash2,
-  FiInfo,
-  FiRefreshCw
+  FiTrash2
 } from 'react-icons/fi'
+import { LoadingState, ErrorState, EmptyCoursesState } from '../../components/common'
 
 interface Course {
   id: number
@@ -216,13 +215,7 @@ export function MyCourses() {
             </p>
           </div>
         </div>
-        <div className="card p-4 mb-4">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <h3 className="headline-lg text-base-content mb-2">Cargando Cursos</h3>
-            <p className="text-small text-base-content/70">Obteniendo información de tus cursos...</p>
-          </div>
-        </div>
+        <LoadingState message="Cargando cursos..." />
       </div>
     )
   }
@@ -243,22 +236,11 @@ export function MyCourses() {
             </p>
           </div>
         </div>
-        <div className="card p-4 mb-4">
-          <div className="text-center py-8">
-            <div className="p-3 bg-error-100 rounded-full w-fit mx-auto mb-4">
-              <FiInfo className="w-6 h-6 text-error" />
-            </div>
-            <h3 className="headline-lg text-base-content mb-2">Error al Cargar</h3>
-            <p className="text-small text-base-content/70 mb-4">{error}</p>
-            <Button
-              onClick={loadData}
-              variant="outline"
-              leftIcon={<FiRefreshCw className="w-4 h-4" />}
-            >
-              Reintentar
-            </Button>
-          </div>
-        </div>
+        <ErrorState 
+          error={error}
+          onRetry={loadData}
+          retryLabel="Reintentar"
+        />
       </div>
     )
   }
@@ -453,21 +435,9 @@ export function MyCourses() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 bg-base-200 rounded-full">
-                <FiBook className="w-6 h-6 text-base-content/40" />
-              </div>
-              <div>
-                <h3 className="headline-xl text-base-content mb-1">¡Aún no tienes cursos creados!</h3>
-                <p className="text-small text-base-content/70 mb-4">Comienza tu experiencia docente creando tu primer curso.</p>
-                <div className="flex items-center justify-center space-x-2 text-small text-base-content/70">
-                  <FiInfo className="w-4 h-4" />
-                  <span>Podrás gestionar clases, asignar contenido y organizar material educativo</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <EmptyCoursesState 
+            onAddCourse={() => setShowCreateModal(true)}
+          />
         )}
       </div>
 

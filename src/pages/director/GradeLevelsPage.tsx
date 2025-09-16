@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useDirectorGradeLevels } from '../../hooks/useDirectorAcademic'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GradeLevel } from '../../api/endpoints'
 import { GradeLevelModal } from '../../components/modals/GradeLevelModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { LoadingState, EmptyGradeLevelsState } from '../../components/common'
 
 export function GradeLevelsPage() {
   const {
@@ -76,11 +77,7 @@ export function GradeLevelsPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <LoadingState message="Cargando grados..." />
   }
 
   return (
@@ -105,9 +102,9 @@ export function GradeLevelsPage() {
         </CardHeader>
         <CardContent>
           {gradeLevels.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-base-content/70">No hay grados registrados</p>
-            </div>
+            <EmptyGradeLevelsState 
+              onAddGradeLevel={() => setShowCreateModal(true)}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-base-300">

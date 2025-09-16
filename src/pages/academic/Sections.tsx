@@ -11,6 +11,7 @@ import {
   FiAward,
   FiInfo
 } from 'react-icons/fi'
+import { LoadingState } from '../../components/common'
 
 interface Section {
   id: number
@@ -43,12 +44,7 @@ export function Sections() {
   const sections = user?.role === 'ALUMNO' ? (studentSection ? [studentSection] : []) : allSections?.results
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-        <p className="text-small text-base-content/70">Cargando secciones...</p>
-      </div>
-    )
+    return <LoadingState message="Cargando secciones..." />
   }
 
   return (

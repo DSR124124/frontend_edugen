@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useDirectorUsers } from '../../hooks/useDirectorUsers'
 import { useAuthStore } from '../../store/auth'
-import { useNotificationContext } from '../../contexts/NotificationContext'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { UserDetailModal } from '../../components/modals/UserDetailModal'
 import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
@@ -68,15 +68,15 @@ export function DirectorDashboard() {
       // Mostrar notificación de éxito con detalles específicos
       if (userData.role === 'PROFESOR') {
         showSuccess(
-          '🎉 ¡Profesor Registrado Exitosamente!',
+          ' ¡Profesor Registrado Exitosamente!',
           `El profesor ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de docentes activos.`,
-          6000
+          { duration: 6000 }
         )
       } else {
         showSuccess(
-          '🎉 ¡Estudiante Registrado Exitosamente!',
+          '¡Estudiante Registrado Exitosamente!',
           `El estudiante ${newUser.first_name} ${newUser.last_name} (${newUser.username}) ha sido registrado correctamente y ya aparece en la lista de estudiantes.`,
-          6000
+          { duration: 6000 }
         )
       }
       
@@ -89,7 +89,7 @@ export function DirectorDashboard() {
       showError(
         '❌ Error al Registrar Usuario',
         err.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
-        5000
+        { duration: 5000 }
       )
     }
   }
@@ -106,7 +106,7 @@ export function DirectorDashboard() {
         showSuccess(
           'Usuario Eliminado',
           'El usuario ha sido eliminado correctamente.',
-          3000
+          { duration: 3000 }
         )
         setShowConfirmDelete(false)
         setUserToDelete(null)
@@ -114,7 +114,7 @@ export function DirectorDashboard() {
         showError(
           'Error al Eliminar Usuario',
           err.response?.data?.detail || 'No se pudo eliminar el usuario.',
-          5000
+          { duration: 5000 }
         )
       }
     }
@@ -149,13 +149,13 @@ export function DirectorDashboard() {
       showSuccess(
         'Usuario Actualizado',
         'Los datos del usuario han sido actualizados correctamente.',
-        3000
+        { duration: 3000 }
       )
     } catch (error: any) {
       showError(
         'Error al Actualizar Usuario',
         error.response?.data?.detail || 'No se pudo actualizar el usuario.',
-        5000
+        { duration: 5000 }
       )
     }
   }
