@@ -39,53 +39,193 @@ Frontend del sistema EDUGEN construido con React + TypeScript + Vite, diseñado 
 ## 📁 Estructura del Proyecto
 
 ```
-frontend_edugen/src/
-├── api/                    # Configuración de API
-│   ├── client.ts          # Cliente HTTP con interceptores
-│   ├── endpoints.ts       # Definición de endpoints y tipos
-│   └── http.ts           # Configuración base HTTP
-├── app/                   # Configuración de la aplicación
-│   ├── providers.tsx     # Proveedores de contexto
-│   └── router.tsx        # Configuración de rutas
-├── components/            # Componentes reutilizables
-│   ├── ai/               # Componentes de IA
-│   ├── charts/           # Gráficos y visualizaciones
-│   ├── common/           # Componentes comunes
-│   ├── editor-tools/     # Herramientas de edición
-│   ├── forms/            # Formularios
-│   ├── kpi/              # Tarjetas de KPIs
-│   ├── layout/           # Componentes de layout
-│   ├── modals/           # Modales y diálogos
-│   ├── notifications/    # Sistema de notificaciones
-│   ├── tables/           # Tablas de datos
-│   └── ui/               # Componentes UI básicos
-├── contexts/             # Contextos de React
-│   ├── AuthContext.tsx
-│   ├── ErrorContext.tsx
-│   └── NotificationContext.tsx
-├── hooks/                # Hooks personalizados (21 archivos)
-├── layouts/              # Layouts de página
-│   ├── AppLayout.tsx
-│   └── AuthLayout.tsx
-├── pages/                # Páginas de la aplicación
-│   ├── academic/         # Páginas académicas
-│   ├── ai/              # Páginas de IA
-│   ├── auth/            # Autenticación
-│   ├── dashboard/       # Dashboards por rol
-│   ├── director/        # Funcionalidades de director
-│   ├── portfolios/      # Portafolios
-│   ├── professor/       # Funcionalidades de profesor
-│   ├── settings/        # Configuración
-│   └── student/         # Funcionalidades de estudiante
-├── store/                # Estado global (Zustand)
-│   ├── auth.ts
-│   ├── director.ts
-│   ├── ui.ts
-│   └── index.ts
-├── styles/               # Estilos globales
-├── utils/                # Utilidades
-└── config/               # Configuración
-    └── routes.ts         # Configuración de rutas
+
+frontend_edugen/
+├── eslint.config.js
+├── index.html
+├── package.json
+├── postcss.config.js
+├── public
+│   ├── editor-educational-content.js
+│   ├── editor-layout-design.js
+│   ├── editor-multimedia.js
+│   ├── editor-text-format.js
+│   └── favicon.ico
+├── README.md
+├── src
+│   ├── api
+│   │   ├── client.ts
+│   │   ├── endpoints.ts
+│   │   └── http.ts
+│   ├── app
+│   │   ├── providers.tsx
+│   │   └── router.tsx
+│   ├── App.css
+│   ├── App.tsx
+│   ├── assets
+│   │   ├── images
+│   │   │   ├── avatars
+│   │   │   ├── backgrounds
+│   │   │   │   └── estudiantes.jpg
+│   │   │   ├── icons
+│   │   │   ├── illustrations
+│   │   │   └── logos
+│   │   │       └── logo.png
+│   │   └── react.svg
+│   ├── components
+│   │   ├── ai
+│   │   │   ├── ContentEditor.tsx
+│   │   │   ├── DeepSeekChat.tsx
+│   │   │   └── GrapesJSEditor.tsx
+│   │   ├── charts
+│   │   │   ├── AnalyticsCharts.tsx
+│   │   │   └── BarChart.tsx
+│   │   ├── common
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   └── LoadingScreen.tsx
+│   │   ├── editor-tools
+│   │   │   ├── BasicVisualEditor.tsx
+│   │   │   └── index.ts
+│   │   ├── forms
+│   │   │   └── UserProfile.tsx
+│   │   ├── kpi
+│   │   │   └── KPICard.tsx
+│   │   ├── layout
+│   │   │   ├── Header.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── modals
+│   │   │   ├── AddMaterialModal.tsx
+│   │   │   ├── AssignCourseModal.tsx
+│   │   │   ├── AssignMaterialModal.tsx
+│   │   │   ├── ClassmatesModal.tsx
+│   │   │   ├── ConfirmModal.tsx
+│   │   │   ├── CreateCourseModal.tsx
+│   │   │   ├── CreateUserModal.tsx
+│   │   │   ├── DeleteCourseModal.tsx
+│   │   │   ├── EditCourseModal.tsx
+│   │   │   ├── EditUserModal.tsx
+│   │   │   ├── GenerateAIMaterialModal.tsx
+│   │   │   ├── GradeLevelModal.tsx
+│   │   │   ├── MaterialViewer.tsx
+│   │   │   ├── PortfolioDetailModal.tsx
+│   │   │   ├── SectionModal.tsx
+│   │   │   ├── StudentClassroom.tsx
+│   │   │   ├── StudentProfileModal.tsx
+│   │   │   ├── TermModal.tsx
+│   │   │   ├── TokenExpiredModal.tsx
+│   │   │   ├── TopicModal.tsx
+│   │   │   ├── UserDetailModal.tsx
+│   │   │   ├── ViewCourseModal.tsx
+│   │   │   └── ViewMaterialsModal.tsx
+│   │   ├── notifications
+│   │   │   ├── Notification.tsx
+│   │   │   └── NotificationContainer.tsx
+│   │   ├── tables
+│   │   │   └── DataTable.tsx
+│   │   └── ui
+│   │       ├── Breadcrumb.tsx
+│   │       ├── Button.tsx
+│   │       ├── Card.tsx
+│   │       ├── Input.tsx
+│   │       ├── Modal.tsx
+│   │       ├── ProgressBar.tsx
+│   │       ├── Select.tsx
+│   │       ├── Textarea.tsx
+│   │       └── Toast.tsx
+│   ├── config
+│   │   └── routes.ts
+│   ├── contexts
+│   │   ├── AuthContext.tsx
+│   │   ├── ErrorContext.tsx
+│   │   └── NotificationContext.tsx
+│   ├── hooks
+│   │   ├── useActiveStudents.ts
+│   │   ├── useApi.ts
+│   │   ├── useClassmates.ts
+│   │   ├── useDebounce.ts
+│   │   ├── useDirectorAcademic.ts
+│   │   ├── useDirectorApi.ts
+│   │   ├── useDirectorUsers.ts
+│   │   ├── useForm.ts
+│   │   ├── useLocalStorage.ts
+│   │   ├── useMaterialAnalytics.ts
+│   │   ├── useMaterials.ts
+│   │   ├── useMaterialTracking.ts
+│   │   ├── useModal.ts
+│   │   ├── useNotifications.ts
+│   │   ├── usePagination.ts
+│   │   ├── usePortfolios.ts
+│   │   ├── useProfessor.ts
+│   │   ├── useProfessorMaterials.ts
+│   │   ├── useProfessorSections.ts
+│   │   ├── useSidebar.ts
+│   │   ├── useStudentsBySection.ts
+│   │   ├── useTokenExpiry.ts
+│   │   └── useTopics.ts
+│   ├── index.css
+│   ├── index.ts
+│   ├── layouts
+│   │   ├── AppLayout.tsx
+│   │   └── AuthLayout.tsx
+│   ├── main.tsx
+│   ├── pages
+│   │   ├── academic
+│   │   │   ├── Courses.tsx
+│   │   │   └── Sections.tsx
+│   │   ├── ai
+│   │   │   ├── ContentGenerator.tsx
+│   │   │   └── GeneratedContentPage.tsx
+│   │   ├── auth
+│   │   │   ├── Login.tsx
+│   │   │   └── Logout.tsx
+│   │   ├── dashboard
+│   │   │   ├── AlumnoDashboard.tsx
+│   │   │   ├── DashboardRouter.tsx
+│   │   │   └── DirectorDashboard.tsx
+│   │   ├── director
+│   │   │   ├── GradeLevelsPage.tsx
+│   │   │   ├── InstitutionPage.tsx
+│   │   │   ├── ProfessorsPage.tsx
+│   │   │   ├── SectionsPage.tsx
+│   │   │   ├── StudentsPage.tsx
+│   │   │   └── TermsPage.tsx
+│   │   ├── portfolios
+│   │   │   └── MyPortfolio.tsx
+│   │   ├── professor
+│   │   │   ├── GeneratedContentPage.tsx
+│   │   │   ├── MaterialAnalyticsDashboard.tsx
+│   │   │   ├── MyCourses.tsx
+│   │   │   ├── MySections.tsx
+│   │   │   ├── MyStudents.tsx
+│   │   │   ├── PortfolioManagement.tsx
+│   │   │   ├── ProfessorDashboard.tsx
+│   │   │   ├── ProfessorRouter.tsx
+│   │   │   └── TopicsPage.tsx
+│   │   ├── settings
+│   │   │   └── Profile.tsx
+│   │   └── student
+│   │       ├── MySection.tsx
+│   │       ├── MySectionMaterials.tsx
+│   │       └── StudentPortfolio.tsx
+│   ├── store
+│   │   ├── auth.ts
+│   │   ├── director.ts
+│   │   ├── index.ts
+│   │   └── ui.ts
+│   ├── styles
+│   │   ├── app.css
+│   │   └── tokens.css
+│   ├── utils
+│   │   ├── cn.ts
+│   │   ├── constants.ts
+│   │   ├── helpers.ts
+│   │   └── validation.ts
+│   └── vite-env.d.ts
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
 ```
 
 ## 🎯 Funcionalidades por Rol
