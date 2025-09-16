@@ -11,8 +11,7 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       }
-    },
-    historyApiFallback: true
+    }
   },
   build: {
     rollupOptions: {
