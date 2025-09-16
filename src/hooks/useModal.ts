@@ -37,3 +37,4 @@ export const useModal = (isOpen: boolean) => {
     }
   }, [isOpen])
 }
+
