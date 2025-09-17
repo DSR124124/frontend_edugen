@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useTopics } from '../../hooks/useTopics'
 import { useMaterials } from '../../hooks/useMaterials'
-import { academicApi } from '../../api/endpoints'
+import { academicApi, aiContentApi } from '../../api/endpoints'
 import { TopicModal } from '../../components/modals/TopicModal'
 import { AddMaterialModal } from '../../components/modals/AddMaterialModal'
 import { GenerateAIMaterialModal } from '../../components/modals/GenerateAIMaterialModal'
+import { LoadingOverlay } from '../../components/ui/LoadingSpinner'
 import { ViewMaterialsModal } from '../../components/modals/ViewMaterialsModal'
 import { Topic, Student } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
@@ -40,6 +41,7 @@ export function TopicsPage() {
   const [loadingStudents, setLoadingStudents] = useState(false)
   const [isMaterialsModalOpen, setIsMaterialsModalOpen] = useState(false)
   const [viewingTopic, setViewingTopic] = useState<Topic | null>(null)
+  const [isCreatingAIConversation, setIsCreatingAIConversation] = useState(false)
 
   // Cargar cursos del profesor
   useEffect(() => {
@@ -157,34 +159,45 @@ export function TopicsPage() {
     additionalRequirements?: string
   }) => {
     try {
-      // Construir URL con parámetros para el generador de IA
-      const searchParams = new URLSearchParams({
-        topic: params.topic.toString(),
-        topicName: params.topicName,
-        courseName: params.courseName,
-        educationalLevel: params.educationalLevel,
-        resourceType: params.resourceType
-      })
+      setIsCreatingAIConversation(true)
       
-      if (params.additionalRequirements) {
-        searchParams.set('additionalRequirements', params.additionalRequirements)
-      }
-      
-      const aiUrl = `/ai-content?${searchParams.toString()}`
-      
-      // Mostrar mensaje de confirmación con los parámetros
+      // Mostrar mensaje de confirmación
       showSuccess(
-        'Creando Nueva Conversación con IA', 
+        'Creando Conversación con IA', 
         `Se está creando una conversación automática con los parámetros: Tema: ${params.topicName} | Curso: ${params.courseName} | Nivel: ${params.educationalLevel} | Tipo: ${params.resourceType}`
       )
       
-      // Redirigir inmediatamente al generador de IA
+      // Crear conversación primero
+      const conversationTitle = `Material: ${params.topicName} - ${params.courseName}`
+      const response = await aiContentApi.createConversation({ title: conversationTitle })
+      const conversationId = response.data.id
+      
+      // Construir mensaje inicial con los parámetros
+      const initialMessage = `Hola! Necesito generar material educativo con los siguientes parámetros:
+
+📚 **Tema:** ${params.topicName}
+🎓 **Curso:** ${params.courseName}
+📊 **Nivel Educativo:** ${params.educationalLevel}
+📝 **Tipo de Recurso:** ${params.resourceType}${params.additionalRequirements ? `\n➕ **Requisitos Adicionales:** ${params.additionalRequirements}` : ''}
+
+Por favor, ayúdame a refinar estos requisitos y generar el material educativo personalizado.`
+
+      // Enviar mensaje inicial
+      await aiContentApi.sendMessage(conversationId, { content: initialMessage })
+      
+      // Construir URL con el ID de la conversación
+      const aiUrl = `/ai-content?conversationId=${conversationId}`
+      
+      // Redirigir al generador de IA con la conversación específica
       window.location.href = aiUrl
       
       setIsAIMaterialModalOpen(false)
       setSelectedTopic(null)
-    } catch {
-      showError('Error', 'No se pudo abrir el chatbot de IA')
+    } catch (error) {
+      console.error('Error creating AI conversation:', error)
+      showError('Error', 'No se pudo crear la conversación con IA')
+    } finally {
+      setIsCreatingAIConversation(false)
     }
   }
 
@@ -278,6 +291,12 @@ export function TopicsPage() {
 
   return (
     <div className="space-y-4">
+        {/* Loading overlay para creación de conversación IA */}
+        <LoadingOverlay 
+          isVisible={isCreatingAIConversation}
+          message="Creando conversación con IA... Se está configurando una nueva conversación con los parámetros del tema y curso seleccionados."
+        />
+        
         {/* Header */}
         <div className="flex items-center space-x-3 mb-4">
           <div className="p-2 bg-primary-100 rounded-lg">
@@ -505,7 +524,7 @@ export function TopicsPage() {
           onClose={handleCloseAIMaterialModal}
           onGenerate={handleAIGenerate}
           topic={selectedTopic}
-          loading={false}
+          loading={isCreatingAIConversation}
         />
 
         {/* View Materials Modal */}

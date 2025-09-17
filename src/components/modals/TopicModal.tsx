@@ -25,7 +25,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    course: 0
+    course: '' as string | number
   })
   const [errors, setErrors] = useState<FormErrors>({
     name: '',
@@ -47,7 +47,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
       setFormData({
         name: '',
         description: '',
-        course: courses.length > 0 ? courses[0].id : 0
+        course: courses.length > 0 ? courses[0].id : ''
       })
     }
     setErrors({
@@ -87,18 +87,18 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
     }
   }
 
-  const validateField = (fieldName: string, value: any): string => {
+  const validateField = (fieldName: string, value: string | number): string => {
     switch (fieldName) {
       case 'name':
-        if (!value || !value.trim()) {
+        if (!value || !String(value).trim()) {
           return 'El nombre del tema es requerido'
         }
-        if (value.trim().length < 3) {
+        if (String(value).trim().length < 3) {
           return 'El nombre debe tener al menos 3 caracteres'
         }
         return ''
       case 'course':
-        if (!value || value === 0) {
+        if (!value) {
           return 'Debe seleccionar un curso'
         }
         return ''
@@ -116,7 +116,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
 
     // Verificar duplicados si el nombre y curso son válidos
     if (!newErrors.name && !newErrors.course && formData.name.trim() && formData.course) {
-      const duplicateError = await checkForDuplicateName(formData.name, formData.course)
+      const duplicateError = await checkForDuplicateName(formData.name, Number(formData.course))
       newErrors.duplicate_name = duplicateError
     }
 
@@ -142,7 +142,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
       await onSave({
         name: formData.name.trim(),
         description: formData.description.trim() || undefined,
-        course: formData.course
+        course: Number(formData.course)
       })
       onClose()
     } catch (error) {
@@ -156,7 +156,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'course' ? Number(value) : value
+      [name]: value
     }))
     
     // Marcar campo como tocado
@@ -166,7 +166,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
     }))
     
     // Validar campo en tiempo real
-    const fieldError = validateField(name, name === 'course' ? Number(value) : value)
+    const fieldError = validateField(name, value)
     setErrors(prev => ({
       ...prev,
       [name]: fieldError,
@@ -182,7 +182,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
       [name]: true
     }))
     
-    const fieldError = validateField(name, name === 'course' ? Number(value) : value)
+    const fieldError = validateField(name, value)
     setErrors(prev => ({
       ...prev,
       [name]: fieldError
@@ -190,7 +190,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
     
     // Verificar duplicados cuando se termina de escribir el nombre y hay un curso seleccionado
     if (name === 'name' && formData.course && !fieldError) {
-      const duplicateError = await checkForDuplicateName(value, formData.course)
+      const duplicateError = await checkForDuplicateName(value, Number(formData.course))
       setErrors(prev => ({
         ...prev,
         duplicate_name: duplicateError
@@ -268,16 +268,13 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
           error={errors.course && touched.course ? errors.course : undefined}
           disabled={loading || isSubmitting}
           placeholder="Seleccionar curso"
-          options={[
-            { value: 0, label: 'Seleccionar curso', disabled: true },
-            ...courses.map((course) => ({
-              value: course.id,
-              label: `${course.name} (${course.code})`
-            }))
-          ]}
+          options={courses.map((course) => ({
+            value: course.id,
+            label: `${course.name} (${course.code})`
+          }))}
         />
         
-        {!errors.course && touched.course && formData.course !== 0 && (
+        {!errors.course && touched.course && formData.course && (
           <div className="mt-1 flex items-center space-x-1">
             <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -307,7 +304,7 @@ export function TopicModal({ isOpen, onClose, onSave, topic, courses, loading = 
             type="submit"
             variant="primary"
             loading={isSubmitting || isCheckingDuplicates}
-            disabled={loading || isSubmitting || isCheckingDuplicates || !formData.name.trim() || formData.course === 0 || !!errors.duplicate_name}
+            disabled={loading || isSubmitting || isCheckingDuplicates || !formData.name.trim() || !formData.course || !!errors.duplicate_name}
           >
             {isSubmitting ? 'Guardando...' : isCheckingDuplicates ? 'Verificando...' : (topic ? 'Actualizar' : 'Crear')}
           </Button>
