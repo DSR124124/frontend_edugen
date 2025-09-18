@@ -15,7 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex">
         <Sidebar />
         <div className={`flex-1 transition-all duration-300 ${
-          sidebarOpen ? 'ml-64' : 'ml-0'
+          sidebarOpen ? 'md:ml-64 ml-0' : 'ml-0'
         }`}>
           <Header />
           <main>

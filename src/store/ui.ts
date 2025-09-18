@@ -9,10 +9,16 @@ export interface UIState {
   setTheme: (theme: 'light' | 'dark') => void
 }
 
+// Helper function to check if we're on mobile
+const isMobile = () => {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 768
+}
+
 export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
-      sidebarOpen: true, // Cambiar a true por defecto
+      sidebarOpen: !isMobile(), // Open on desktop, closed on mobile by default
       theme: 'light',
 
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
@@ -24,7 +30,7 @@ export const useUIStore = create<UIState>()(
     {
       name: 'ui-storage',
       partialize: (state) => ({
-        sidebarOpen: state.sidebarOpen,
+        // Only persist theme, not sidebar state (it should be responsive)
         theme: state.theme,
       }),
     }

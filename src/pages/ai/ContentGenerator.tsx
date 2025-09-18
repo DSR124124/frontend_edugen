@@ -12,7 +12,10 @@ import {
   FiPlus,
   FiTrash2,
   FiAlertTriangle,
-  FiInfo
+  FiInfo,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMenu
 } from 'react-icons/fi'
 
 
@@ -30,7 +33,23 @@ export function ContentGenerator() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [requirements, setRequirements] = useState<Record<string, unknown> | null>(null)
   const [showGenerateButton, setShowGenerateButton] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const hasProcessedUrlParams = useRef(false)
+
+  // Efecto para manejar el estado inicial de la sidebar
+  useEffect(() => {
+    // En móviles, la sidebar siempre debe estar visible
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarCollapsed(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    handleResize() // Ejecutar una vez al montar
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Crear nueva conversación
   const createConversationMutation = useMutation({
@@ -229,7 +248,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Loading overlay para creación automática */}
       <LoadingOverlay 
         isVisible={isAutoCreating}
@@ -237,65 +256,90 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       />
       
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="p-2 bg-primary-100 rounded-lg">
-          <FiMessageCircle className="w-5 h-5 text-primary" />
+      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+          <FiMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
         </div>
-        <div>
-          <h1 className="headline-2xl text-base-content">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
             Asistente de Contenido Educativo IA
           </h1>
-          <p className="text-small text-base-content/70">
+          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
             Chatea con la IA para definir requisitos y genera contenido educativo personalizado
           </p>
         </div>
+        {/* Botón para colapsar/expandir sidebar - Solo en móviles */}
+        <button
+          onClick={() => {
+            console.log('Toggle sidebar, current state:', isSidebarCollapsed)
+            setIsSidebarCollapsed(!isSidebarCollapsed)
+          }}
+          className="btn btn-ghost btn-sm lg:hidden"
+          title={isSidebarCollapsed ? "Mostrar conversaciones" : "Ocultar conversaciones"}
+        >
+          <FiMenu className="w-4 h-4" />
+        </button>
       </div>
 
-      <div className="flex gap-4 h-[calc(100vh-200px)]">
+      <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 h-[calc(100vh-200px)]">
         {/* Sidebar con conversaciones */}
-        <div className="w-80 card p-4 flex flex-col">
-          <div className="space-y-4 mb-6 flex-shrink-0">
-            <h2 className="headline-lg text-base-content mb-4 flex items-center space-x-2">
-              <FiPlus className="w-5 h-5 text-primary" />
-              <span>Acciones</span>
-            </h2>
+        <div className={`w-full lg:w-80 card p-3 sm:p-4 flex flex-col transition-all duration-300 ${
+          isSidebarCollapsed 
+            ? 'hidden lg:hidden' 
+            : 'block'
+        }`} style={{ display: isSidebarCollapsed ? 'none' : 'block' }}>
+          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 flex-shrink-0">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
+                <FiPlus className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                <span>Acciones</span>
+              </h2>
+              {/* Botón para colapsar sidebar en desktop */}
+              <button
+                onClick={() => setIsSidebarCollapsed(true)}
+                className="btn btn-ghost btn-sm hidden lg:flex"
+                title="Ocultar conversaciones"
+              >
+                <FiChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <button
                 onClick={handleStartNewChat}
                 disabled={createConversationMutation.isPending}
-                className="btn btn-primary w-full btn-lg gap-2"
+                className="btn btn-primary w-full btn-sm sm:btn-lg gap-2"
               >
                 {createConversationMutation.isPending ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    <span>Creando...</span>
+                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
+                    <span className="text-xs sm:text-base">Creando...</span>
                   </>
                 ) : (
                   <>
-                    <FiPlus className="w-5 h-5" />
-                    <span>Nueva Conversación</span>
+                    <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-xs sm:text-base">Nueva Conversación</span>
                   </>
                 )}
               </button>
               
               <button
                 onClick={handleViewGeneratedContent}
-                className="btn btn-outline btn-secondary w-full btn-lg gap-2"
+                className="btn btn-outline btn-secondary w-full btn-sm sm:btn-lg gap-2"
               >
-                <FiBook className="w-5 h-5" />
-                <span>Ver Contenido Generado</span>
+                <FiBook className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-base">Ver Contenido Generado</span>
               </button>
             </div>
           </div>
         
           <div className="flex-1 flex flex-col min-h-0">
-            <h2 className="headline-lg text-base-content mb-3 flex items-center space-x-2 flex-shrink-0">
-              <FiMessageCircle className="w-5 h-5 text-accent" />
+            <h2 className="text-lg sm:text-xl font-bold text-base-content mb-3 flex items-center space-x-2 flex-shrink-0">
+              <FiMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
               <span>Conversaciones</span>
             </h2>
             
-            <div className="flex-1 overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3">
               {conversationsError && (
                 <div className="alert alert-error">
                   <FiAlertTriangle className="w-5 h-5" />
@@ -316,7 +360,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               {!conversationsError && Array.isArray(conversationsData) && conversationsData.map((conv) => (
                 <div
                   key={conv.id}
-                  className={`card p-3 cursor-pointer transition-all duration-200 ${
+                  className={`card p-2 sm:p-3 cursor-pointer transition-all duration-200 ${
                     currentConversation === conv.id
                       ? 'ring-2 ring-primary bg-primary/5'
                       : 'hover:shadow-md'
@@ -327,23 +371,23 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <FiMessageCircle className={`w-4 h-4 ${
+                      <div className="flex items-center space-x-2 mb-1 sm:mb-2">
+                        <FiMessageCircle className={`w-3 h-3 sm:w-4 sm:h-4 ${
                           currentConversation === conv.id ? 'text-primary' : 'text-base-content/70'
                         }`} />
-                        <h5 className={`font-medium truncate ${
+                        <h5 className={`font-medium truncate text-sm sm:text-base ${
                           currentConversation === conv.id ? 'text-primary' : 'text-base-content'
                         }`}>
                           {conv.title || 'Sin título'}
                         </h5>
                       </div>
-                      <div className="flex items-center space-x-4 text-xs text-base-content/70">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs text-base-content/70">
                         <div className="flex items-center space-x-1">
-                          <FiCalendar className="w-3 h-3" />
+                          <FiCalendar className="w-3 h-3 flex-shrink-0" />
                           <span>{new Date(conv.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <FiUsers className="w-3 h-3" />
+                          <FiUsers className="w-3 h-3 flex-shrink-0" />
                           <span>{conv.messages_count} mensaje{conv.messages_count !== 1 ? 's' : ''}</span>
                         </div>
                       </div>
@@ -355,27 +399,27 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                         handleDeleteConversation(conv.id, conv.title || 'Sin título')
                       }}
                       disabled={deleteConversationMutation.isPending}
-                      className="btn btn-sm btn-ghost btn-circle text-error hover:bg-error/10"
+                      className="btn btn-xs sm:btn-sm btn-ghost btn-circle text-error hover:bg-error/10 flex-shrink-0"
                       title="Eliminar conversación"
                     >
-                      <FiTrash2 className="w-4 h-4" />
+                      <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
               ))}
             
               {!conversationsError && Array.isArray(conversationsData) && conversationsData.length === 0 && (
-                <div className="text-center py-8">
+                <div className="text-center py-6 sm:py-8">
                   <div className="flex flex-col items-center space-y-3">
                     <div className="p-3 bg-base-200 rounded-full">
                       <FiMessageCircle className="w-6 h-6 text-base-content/40" />
                     </div>
                     <div>
-                      <h3 className="headline-xl text-base-content mb-1">No hay conversaciones</h3>
-                      <p className="text-small text-base-content/70 mb-4">Crea una nueva para comenzar</p>
-                      <div className="flex items-center justify-center space-x-2 text-small text-base-content/70">
-                        <FiInfo className="w-4 h-4" />
-                        <span>Usa el botón "Nueva Conversación" para empezar</span>
+                      <h3 className="text-lg sm:text-xl font-bold text-base-content mb-1">No hay conversaciones</h3>
+                      <p className="text-xs sm:text-sm text-base-content/70 mb-4">Crea una nueva para comenzar</p>
+                      <div className="flex items-center justify-center space-x-2 text-xs sm:text-sm text-base-content/70">
+                        <FiInfo className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="text-center">Usa el botón "Nueva Conversación" para empezar</span>
                       </div>
                     </div>
                   </div>
@@ -394,7 +438,19 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         </div>
 
         {/* Área principal */}
-        <div className="flex-1 card p-4">
+        <div className={`flex-1 card p-3 sm:p-4 min-h-0 transition-all duration-300 relative ${
+          isSidebarCollapsed ? 'lg:ml-0' : ''
+        }`}>
+          {/* Botón flotante para mostrar sidebar cuando está colapsada */}
+          {isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="fixed top-20 left-4 z-40 btn btn-primary btn-sm shadow-lg hidden lg:flex"
+              title="Mostrar conversaciones"
+            >
+              <FiChevronRight className="w-4 h-4" />
+            </button>
+          )}
           {(
             <>
               <DeepSeekChat
@@ -408,12 +464,12 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               {/* Loading spinner para generación automática */}
               {isGenerating && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                  <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
-                    <div className="flex flex-col items-center space-y-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  <div className="bg-white rounded-lg p-4 sm:p-8 max-w-md w-full mx-4 shadow-xl">
+                    <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                      <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary"></div>
                       <div className="text-center">
-                        <h3 className="headline-lg text-base-content mb-2">Generando Contenido SCORM</h3>
-                        <p className="text-small text-base-content/70 mb-2">Creando contenido educativo interactivo para GrapesJS...</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-base-content mb-2">Generando Contenido SCORM</h3>
+                        <p className="text-xs sm:text-sm text-base-content/70 mb-2">Creando contenido educativo interactivo para GrapesJS...</p>
                         <p className="text-xs text-accent">Te redirigiremos automáticamente</p>
                       </div>
                     </div>
@@ -433,41 +489,41 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black bg-opacity-50" onClick={cancelDelete}></div>
-          <div className="relative bg-base-100 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <div className="flex items-center mb-4">
+          <div className="relative bg-base-100 rounded-lg shadow-xl max-w-md w-full mx-4 p-4 sm:p-6">
+            <div className="flex items-center mb-3 sm:mb-4">
               <div className="p-2 bg-error-100 rounded-lg mr-3">
-                <FiAlertTriangle className="w-6 h-6 text-error" />
+                <FiAlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-error" />
               </div>
-              <h3 className="headline-lg text-base-content">
+              <h3 className="text-lg sm:text-xl font-bold text-base-content">
                 Eliminar Conversación
               </h3>
             </div>
             
-            <p className="text-base-content/70 mb-6">
+            <p className="text-xs sm:text-sm text-base-content/70 mb-4 sm:mb-6">
               ¿Estás seguro de que quieres eliminar la conversación <strong>"{deleteModal.conversationTitle}"</strong>? 
               Esta acción no se puede deshacer y se eliminarán todos los mensajes de esta conversación.
             </p>
-            <div className="bg-info-50 border border-info-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center">
-                <FiInfo className="w-5 h-5 text-info mr-2" />
-                <p className="text-info text-sm">
+            <div className="bg-info-50 border border-info-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+              <div className="flex items-start">
+                <FiInfo className="w-4 h-4 sm:w-5 sm:h-5 text-info mr-2 flex-shrink-0 mt-0.5" />
+                <p className="text-info text-xs sm:text-sm">
                   <strong>Nota:</strong> El contenido generado se conservará y podrás acceder a él desde la sección de contenidos generados.
                 </p>
               </div>
             </div>
             
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={cancelDelete}
                 disabled={deleteConversationMutation.isPending}
-                className="btn btn-outline"
+                className="btn btn-outline w-full sm:w-auto"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmDelete}
                 disabled={deleteConversationMutation.isPending}
-                className="btn btn-error gap-2"
+                className="btn btn-error gap-2 w-full sm:w-auto"
               >
                 {deleteConversationMutation.isPending ? (
                   <>

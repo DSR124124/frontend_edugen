@@ -215,17 +215,17 @@ export function GeneratedContentPage() {
   const contents = generatedContents?.data || []
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="p-2 bg-primary-100 rounded-lg">
-          <FiFileText className="w-5 h-5 text-primary" />
+      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+          <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
         </div>
-        <div>
-          <h1 className="headline-2xl text-base-content">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
             Contenidos Generados
           </h1>
-          <p className="text-small text-base-content/70">
+          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
             Gestiona y edita todos los contenidos educativos generados con IA
           </p>
         </div>
@@ -269,17 +269,92 @@ export function GeneratedContentPage() {
           </div>
         </div>
         ) : (
-          <div className="card p-4 mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="headline-lg text-base-content flex items-center space-x-2">
-                <FiFileText className="w-5 h-5 text-primary" />
+          <div className="card p-3 sm:p-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
+              <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
+                <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 <span>Lista de Contenidos</span>
               </h2>
-              <div className="text-small text-base-content/70">
+              <div className="text-xs sm:text-sm text-base-content/70">
                 {contents.length} contenido{contents.length !== 1 ? 's' : ''} generado{contents.length !== 1 ? 's' : ''}
               </div>
             </div>
-            <div className="overflow-x-auto">
+            
+            {/* Vista de Cards para móviles */}
+            <div className="block sm:hidden space-y-3">
+              {contents.map((content) => (
+                <div key={content.id} className="card p-3 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-start space-x-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <FiFileText className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-base text-base-content truncate">
+                        {content.title || 'Sin título'}
+                      </h3>
+                      <p className="text-xs text-base-content/70">ID: {content.id}</p>
+                    </div>
+                    <span className="badge badge-primary badge-sm flex-shrink-0">
+                      <FiCheckCircle className="w-3 h-3 mr-1" />
+                      Generado
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="badge badge-success badge-sm">Contenido Educativo</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <FiCalendar className="w-3 h-3 text-primary" />
+                      <span className="text-xs text-base-content/70">
+                        {new Date(content.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => handleViewContent(content)}
+                      className="btn btn-ghost btn-xs flex items-center space-x-1"
+                    >
+                      <FiEye className="w-3 h-3" />
+                      <span>Ver</span>
+                    </button>
+                    <button
+                      onClick={() => handleEditContent(content)}
+                      className="btn btn-ghost btn-xs flex items-center space-x-1"
+                    >
+                      <FiEdit3 className="w-3 h-3" />
+                      <span>Editar</span>
+                    </button>
+                    <button
+                      onClick={() => handleAssignMaterial(content)}
+                      className="btn btn-outline btn-xs flex items-center space-x-1"
+                    >
+                      <FiUpload className="w-3 h-3" />
+                      <span>Asignar</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteContent(content.id, content.title || 'Sin título')}
+                      className="btn btn-error btn-xs flex items-center space-x-1"
+                      disabled={deleteContentMutation.isPending}
+                    >
+                      <FiTrash2 className="w-3 h-3" />
+                      <span>Eliminar</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Vista de Tabla para desktop */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="table table-zebra w-full">
                 <thead>
                   <tr className="bg-base-200">
@@ -378,34 +453,35 @@ export function GeneratedContentPage() {
       {isEditorOpen && selectedContent && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-7xl h-[90vh] flex flex-col shadow-xl">
-              <div className="p-4 border-b border-base-300 bg-base-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary-100 rounded-lg">
-                      <FiEdit3 className="w-5 h-5 text-primary" />
+          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
+            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-7xl h-[95vh] sm:h-[90vh] flex flex-col shadow-xl">
+              <div className="p-3 sm:p-4 border-b border-base-300 bg-base-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+                      <FiEdit3 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
-                    <div>
-                      <h2 className="headline-lg text-base-content">Editor de Contenido</h2>
-                      <p className="text-small text-base-content/70">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-xl font-bold text-base-content truncate">Editor de Contenido</h2>
+                      <p className="text-xs sm:text-sm text-base-content/70 truncate">
                         Editando: {selectedContent.title || 'Sin título'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={handleCloseEditor}
-                      className="btn btn-ghost btn-sm flex items-center space-x-2"
+                      className="btn btn-ghost btn-sm flex items-center space-x-1 sm:space-x-2"
                     >
                       <FiX className="w-4 h-4" />
-                      <span>Cerrar Editor</span>
+                      <span className="hidden sm:inline">Cerrar Editor</span>
+                      <span className="sm:hidden">Cerrar</span>
                     </button>
                   </div>
                 </div>
               </div>
               
-              <div className="flex-1 bg-base-200">
+              <div className="flex-1 bg-base-200 overflow-hidden">
                 <div className="h-full">
                   <GrapesJSEditor
                     content={selectedContent}
@@ -434,25 +510,25 @@ export function GeneratedContentPage() {
       {isViewModalOpen && viewingContent && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-4xl h-[80vh] flex flex-col shadow-xl">
-              <div className="p-4 border-b border-base-300 bg-base-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary-100 rounded-lg">
-                      <FiEye className="w-5 h-5 text-primary" />
+          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
+            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-4xl h-[95vh] sm:h-[80vh] flex flex-col shadow-xl">
+              <div className="p-3 sm:p-4 border-b border-base-300 bg-base-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+                      <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
-                    <div>
-                      <h2 className="headline-lg text-base-content">Vista Previa del Contenido</h2>
-                      <p className="text-small text-base-content/70">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-xl font-bold text-base-content truncate">Vista Previa del Contenido</h2>
+                      <p className="text-xs sm:text-sm text-base-content/70 truncate">
                         {viewingContent.title || 'Sin título'}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     <button
                       onClick={handleCloseViewModal}
-                      className="btn btn-ghost btn-sm flex items-center space-x-2"
+                      className="btn btn-ghost btn-sm flex items-center space-x-1 sm:space-x-2"
                     >
                       <FiX className="w-4 h-4" />
                       <span>Cerrar</span>
@@ -461,10 +537,10 @@ export function GeneratedContentPage() {
                 </div>
               </div>
               
-              <div className="flex-1 bg-base-200 p-6 overflow-y-auto">
+              <div className="flex-1 bg-base-200 p-3 sm:p-6 overflow-y-auto">
                 <div className="bg-white rounded-lg shadow-sm h-full">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-xl font-bold text-gray-900">
+                  <div className="p-3 sm:p-4 border-b border-gray-200">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                       {viewingContent.title || 'Sin título'}
                     </h3>
                   </div>
