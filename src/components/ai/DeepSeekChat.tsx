@@ -5,13 +5,17 @@ import { aiContentApi, ConversationMessage } from '../../api/endpoints'
 interface DeepSeekChatProps {
   conversationId?: number
   onRequirementsExtracted?: (requirements: unknown) => void
+  showGenerateButton?: boolean
+  onGenerateContent?: () => void
+  isGenerating?: boolean
 }
 
-export function DeepSeekChat({ conversationId, onRequirementsExtracted }: DeepSeekChatProps) {
+export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGenerateButton, onGenerateContent, isGenerating }: DeepSeekChatProps) {
   const queryClient = useQueryClient()
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isContentReady, setIsContentReady] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Obtener mensajes de la conversación
@@ -43,18 +47,40 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted }: DeepSe
       onRequirementsExtracted?.(response.data.requirements)
       // Invalidar queries para actualizar la lista de conversaciones
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
+    },
+    onError: (error: unknown) => {
+      // Mostrar mensaje de error al usuario
+      const errorMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Error al extraer requisitos'
+      alert(errorMessage)
     }
   })
 
   useEffect(() => {
     if (conversationMessages) {
       setMessages(conversationMessages.data || [])
+      
+      // Resetear estado cuando cambia la conversación
+      setIsContentReady(false)
+      
+      // Verificar si el último mensaje del asistente dice que está listo
+      const lastMessage = conversationMessages.data?.[conversationMessages.data.length - 1]
+      if (lastMessage?.role === 'assistant' && 
+          lastMessage.content.toLowerCase().includes('está listo tu contenido para ser generado') &&
+          (lastMessage.content.toLowerCase().includes('extraer requisitos') || 
+           lastMessage.content.toLowerCase().includes('extraer requisitos'))) {
+        setIsContentReady(true)
+      }
     }
   }, [conversationMessages])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Resetear estado cuando cambia la conversación
+  useEffect(() => {
+    setIsContentReady(false)
+  }, [conversationId])
 
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading || !conversationId) return
@@ -72,7 +98,7 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted }: DeepSe
 
     try {
       await sendMessageMutation.mutateAsync(input)
-    } catch (error) {
+    } catch {
       // Error handling
     } finally {
       setIsLoading(false)
@@ -98,13 +124,6 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted }: DeepSe
       <div className="p-4 border-b bg-gray-50">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">Asistente de Contenido Educativo IA</h3>
-          <button
-            onClick={handleExtractRequirements}
-            disabled={extractRequirementsMutation.isPending || !conversationId}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-          >
-            {extractRequirementsMutation.isPending ? 'Extrayendo...' : 'Extraer Requisitos'}
-          </button>
         </div>
         <p className="text-sm text-gray-600 mt-1">
           Describe qué contenido educativo quieres crear (nivel, materia, tema) y te ayudaré paso a paso
@@ -198,24 +217,65 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted }: DeepSe
 
       {/* Input */}
       <div className="p-4 border-t bg-gray-50">
-        <div className="flex space-x-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Escribe tu mensaje aquí... (Enter para enviar, Shift+Enter para nueva línea)"
-            className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            disabled={isLoading || !conversationId}
-            rows={2}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!input.trim() || isLoading || !conversationId}
-            className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-          >
-            Enviar
-          </button>
-        </div>
+        {isContentReady ? (
+          <div className="flex justify-center space-x-2">
+            <button
+              onClick={handleExtractRequirements}
+              disabled={extractRequirementsMutation.isPending || !conversationId}
+              className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+            >
+              {extractRequirementsMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Extrayendo...</span>
+                </>
+              ) : (
+                <>
+                  <span>📋</span>
+                  <span>Extraer Requisitos</span>
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          <div className="flex space-x-2">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Escribe tu mensaje aquí... (Enter para enviar, Shift+Enter para nueva línea)"
+              className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              disabled={isLoading || !conversationId || isGenerating}
+              rows={2}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isLoading || !conversationId || isGenerating}
+              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              Enviar
+            </button>
+          </div>
+        )}
+        
+        {showGenerateButton && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={onGenerateContent}
+              disabled={isGenerating || !conversationId}
+              className="px-8 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Generando...</span>
+                </>
+              ) : (
+                <span>Generar Contenido</span>
+              )}
+            </button>
+          </div>
+        )}
         {!conversationId && (
           <p className="text-xs text-red-500 mt-2">
             Selecciona una conversación para comenzar a chatear

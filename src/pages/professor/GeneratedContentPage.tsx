@@ -462,16 +462,36 @@ export function GeneratedContentPage() {
               </div>
               
               <div className="flex-1 bg-base-200 p-6 overflow-y-auto">
-                <div className="prose prose-lg max-w-none">
-                  <div className="bg-white rounded-lg p-6 shadow-sm">
-                    <h3 className="text-xl font-bold mb-4 text-gray-900">
+                <div className="bg-white rounded-lg shadow-sm h-full">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-xl font-bold text-gray-900">
                       {viewingContent.title || 'Sin título'}
                     </h3>
-                    <div 
-                      className="text-gray-700 leading-relaxed"
-                      dangerouslySetInnerHTML={{ 
-                        __html: viewingContent.html_content || 'No hay contenido disponible' 
-                      }}
+                  </div>
+                  <div className="h-full overflow-auto">
+                    <iframe
+                      srcDoc={`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                          <meta charset="UTF-8">
+                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                          <title>${viewingContent.title || 'Vista Previa'}</title>
+                          <style>
+                            ${viewingContent.css_content || ''}
+                          </style>
+                        </head>
+                        <body>
+                          ${viewingContent.html_content || 'No hay contenido disponible'}
+                          <script>
+                            ${viewingContent.js_content || ''}
+                          </script>
+                        </body>
+                        </html>
+                      `}
+                      className="w-full h-full border-0"
+                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                      title="Vista Previa del Contenido"
                     />
                   </div>
                 </div>

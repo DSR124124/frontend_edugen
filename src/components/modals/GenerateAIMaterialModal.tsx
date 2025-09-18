@@ -241,6 +241,23 @@ export function GenerateAIMaterialModal({
       title="Generar Material con IA"
       size="lg"
     >
+      <div className="relative">
+      {/* Overlay de carga */}
+      {isGenerating && (
+        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+          <div className="text-center p-8">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-primary mb-2">Creando Conversación con IA</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Configurando la conversación y enviando requisitos...
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className="bg-primary h-2 rounded-full animate-pulse" style={{width: '70%'}}></div>
+            </div>
+            <p className="text-xs text-gray-500">Esto puede tomar unos segundos, por favor espere...</p>
+          </div>
+        </div>
+      )}
       <div className="mb-3 p-2 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg border border-primary-200/50 shadow-sm">
         <div className="flex items-center space-x-2">
           <div className="p-1.5 bg-primary-100 rounded-md">
@@ -253,6 +270,22 @@ export function GenerateAIMaterialModal({
             </p>
           </div>
         </div>
+        
+        {/* Indicador de progreso */}
+        {isGenerating && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800">Configurando conversación con IA</p>
+                <p className="text-xs text-blue-600">Esto puede tomar unos segundos...</p>
+              </div>
+            </div>
+            <div className="mt-2 w-full bg-blue-200 rounded-full h-1.5">
+              <div className="bg-blue-500 h-1.5 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -509,19 +542,23 @@ export function GenerateAIMaterialModal({
             className="px-4 py-2 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 transition-all duration-300 hover:scale-105 hover:shadow-lg"
           >
             {isGenerating ? (
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Generando...</span>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium">Creando conversación...</span>
+                  <span className="text-xs opacity-75">Enviando requisitos a la IA</span>
+                </div>
               </div>
             ) : (
-              <div className="flex items-center space-x-1">
-                <FiCpu className="w-3 h-3 animate-pulse" />
+              <div className="flex items-center space-x-2">
+                <FiCpu className="w-4 h-4 animate-pulse" />
                 <span>Generar con IA</span>
               </div>
             )}
           </Button>
         </div>
       </form>
+      </div>
     </Modal>
   )
 }

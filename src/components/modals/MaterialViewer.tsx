@@ -331,6 +331,7 @@ export function MaterialViewer({ material, isOpen, onClose }: MaterialViewerProp
             className="w-full h-full min-h-[80vh] rounded-lg border-0"
             title={material.name}
             style={{ minHeight: '80vh' }}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
           />
         </div>
       )

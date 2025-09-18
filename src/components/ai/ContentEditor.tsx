@@ -52,7 +52,7 @@ export function ContentEditor({ content }: ContentEditorProps) {
         srcDoc={fullHtml}
         className="w-full h-full border-0"
         title="Vista previa del contenido"
-        sandbox="allow-scripts"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
       />
     )
   }
