@@ -156,20 +156,16 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
   // Generar contenido automáticamente
   const generateContentMutation = useMutation({
     mutationFn: async (data: { requirements: Record<string, unknown>; title: string }) => {
-      console.log('🚀 [MUTATION] Starting content generation...')
-      console.log('📋 [MUTATION] Data:', data)
-      console.log('💬 [MUTATION] Conversation ID:', currentConversation)
+      // Starting content generation
       
       if (!currentConversation) throw new Error('No conversation selected')
       return aiContentApi.generateContent(currentConversation, data)
     },
     onSuccess: (response) => {
-      console.log('✅ [MUTATION] Content generated successfully:', response)
       // Redirigir a contenidos generados
       navigate('/generated-content')
     },
     onError: (error) => {
-      console.log('❌ [MUTATION] Error generating content:', error)
       setIsGenerating(false)
     }
   })
