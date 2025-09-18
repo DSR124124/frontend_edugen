@@ -181,6 +181,8 @@ export interface GeneratedContent {
   conversation_title: string
   user_name: string
   title: string
+  description?: string
+  content_type?: string
   html_content: string
   css_content: string
   js_content: string

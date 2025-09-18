@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Textarea } from '../ui/Textarea'
 
 interface Course {
   id: number
@@ -11,32 +15,6 @@ interface Course {
   updated_at: string
 }
 
-// interface Section {
-//   id: number
-//   name: string
-//   course?: {
-//     id: number
-//     name: string
-//     code: string
-//   }
-//   grade_level?: {
-//     id: number
-//     name: string
-//     level: number
-//   }
-//   term?: {
-//     id: number
-//     name: string
-//     is_active: boolean
-//   }
-// }
-
-// interface GradeLevel {
-//   id: number
-//   name: string
-//   level: number
-// }
-
 interface EditCourseModalProps {
   isOpen: boolean
   onClose: () => void
@@ -48,6 +26,12 @@ interface EditCourseModalProps {
   }) => void
   loading: boolean
   course: Course | null
+}
+
+interface FormErrors {
+  name: string
+  code: string
+  credits: string
 }
 
 export function EditCourseModal({
@@ -63,6 +47,13 @@ export function EditCourseModal({
     description: '',
     credits: 0
   })
+  const [errors, setErrors] = useState<FormErrors>({
+    name: '',
+    code: '',
+    credits: ''
+  })
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Actualizar el formulario cuando cambie el curso
   useEffect(() => {
@@ -74,11 +65,106 @@ export function EditCourseModal({
         credits: course.credits || 0
       })
     }
+    // Limpiar errores y estado tocado
+    setErrors({
+      name: '',
+      code: '',
+      credits: ''
+    })
+    setTouched({})
+    setIsSubmitting(false)
   }, [course])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateField = (fieldName: string, value: string | number): string => {
+    switch (fieldName) {
+      case 'name':
+        if (!value || !String(value).trim()) {
+          return 'El nombre del curso es requerido'
+        }
+        if (String(value).trim().length < 3) {
+          return 'El nombre debe tener al menos 3 caracteres'
+        }
+        return ''
+      case 'code':
+        if (!value || !String(value).trim()) {
+          return 'El código del curso es requerido'
+        }
+        if (String(value).trim().length < 2) {
+          return 'El código debe tener al menos 2 caracteres'
+        }
+        return ''
+      case 'credits': {
+        const creditsNum = Number(value)
+        if (isNaN(creditsNum) || creditsNum < 0) {
+          return 'Los créditos deben ser un número mayor o igual a 0'
+        }
+        return ''
+      }
+      default:
+        return ''
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {
+      name: validateField('name', formData.name),
+      code: validateField('code', formData.code),
+      credits: validateField('credits', formData.credits)
+    }
+
+    setErrors(newErrors)
+    setTouched({
+      name: true,
+      code: true,
+      credits: true
+    })
+
+    return !newErrors.name && !newErrors.code && !newErrors.credits
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(formData)
+    
+    const isValid = validateForm()
+    if (!isValid) {
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        name: formData.name.trim(),
+        code: formData.code.trim(),
+        description: formData.description.trim(),
+        credits: formData.credits
+      })
+      onClose()
+    } catch (error) {
+      console.error('Error updating course:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'credits' ? (parseInt(value) || 0) : value
+    }))
+    
+    // Marcar campo como tocado
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }))
+    
+    // Validar campo en tiempo real
+    const fieldError = validateField(name, name === 'credits' ? (parseInt(value) || 0) : value)
+    setErrors(prev => ({
+      ...prev,
+      [name]: fieldError
+    }))
   }
 
   const handleClose = () => {
@@ -88,76 +174,89 @@ export function EditCourseModal({
       description: '',
       credits: 0
     })
+    setErrors({
+      name: '',
+      code: '',
+      credits: ''
+    })
+    setTouched({})
+    setIsSubmitting(false)
     onClose()
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Editar Curso</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nombre del Curso</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Código del Curso</label>
-              <input
-                type="text"
-                value={formData.code}
-                onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Descripción (Opcional)</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                rows={3}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Créditos</label>
-              <input
-                type="number"
-                min="0"
-                value={formData.credits}
-                onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Editar Curso"
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Nombre del Curso"
+          value={formData.name}
+          onChange={handleChange}
+          name="name"
+          placeholder="Ej: Matemáticas Básicas"
+          required
+          error={errors.name && touched.name ? errors.name : undefined}
+          disabled={loading || isSubmitting}
+        />
 
-          <div className="mt-6 flex justify-end space-x-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <Input
+          label="Código del Curso"
+          value={formData.code}
+          onChange={handleChange}
+          name="code"
+          placeholder="Ej: MAT101"
+          required
+          error={errors.code && touched.code ? errors.code : undefined}
+          disabled={loading || isSubmitting}
+        />
+
+        <Textarea
+          label="Descripción (Opcional)"
+          value={formData.description}
+          onChange={handleChange}
+          name="description"
+          rows={3}
+          placeholder="Descripción detallada del curso (opcional)"
+          helperText="Proporciona una descripción detallada del curso para ayudar a los estudiantes"
+          disabled={loading || isSubmitting}
+        />
+
+        <Input
+          label="Créditos"
+          type="number"
+          min="0"
+          value={formData.credits}
+          onChange={handleChange}
+          name="credits"
+          placeholder="0"
+          required
+          error={errors.credits && touched.credits ? errors.credits : undefined}
+          disabled={loading || isSubmitting}
+        />
+
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button
+            type="button"
+            onClick={handleClose}
+            variant="outline"
+            disabled={loading || isSubmitting}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            loading={isSubmitting}
+            disabled={loading || isSubmitting || !formData.name.trim() || !formData.code.trim()}
+          >
+            {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   )
 }

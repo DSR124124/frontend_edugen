@@ -451,7 +451,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               <FiChevronRight className="w-4 h-4" />
             </button>
           )}
-          {(
+          {true && (
             <>
               <DeepSeekChat
                 conversationId={currentConversation || undefined}
@@ -479,8 +479,6 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               
             </>
           )}
-        
-        
         </div>
       </div>
 

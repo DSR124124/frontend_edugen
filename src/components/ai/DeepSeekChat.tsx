@@ -121,30 +121,30 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="p-4 border-b bg-gray-50">
+      <div className="p-3 sm:p-4 border-b bg-gray-50">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">Asistente de Contenido Educativo IA</h3>
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800">Asistente de Contenido Educativo IA</h3>
         </div>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-xs sm:text-sm text-gray-600 mt-1">
           Describe qué contenido educativo quieres crear (nivel, materia, tema) y te ayudaré paso a paso
         </p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         {messagesError && (
-          <div className="text-center text-red-500 mt-8">
-            <div className="text-4xl mb-4">⚠️</div>
-            <p className="text-lg font-medium">Error al cargar mensajes</p>
-            <p className="text-sm">No se pudieron cargar los mensajes de la conversación</p>
+          <div className="text-center text-red-500 mt-6 sm:mt-8">
+            <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">⚠️</div>
+            <p className="text-base sm:text-lg font-medium">Error al cargar mensajes</p>
+            <p className="text-xs sm:text-sm">No se pudieron cargar los mensajes de la conversación</p>
           </div>
         )}
         
         {!messagesError && messages.length === 0 && (
-          <div className="text-center text-gray-500 mt-8">
-            <div className="text-4xl mb-4">🎓</div>
-            <p className="text-lg font-medium">¡Hola! Soy tu asistente de contenido educativo</p>
-            <p className="text-sm">Puedo ayudarte a crear contenido educativo interactivo. ¿Qué materia y nivel quieres enseñar hoy?</p>
+          <div className="text-center text-gray-500 mt-6 sm:mt-8">
+            <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">🎓</div>
+            <p className="text-base sm:text-lg font-medium">¡Hola! Soy tu asistente de contenido educativo</p>
+            <p className="text-xs sm:text-sm">Puedo ayudarte a crear contenido educativo interactivo. ¿Qué materia y nivel quieres enseñar hoy?</p>
           </div>
         )}
         
@@ -154,7 +154,7 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+                className={`max-w-xs sm:max-w-sm lg:max-w-md px-3 sm:px-4 py-2 sm:py-3 rounded-lg ${
                   message.role === 'user'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-800 border border-gray-200'
@@ -162,12 +162,12 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
               >
                 <div className="flex items-start space-x-2">
                   {message.role === 'assistant' && (
-                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-1">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-1">
                       AI
                     </div>
                   )}
                   <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.content}</p>
                     <p className="text-xs opacity-70 mt-1">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </p>
@@ -198,9 +198,9 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 px-4 py-3 rounded-lg border border-gray-200">
+            <div className="bg-gray-100 text-gray-800 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-200">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                   AI
                 </div>
                 <div className="flex space-x-1">
@@ -216,13 +216,13 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-gray-50">
+      <div className="p-3 sm:p-4 border-t bg-gray-50">
         {isContentReady ? (
-          <div className="flex justify-center space-x-2">
+          <div className="flex justify-center">
             <button
               onClick={handleExtractRequirements}
               disabled={extractRequirementsMutation.isPending || !conversationId}
-              className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+              className="px-4 sm:px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2 min-h-[44px] text-sm sm:text-base"
             >
               {extractRequirementsMutation.isPending ? (
                 <>
@@ -238,20 +238,20 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
             </button>
           </div>
         ) : (
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Escribe tu mensaje aquí... (Enter para enviar, Shift+Enter para nueva línea)"
-              className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm sm:text-base"
               disabled={isLoading || !conversationId || isGenerating}
               rows={2}
             />
             <button
               onClick={handleSendMessage}
               disabled={!input.trim() || isLoading || !conversationId || isGenerating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium min-h-[44px] text-sm sm:text-base"
             >
               Enviar
             </button>
@@ -259,11 +259,11 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
         )}
         
         {showGenerateButton && (
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-center mt-3 sm:mt-4">
             <button
               onClick={onGenerateContent}
               disabled={isGenerating || !conversationId}
-              className="px-8 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+              className="px-6 sm:px-8 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2 min-h-[44px] text-sm sm:text-base"
             >
               {isGenerating ? (
                 <>
@@ -277,7 +277,7 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
           </div>
         )}
         {!conversationId && (
-          <p className="text-xs text-red-500 mt-2">
+          <p className="text-xs sm:text-sm text-red-500 mt-2 text-center">
             Selecciona una conversación para comenzar a chatear
           </p>
         )}

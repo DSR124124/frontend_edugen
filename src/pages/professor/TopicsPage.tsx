@@ -5,6 +5,7 @@ import { academicApi, aiContentApi } from '../../api/endpoints'
 import { TopicModal } from '../../components/modals/TopicModal'
 import { AddMaterialModal } from '../../components/modals/AddMaterialModal'
 import { GenerateAIMaterialModal } from '../../components/modals/GenerateAIMaterialModal'
+import { DeleteTopicModal } from '../../components/modals/DeleteTopicModal'
 import { LoadingOverlay } from '../../components/ui/LoadingSpinner'
 import { ViewMaterialsModal } from '../../components/modals/ViewMaterialsModal'
 import { Topic, Student } from '../../api/endpoints'
@@ -42,6 +43,8 @@ export function TopicsPage() {
   const [isMaterialsModalOpen, setIsMaterialsModalOpen] = useState(false)
   const [viewingTopic, setViewingTopic] = useState<Topic | null>(null)
   const [isCreatingAIConversation, setIsCreatingAIConversation] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deletingTopic, setDeletingTopic] = useState<Topic | null>(null)
 
   // Cargar cursos del profesor
   useEffect(() => {
@@ -87,14 +90,27 @@ export function TopicsPage() {
     }
   }
 
-  const handleDeleteTopic = async (topicId: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este tema?')) {
-      try {
-        await deleteTopic(topicId)
-      } catch {
-        // Error deleting topic
-      }
+  const handleDeleteTopic = (topic: Topic) => {
+    setDeletingTopic(topic)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDeleteTopic = async () => {
+    if (!deletingTopic) return
+
+    try {
+      await deleteTopic(deletingTopic.id)
+      setIsDeleteModalOpen(false)
+      setDeletingTopic(null)
+      showSuccess('Tema Eliminado', 'El tema se ha eliminado exitosamente')
+    } catch (error) {
+      showError('Error al Eliminar Tema', 'No se pudo eliminar el tema. Por favor, intenta de nuevo.')
     }
+  }
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeletingTopic(null)
   }
 
   const handleAddMaterial = async (topic: Topic) => {
@@ -489,7 +505,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                               </button>
                               
                               <button
-                                onClick={() => handleDeleteTopic(topic.id)}
+                                onClick={() => handleDeleteTopic(topic)}
                                 className="btn btn-error btn-sm flex items-center justify-center space-x-1 col-span-2 sm:col-span-1"
                               >
                                 <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -541,6 +557,15 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
           onClose={() => setIsMaterialsModalOpen(false)}
           topic={viewingTopic}
         />
-    </div>
-  )
-}
+
+        {/* Delete Topic Modal */}
+        <DeleteTopicModal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={confirmDeleteTopic}
+          loading={loading}
+          topic={deletingTopic}
+        />
+      </div>
+    )
+  }

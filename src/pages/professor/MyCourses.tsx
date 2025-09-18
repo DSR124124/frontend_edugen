@@ -52,6 +52,16 @@ export function MyCourses() {
     loadData()
   }, [])
 
+  // Limpiar estados de modales al montar el componente
+  useEffect(() => {
+    setShowCreateModal(false)
+    setShowAssignModal(false)
+    setShowEditModal(false)
+    setShowViewModal(false)
+    setShowDeleteModal(false)
+    setSelectedCourse(null)
+  }, [])
+
   const loadData = async () => {
     try {
       setLoading(true)
@@ -246,7 +256,7 @@ export function MyCourses() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 min-h-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
         <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
@@ -274,7 +284,7 @@ export function MyCourses() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4">
         <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
           <div className="flex items-center">
             <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
@@ -327,18 +337,18 @@ export function MyCourses() {
         {courses.length > 0 ? (
           <>
             {/* Vista de Cards para móviles */}
-            <div className="block sm:hidden space-y-3">
+            <div className="block sm:hidden space-y-4">
               {courses.map((course) => (
-                <div key={course.id} className="card p-3 hover:shadow-md transition-all duration-200">
+                <div key={course.id} className="card p-4 hover:shadow-md transition-all duration-200">
                   <div className="flex items-start space-x-3 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <FiBook className="w-4 h-4 text-primary" />
+                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <FiBook className="w-5 h-5 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-base text-base-content truncate">
+                      <h3 className="font-semibold text-base text-base-content line-clamp-2" title={course.name}>
                         {course.name}
                       </h3>
-                      <p className="text-xs text-base-content/70 font-mono">
+                      <p className="text-sm text-base-content/70 font-mono mt-1">
                         {course.code}
                       </p>
                     </div>
@@ -348,11 +358,11 @@ export function MyCourses() {
                     </span>
                   </div>
                   
-                  <div className="space-y-2 mb-3">
-                    <div className="text-sm text-base-content line-clamp-2">
+                  <div className="space-y-2 mb-4">
+                    <div className="text-sm text-base-content line-clamp-3">
                       {course.description}
                     </div>
-                    <div className="flex items-center justify-between text-xs text-base-content/70">
+                    <div className="flex items-center justify-between text-sm text-base-content/70">
                       <span>Créditos: {course.credits || 0}</span>
                       <span>
                         {new Date(course.created_at).toLocaleDateString('es-ES', {
@@ -364,12 +374,13 @@ export function MyCourses() {
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button 
                       onClick={() => openViewModal(course)}
                       variant="ghost"
                       size="sm"
-                      leftIcon={<FiEye className="w-3 h-3" />}
+                      leftIcon={<FiEye className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
                       Ver
                     </Button>
@@ -377,7 +388,8 @@ export function MyCourses() {
                       onClick={() => openEditModal(course)}
                       variant="ghost"
                       size="sm"
-                      leftIcon={<FiEdit className="w-3 h-3" />}
+                      leftIcon={<FiEdit className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
                       Editar
                     </Button>
@@ -385,7 +397,8 @@ export function MyCourses() {
                       onClick={() => openAssignModal(course)}
                       variant="primary"
                       size="sm"
-                      leftIcon={<FiUserPlus className="w-3 h-3" />}
+                      leftIcon={<FiUserPlus className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
                       Asignar
                     </Button>
@@ -393,7 +406,8 @@ export function MyCourses() {
                       onClick={() => openDeleteModal(course)}
                       variant="danger"
                       size="sm"
-                      leftIcon={<FiTrash2 className="w-3 h-3" />}
+                      leftIcon={<FiTrash2 className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
                       Eliminar
                     </Button>
