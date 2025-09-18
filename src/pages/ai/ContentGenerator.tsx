@@ -161,11 +161,11 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       if (!currentConversation) throw new Error('No conversation selected')
       return aiContentApi.generateContent(currentConversation, data)
     },
-    onSuccess: (response) => {
+    onSuccess: () => {
       // Redirigir a contenidos generados
       navigate('/generated-content')
     },
-    onError: (error) => {
+    onError: () => {
       setIsGenerating(false)
     }
   })
