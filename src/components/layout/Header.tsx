@@ -176,37 +176,52 @@ export function Header() {
     }, 500) // 0.5 segundos de delay
   }
 
+  // Obtener el título de la página actual para móviles
+  const getCurrentPageTitle = () => {
+    const currentItem = breadcrumbItems.find(item => item.current)
+    return currentItem?.label || 'Dashboard'
+  }
+
   return (
     <header className="bg-white shadow-sm border-b relative z-40" style={{ borderColor: 'var(--color-base-300)' }}>
-      <div className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
           {/* Botón único para mostrar/ocultar sidebar */}
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-md transition-colors hover:bg-gray-200 relative group"
+            className="p-2 rounded-md transition-colors hover:bg-gray-200 active:bg-gray-300 relative group flex-shrink-0"
             title={sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
           >
             {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             
-            {/* Tooltip personalizado */}
-            <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+            {/* Tooltip personalizado - Solo en desktop */}
+            <div className="hidden sm:block absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
               {sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
               <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
             </div>
           </button>
           
-          {/* Breadcrumb */}
+          {/* Título de página actual para móviles */}
+          <div className="sm:hidden flex-1 min-w-0">
+            <h1 className="text-lg font-semibold truncate" style={{ color: 'var(--color-base-content)' }}>
+              {getCurrentPageTitle()}
+            </h1>
+          </div>
+          
+          {/* Breadcrumb - Hidden on mobile for better space usage */}
           {breadcrumbItems.length > 0 && (
-            <Breadcrumb items={breadcrumbItems} />
+            <div className="hidden sm:block flex-1 min-w-0">
+              <Breadcrumb items={breadcrumbItems} />
+            </div>
           )}
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-100)' }}>
-              <User className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
+        <div className="flex items-center space-x-1 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-100)' }}>
+              <User className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'var(--color-primary)' }} />
             </div>
-            <div className="text-sm">
+            <div className="text-sm hidden sm:block">
               <p className="font-semibold" style={{ color: 'var(--color-base-content)' }}>{user?.first_name} {user?.last_name}</p>
               <p className="text-xs capitalize" style={{ color: 'var(--color-base-content)' }}>{user?.role?.toLowerCase()}</p>
             </div>
@@ -214,11 +229,13 @@ export function Header() {
           
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none"
+            className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95"
             style={{
               color: 'var(--color-base-content)',
               backgroundColor: 'var(--color-base-100)',
-              border: `1px solid var(--color-base-300)`
+              border: `1px solid var(--color-base-300)`,
+              minWidth: '44px', // Tamaño mínimo táctil
+              minHeight: '44px'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--color-base-200)'
@@ -228,9 +245,10 @@ export function Header() {
               e.currentTarget.style.backgroundColor = 'var(--color-base-100)'
               e.currentTarget.style.borderColor = 'var(--color-base-300)'
             }}
+            title="Cerrar sesión"
           >
             <LogOut className="h-4 w-4" />
-            <span>Salir</span>
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </div>

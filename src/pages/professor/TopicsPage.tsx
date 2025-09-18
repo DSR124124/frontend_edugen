@@ -290,7 +290,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
         {/* Loading overlay para creación de conversación IA */}
         <LoadingOverlay 
           isVisible={isCreatingAIConversation}
@@ -298,43 +298,43 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         />
         
         {/* Header */}
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-primary-100 rounded-lg">
-            <FiTarget className="w-5 h-5 text-primary" />
+        <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+          <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+            <FiTarget className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
-          <div>
-            <h1 className="headline-2xl text-base-content">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
               Gestión de Temas
             </h1>
-            <p className="text-small text-base-content/70">
+            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
               Crea y gestiona los temas de tus cursos
             </p>
           </div>
         </div>
 
         {/* Course Selector */}
-        <div className="card p-4 mb-4">
-          <h2 className="headline-lg text-base-content mb-3 flex items-center space-x-2">
-            <FiBook className="w-5 h-5 text-primary" />
+        <div className="card p-3 sm:p-4 mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-base-content mb-3 flex items-center space-x-2">
+            <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             <span>Seleccionar Curso</span>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {courses.map((course) => (
               <button
                 key={course.id}
                 onClick={() => setSelectedCourseId(course.id)}
-                className={`p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-sm ${
+                className={`p-3 border-2 rounded-lg text-left transition-all duration-200 hover:shadow-sm active:scale-95 ${
                   selectedCourseId === course.id
                     ? 'border-primary bg-primary-50 text-primary'
                     : 'border-base-300 hover:border-primary/50 hover:bg-base-50'
                 }`}
               >
                 <div className="flex items-center space-x-2 mb-2">
-                  <FiBook className="w-4 h-4" />
-                  <h3 className="headline-small font-medium">{course.name}</h3>
+                  <FiBook className="w-4 h-4 flex-shrink-0" />
+                  <h3 className="font-semibold text-sm sm:text-base truncate">{course.name}</h3>
                 </div>
-                <div className="flex items-center space-x-1 text-small text-base-content/70">
-                  <span>{course.code}</span>
+                <div className="flex items-center space-x-1 text-xs sm:text-sm text-base-content/70">
+                  <span className="font-mono">{course.code}</span>
                 </div>
               </button>
             ))}
@@ -344,20 +344,20 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         {/* Topics Management */}
         {selectedCourseId && (
           <div className="card">
-            <div className="p-4 border-b border-base-300">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="headline-lg text-base-content flex items-center space-x-2">
-                    <FiTarget className="w-5 h-5 text-primary" />
+            <div className="p-3 sm:p-4 border-b border-base-300">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
+                    <FiTarget className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     <span>Temas del Curso</span>
                   </h2>
-                  <p className="text-small text-base-content/70 mt-1">
+                  <p className="text-xs sm:text-sm text-base-content/70 mt-1">
                     {topics.length} tema{topics.length !== 1 ? 's' : ''} encontrado{topics.length !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="btn-primary flex items-center space-x-2"
+                  className="btn-primary flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                   <FiPlus className="w-4 h-4" />
                   <span>Crear Tema</span>
@@ -365,11 +365,11 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-                  <p className="text-small text-base-content/70">Cargando temas...</p>
+                  <p className="text-xs sm:text-sm text-base-content/70">Cargando temas...</p>
                 </div>
               ) : topics.length === 0 ? (
                 <div className="text-center py-12">
@@ -378,28 +378,28 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                       <FiTarget className="w-6 h-6 text-base-content/40" />
                     </div>
                     <div>
-                      <h3 className="headline-xl text-base-content mb-1">No hay temas</h3>
-                      <p className="text-small text-base-content/70">Comienza creando el primer tema para este curso.</p>
+                      <h3 className="text-lg sm:text-xl font-bold text-base-content mb-1">No hay temas</h3>
+                      <p className="text-xs sm:text-sm text-base-content/70">Comienza creando el primer tema para este curso.</p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {topics
                     .sort((a, b) => a.order - b.order)
                     .map((topic) => (
-                      <div key={topic.id} className="rounded-lg border-2 transition-all duration-200 hover:shadow-md p-6" style={{ borderColor: 'var(--color-base-300)' }}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                                <FiTarget className="w-5 h-5 text-primary" />
+                      <div key={topic.id} className="rounded-lg border-2 transition-all duration-200 hover:shadow-md p-4 sm:p-6" style={{ borderColor: 'var(--color-base-300)' }}>
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start space-x-3 mb-3">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                                <FiTarget className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                               </div>
-                              <div>
-                                <h3 className="headline-lg text-base-content">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="text-base sm:text-lg font-bold text-base-content truncate">
                                   {topic.name}
                                 </h3>
-                                <div className="flex items-center space-x-2 mt-1">
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
                                   <span className="badge badge-primary badge-sm">
                                     Orden: {topic.order}
                                   </span>
@@ -413,26 +413,27 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                             </div>
                             
                             {topic.description && (
-                              <p className="text-sm text-base-content/70 mb-3">
+                              <p className="text-xs sm:text-sm text-base-content/70 mb-3 line-clamp-2">
                                 {topic.description}
                               </p>
                             )}
                             
-                            <div className="flex items-center space-x-4 text-small text-base-content/70">
+                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-base-content/70">
                               <div className="flex items-center space-x-2">
-                                <FiBook className="w-4 h-4 text-primary" />
-                                <span><strong>Curso:</strong> {topic.course_name} ({topic.course_code})</span>
+                                <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+                                <span className="truncate"><strong>Curso:</strong> {topic.course_name} ({topic.course_code})</span>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <FiCalendar className="w-4 h-4 text-primary" />
+                                <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
                                 <span><strong>Creado:</strong> {formatDate(topic.created_at)}</span>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="flex items-center space-x-2">
-                            {/* Botones de reordenamiento */}
-                            <div className="flex flex-col space-y-1">
+                          {/* Botones de acción - Responsive */}
+                          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-0 lg:space-y-2 xl:space-y-0 xl:space-x-2">
+                            {/* Botones de reordenamiento - Solo en desktop */}
+                            <div className="hidden lg:flex flex-col space-y-1">
                               <button
                                 onClick={() => handleReorderTopic(topic.id, 'up')}
                                 className="btn btn-ghost btn-sm p-1"
@@ -449,45 +450,52 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                               </button>
                             </div>
                             
-                            <button
-                              onClick={() => handleViewMaterials(topic)}
-                              className="btn btn-ghost btn-sm flex items-center space-x-1"
-                            >
-                              <FiEye className="w-4 h-4" />
-                              <span>Ver Materiales</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleAddMaterial(topic)}
-                              className="btn btn-outline btn-sm flex items-center space-x-1"
-                            >
-                              <FiPlus className="w-4 h-4" />
-                              <span>Agregar Material</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleGenerateAIMaterial(topic)}
-                              className="btn btn-outline btn-sm flex items-center space-x-1"
-                            >
-                              <FiZap className="w-4 h-4" />
-                              <span>Generar con IA</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleEditTopic(topic)}
-                              className="btn btn-ghost btn-sm flex items-center space-x-1"
-                            >
-                              <FiEdit3 className="w-4 h-4" />
-                              <span>Editar</span>
-                            </button>
-                            
-                            <button
-                              onClick={() => handleDeleteTopic(topic.id)}
-                              className="btn btn-error btn-sm flex items-center space-x-1"
-                            >
-                              <FiTrash2 className="w-4 h-4" />
-                              <span>Eliminar</span>
-                            </button>
+                            {/* Botones principales */}
+                            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                              <button
+                                onClick={() => handleViewMaterials(topic)}
+                                className="btn btn-ghost btn-sm flex items-center justify-center space-x-1"
+                              >
+                                <FiEye className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Ver Materiales</span>
+                                <span className="sm:hidden">Ver</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleAddMaterial(topic)}
+                                className="btn btn-outline btn-sm flex items-center justify-center space-x-1"
+                              >
+                                <FiPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Agregar Material</span>
+                                <span className="sm:hidden">Agregar</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleGenerateAIMaterial(topic)}
+                                className="btn btn-outline btn-sm flex items-center justify-center space-x-1"
+                              >
+                                <FiZap className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Generar con IA</span>
+                                <span className="sm:hidden">IA</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleEditTopic(topic)}
+                                className="btn btn-ghost btn-sm flex items-center justify-center space-x-1"
+                              >
+                                <FiEdit3 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Editar</span>
+                                <span className="sm:hidden">Editar</span>
+                              </button>
+                              
+                              <button
+                                onClick={() => handleDeleteTopic(topic.id)}
+                                className="btn btn-error btn-sm flex items-center justify-center space-x-1 col-span-2 sm:col-span-1"
+                              >
+                                <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span>Eliminar</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

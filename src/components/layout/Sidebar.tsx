@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { useAuthStore } from '../../store/auth'
 import { useSidebar } from '../../hooks/useSidebar'
 import logoImage from '../../assets/images/logos/logo.png?url'
@@ -17,6 +18,55 @@ import {
   FileText,
   BarChart3,
   Home,
+  Cpu,
+  Database,
+  Cloud,
+  Zap,
+  Shield,
+  Globe,
+  Code,
+  Wifi,
+  Smartphone,
+  Monitor,
+  Server,
+  // Iconos educativos adicionales
+  BookMarked,
+  Calculator,
+  Microscope,
+  Atom,
+  Beaker,
+  Brain,
+  Lightbulb,
+  PenTool,
+  Ruler,
+  Target,
+  Award,
+  Star,
+  Trophy,
+  BookCheck,
+  ClipboardList,
+  Edit3,
+  FileCheck,
+  Library,
+  School,
+  // Iconos tecnológicos adicionales
+  Terminal,
+  GitBranch,
+  HardDrive,
+  Router,
+  Wrench,
+  Lock,
+  Key,
+  Eye,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  Share2,
+  Camera,
+  Video,
+  Headphones,
+  Printer,
 } from 'lucide-react'
 
 const studentNavigation = [
@@ -52,7 +102,8 @@ const professorNavigation = [
 
 export function Sidebar() {
   const { user } = useAuthStore()
-  const { sidebarOpen, setSidebarOpen, closeSidebarOnMobile } = useSidebar()
+  const { sidebarOpen, setSidebarOpen, closeSidebarOnMobile, isMobile } = useSidebar()
+  const sidebarRef = useRef<HTMLDivElement>(null)
 
   const getNavigation = () => {
     switch (user?.role) {
@@ -69,6 +120,28 @@ export function Sidebar() {
 
   const allNavigation = getNavigation()
 
+  // Handle click outside to close sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node) &&
+        sidebarOpen &&
+        isMobile
+      ) {
+        setSidebarOpen(false)
+      }
+    }
+
+    if (sidebarOpen && isMobile) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [sidebarOpen, isMobile, setSidebarOpen])
+
   return (
     <>
       {/* Overlay para móviles */}
@@ -81,14 +154,194 @@ export function Sidebar() {
       
       {/* Sidebar */}
       <div 
+        ref={sidebarRef}
         className={`fixed inset-y-0 left-0 z-50 w-64 shadow-lg transform transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
-        style={{ backgroundColor: 'var(--color-primary)' }}
+        style={{ 
+          background: "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)"
+        }}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full relative overflow-hidden">
+          {/* Elementos flotantes educativos y tecnológicos distribuidos por todo el sidebar */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Elementos distribuidos uniformemente usando posicionamiento porcentual */}
+            
+            {/* Fila 1 - Top 5% */}
+            <div className="absolute left-2 animate-pulse" style={{ top: '5%', animationDelay: '0.2s' }}>
+              <BookMarked className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-3 animate-bounce" style={{ top: '5%', animationDelay: '0.4s' }}>
+              <Calculator className="w-4 h-4 text-white/15" />
+            </div>
+            <div className="absolute left-8 animate-pulse" style={{ top: '5%', animationDelay: '0.6s' }}>
+              <Microscope className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-8 animate-bounce" style={{ top: '5%', animationDelay: '0.8s' }}>
+              <Atom className="w-4 h-4 text-white/10" />
+            </div>
+            
+            {/* Fila 2 - Top 15% */}
+            <div className="absolute left-3 animate-pulse" style={{ top: '15%', animationDelay: '1s' }}>
+              <Cpu className="w-4 h-4 text-white/20" />
+            </div>
+            <div className="absolute right-4 animate-bounce" style={{ top: '15%', animationDelay: '1.2s' }}>
+              <Database className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-10 animate-pulse" style={{ top: '15%', animationDelay: '1.4s' }}>
+              <Cloud className="w-5 h-5 text-white/10" />
+            </div>
+            <div className="absolute right-10 animate-bounce" style={{ top: '15%', animationDelay: '1.6s' }}>
+              <Terminal className="w-3 h-3 text-white/25" />
+            </div>
+            
+            {/* Fila 3 - Top 25% */}
+            <div className="absolute left-2 animate-pulse" style={{ top: '25%', animationDelay: '1.8s' }}>
+              <Lightbulb className="w-4 h-4 text-white/20" />
+            </div>
+            <div className="absolute right-3 animate-bounce" style={{ top: '25%', animationDelay: '2s' }}>
+              <PenTool className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute left-8 animate-pulse" style={{ top: '25%', animationDelay: '2.2s' }}>
+              <Ruler className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute right-8 animate-bounce" style={{ top: '25%', animationDelay: '2.4s' }}>
+              <Target className="w-4 h-4 text-white/20" />
+            </div>
+            
+            {/* Fila 4 - Top 35% */}
+            <div className="absolute left-3 animate-pulse" style={{ top: '35%', animationDelay: '2.6s' }}>
+              <Router className="w-4 h-4 text-white/20" />
+            </div>
+            <div className="absolute right-4 animate-bounce" style={{ top: '35%', animationDelay: '2.8s' }}>
+              <Wrench className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-10 animate-pulse" style={{ top: '35%', animationDelay: '3s' }}>
+              <Lock className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-10 animate-bounce" style={{ top: '35%', animationDelay: '3.2s' }}>
+              <Key className="w-3 h-3 text-white/20" />
+            </div>
+            
+            {/* Fila 5 - Top 45% */}
+            <div className="absolute left-2 animate-pulse" style={{ top: '45%', animationDelay: '3.4s' }}>
+              <Trophy className="w-4 h-4 text-white/20" />
+            </div>
+            <div className="absolute right-3 animate-bounce" style={{ top: '45%', animationDelay: '3.6s' }}>
+              <BookCheck className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-8 animate-pulse" style={{ top: '45%', animationDelay: '3.8s' }}>
+              <ClipboardList className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-8 animate-bounce" style={{ top: '45%', animationDelay: '4s' }}>
+              <Edit3 className="w-3 h-3 text-white/20" />
+            </div>
+            
+            {/* Fila 6 - Top 55% */}
+            <div className="absolute left-3 animate-pulse" style={{ top: '55%', animationDelay: '4.2s' }}>
+              <Zap className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-4 animate-bounce" style={{ top: '55%', animationDelay: '4.4s' }}>
+              <Shield className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-10 animate-pulse" style={{ top: '55%', animationDelay: '4.6s' }}>
+              <Globe className="w-4 h-4 text-white/10" />
+            </div>
+            <div className="absolute right-10 animate-bounce" style={{ top: '55%', animationDelay: '4.8s' }}>
+              <Code className="w-3 h-3 text-white/25" />
+            </div>
+            
+            {/* Fila 7 - Top 65% */}
+            <div className="absolute left-2 animate-pulse" style={{ top: '65%', animationDelay: '5s' }}>
+              <Wifi className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-3 animate-bounce" style={{ top: '65%', animationDelay: '5.2s' }}>
+              <Smartphone className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-8 animate-pulse" style={{ top: '65%', animationDelay: '5.4s' }}>
+              <Monitor className="w-4 h-4 text-white/20" />
+            </div>
+            <div className="absolute right-8 animate-bounce" style={{ top: '65%', animationDelay: '5.6s' }}>
+              <Server className="w-3 h-3 text-white/15" />
+            </div>
+            
+            {/* Fila 8 - Top 75% */}
+            <div className="absolute left-3 animate-pulse" style={{ top: '75%', animationDelay: '5.8s' }}>
+              <School className="w-4 h-4 text-white/25" />
+            </div>
+            <div className="absolute right-4 animate-bounce" style={{ top: '75%', animationDelay: '6s' }}>
+              <Filter className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute left-10 animate-pulse" style={{ top: '75%', animationDelay: '6.2s' }}>
+              <Camera className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute right-10 animate-bounce" style={{ top: '75%', animationDelay: '6.4s' }}>
+              <Video className="w-3 h-3 text-white/20" />
+            </div>
+            
+            {/* Fila 9 - Top 85% */}
+            <div className="absolute left-2 animate-pulse" style={{ top: '85%', animationDelay: '6.6s' }}>
+              <Headphones className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-3 animate-bounce" style={{ top: '85%', animationDelay: '6.8s' }}>
+              <Printer className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-8 animate-pulse" style={{ top: '85%', animationDelay: '7s' }}>
+              <FileText className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-8 animate-bounce" style={{ top: '85%', animationDelay: '7.2s' }}>
+              <Download className="w-3 h-3 text-white/15" />
+            </div>
+            
+            {/* Fila 10 - Top 95% */}
+            <div className="absolute left-3 animate-pulse" style={{ top: '95%', animationDelay: '7.4s' }}>
+              <Upload className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-4 animate-bounce" style={{ top: '95%', animationDelay: '7.6s' }}>
+              <Share2 className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute left-10 animate-pulse" style={{ top: '95%', animationDelay: '7.8s' }}>
+              <BookOpen className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute right-10 animate-bounce" style={{ top: '95%', animationDelay: '8s' }}>
+              <GraduationCap className="w-3 h-3 text-white/20" />
+            </div>
+            
+            {/* Elementos adicionales distribuidos aleatoriamente */}
+            <div className="absolute left-12 animate-pulse" style={{ top: '10%', animationDelay: '8.2s' }}>
+              <Beaker className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-12 animate-bounce" style={{ top: '20%', animationDelay: '8.4s' }}>
+              <Brain className="w-4 h-4 text-white/15" />
+            </div>
+            <div className="absolute left-14 animate-pulse" style={{ top: '30%', animationDelay: '8.6s' }}>
+              <GitBranch className="w-3 h-3 text-white/20" />
+            </div>
+            <div className="absolute right-14 animate-bounce" style={{ top: '40%', animationDelay: '8.8s' }}>
+              <HardDrive className="w-4 h-4 text-white/15" />
+            </div>
+            <div className="absolute left-12 animate-pulse" style={{ top: '50%', animationDelay: '9s' }}>
+              <Award className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute right-12 animate-bounce" style={{ top: '60%', animationDelay: '9.2s' }}>
+              <Star className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute left-14 animate-pulse" style={{ top: '70%', animationDelay: '9.4s' }}>
+              <Eye className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute right-14 animate-bounce" style={{ top: '80%', animationDelay: '9.6s' }}>
+              <Search className="w-3 h-3 text-white/25" />
+            </div>
+            <div className="absolute left-12 animate-pulse" style={{ top: '90%', animationDelay: '9.8s' }}>
+              <FileCheck className="w-3 h-3 text-white/15" />
+            </div>
+            <div className="absolute right-12 animate-bounce" style={{ top: '100%', animationDelay: '10s' }}>
+              <Library className="w-4 h-4 text-white/25" />
+            </div>
+          </div>
+
           {/* Logo del sistema - Parte superior */}
-          <div className="flex items-center justify-center px-4 py-4">
+          <div className="flex items-center justify-center px-4 py-4 relative z-10">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-lg flex items-center justify-center p-2" style={{ backgroundColor: 'var(--color-primary-50)' }}>
                 <img
@@ -111,7 +364,7 @@ export function Sidebar() {
           {/* Línea divisoria debajo del logo */}
           <div className="mx-4 border-b-2 border-white opacity-60"></div>
           
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-2 relative z-10">
             {allNavigation.map((item) => {
               const Icon = item.icon
               return (

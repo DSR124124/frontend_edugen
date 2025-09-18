@@ -246,18 +246,18 @@ export function MyCourses() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-primary-100 rounded-lg">
-            <FiBook className="w-5 h-5 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
+        <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
+          <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+            <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
-          <div>
-            <h1 className="headline-2xl text-base-content">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
               Mis Cursos
             </h1>
-            <p className="text-small text-base-content/70">
+            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
               Gestiona los cursos que has creado y dictas
             </p>
           </div>
@@ -266,174 +266,255 @@ export function MyCourses() {
           onClick={() => setShowCreateModal(true)}
           variant="primary"
           leftIcon={<FiPlus className="w-4 h-4" />}
+          className="w-full sm:w-auto"
         >
-          Crear Curso
+          <span className="hidden sm:inline">Crear Curso</span>
+          <span className="sm:hidden">Crear</span>
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
           <div className="flex items-center">
-            <div className="p-3 bg-primary-100 rounded-lg">
-              <FiBook className="w-6 h-6 text-primary" />
+            <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
+              <FiBook className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
-            <div className="ml-4">
-              <p className="text-small font-medium text-base-content/70">Total Cursos</p>
-              <p className="text-2xl font-semibold text-base-content">{courses.length}</p>
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Total Cursos</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">{courses.length}</p>
             </div>
           </div>
         </div>
         
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
           <div className="flex items-center">
-            <div className="p-3 bg-success-100 rounded-lg">
-              <FiCheckCircle className="w-6 h-6 text-success" />
+            <div className="p-2 sm:p-3 bg-success-100 rounded-lg flex-shrink-0">
+              <FiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
             </div>
-            <div className="ml-4">
-              <p className="text-small font-medium text-base-content/70">Cursos Activos</p>
-              <p className="text-2xl font-semibold text-base-content">{courses.length}</p>
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Cursos Activos</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">{courses.length}</p>
             </div>
           </div>
         </div>
         
-        <div className="card p-4">
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center">
-            <div className="p-3 bg-secondary-100 rounded-lg">
-              <FiUsers className="w-6 h-6 text-secondary" />
+            <div className="p-2 sm:p-3 bg-secondary-100 rounded-lg flex-shrink-0">
+              <FiUsers className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
             </div>
-            <div className="ml-4">
-              <p className="text-small font-medium text-base-content/70">Secciones Asignadas</p>
-              <p className="text-2xl font-semibold text-base-content">{professorSections?.length || 0}</p>
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Secciones Asignadas</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">{professorSections?.length || 0}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Courses Grid */}
-      <div className="card p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="headline-lg text-base-content flex items-center space-x-2">
-            <FiBook className="w-5 h-5 text-primary" />
+      <div className="card p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
+          <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
+            <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             <span>Cursos Creados</span>
           </h2>
-          <div className="text-small text-base-content/70">
+          <div className="text-xs sm:text-sm text-base-content/70">
             {courses.length} {courses.length === 1 ? 'curso' : 'cursos'} encontrado{courses.length !== 1 ? 's' : ''}
           </div>
         </div>
 
         {courses.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-base-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Curso
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Código
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Descripción
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Créditos
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Creado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-base-100 divide-y divide-base-300">
-                {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-base-200/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                          <FiBook className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-base-content">{course.name}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-base-content font-mono bg-base-200 px-2 py-1 rounded">
+          <>
+            {/* Vista de Cards para móviles */}
+            <div className="block sm:hidden space-y-3">
+              {courses.map((course) => (
+                <div key={course.id} className="card p-3 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-start space-x-3 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                      <FiBook className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-base text-base-content truncate">
+                        {course.name}
+                      </h3>
+                      <p className="text-xs text-base-content/70 font-mono">
                         {course.code}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-base-content max-w-xs truncate" title={course.description}>
-                        {course.description}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-base-content">
-                        {course.credits || 0}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-base-content">
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-success-100 text-success rounded-full flex-shrink-0">
+                      <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                      Activo
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 mb-3">
+                    <div className="text-sm text-base-content line-clamp-2">
+                      {course.description}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-base-content/70">
+                      <span>Créditos: {course.credits || 0}</span>
+                      <span>
                         {new Date(course.created_at).toLocaleDateString('es-ES', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric'
                         })}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
-                        <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
-                        Activo
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <Button 
-                          onClick={() => openViewModal(course)}
-                          variant="ghost"
-                          size="sm"
-                          leftIcon={<FiEye className="w-4 h-4" />}
-                        >
-                          Ver
-                        </Button>
-                        <Button 
-                          onClick={() => openEditModal(course)}
-                          variant="ghost"
-                          size="sm"
-                          leftIcon={<FiEdit className="w-4 h-4" />}
-                        >
-                          Editar
-                        </Button>
-                        <Button 
-                          onClick={() => openAssignModal(course)}
-                          variant="primary"
-                          size="sm"
-                          leftIcon={<FiUserPlus className="w-4 h-4" />}
-                        >
-                          Asignar
-                        </Button>
-                        <Button 
-                          onClick={() => openDeleteModal(course)}
-                          variant="danger"
-                          size="sm"
-                          leftIcon={<FiTrash2 className="w-4 h-4" />}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </td>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      onClick={() => openViewModal(course)}
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<FiEye className="w-3 h-3" />}
+                    >
+                      Ver
+                    </Button>
+                    <Button 
+                      onClick={() => openEditModal(course)}
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<FiEdit className="w-3 h-3" />}
+                    >
+                      Editar
+                    </Button>
+                    <Button 
+                      onClick={() => openAssignModal(course)}
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<FiUserPlus className="w-3 h-3" />}
+                    >
+                      Asignar
+                    </Button>
+                    <Button 
+                      onClick={() => openDeleteModal(course)}
+                      variant="danger"
+                      size="sm"
+                      leftIcon={<FiTrash2 className="w-3 h-3" />}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Vista de Tabla para desktop */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-base-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Curso
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Código
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Descripción
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Créditos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Creado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-base-100 divide-y divide-base-300">
+                  {courses.map((course) => (
+                    <tr key={course.id} className="hover:bg-base-200/50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                            <FiBook className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-base-content">{course.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-base-content font-mono bg-base-200 px-2 py-1 rounded">
+                          {course.code}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-base-content max-w-xs truncate" title={course.description}>
+                          {course.description}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-base-content">
+                          {course.credits || 0}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-base-content">
+                          {new Date(course.created_at).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
+                          <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                          Activo
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <Button 
+                            onClick={() => openViewModal(course)}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<FiEye className="w-4 h-4" />}
+                          >
+                            Ver
+                          </Button>
+                          <Button 
+                            onClick={() => openEditModal(course)}
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<FiEdit className="w-4 h-4" />}
+                          >
+                            Editar
+                          </Button>
+                          <Button 
+                            onClick={() => openAssignModal(course)}
+                            variant="primary"
+                            size="sm"
+                            leftIcon={<FiUserPlus className="w-4 h-4" />}
+                          >
+                            Asignar
+                          </Button>
+                          <Button 
+                            onClick={() => openDeleteModal(course)}
+                            variant="danger"
+                            size="sm"
+                            leftIcon={<FiTrash2 className="w-4 h-4" />}
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
           <EmptyCoursesState 
             onAddCourse={() => setShowCreateModal(true)}
