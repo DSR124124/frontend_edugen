@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
 import { useNotificationContext } from "../../hooks/useNotificationContext";
 import { authApi } from "../../api/endpoints";
+import fondoImage from "../../assets/images/backgrounds/fondo.png?url";
 import estudiantesImage from "../../assets/images/backgrounds/estudiantes.jpg?url";
 import logoImage from "../../assets/images/logos/logo.png?url";
 import { 
@@ -75,7 +76,7 @@ export function Login() {
 
   return (
     <div
-      className="min-h-screen flex flex-col lg:flex-row relative"
+      className="h-screen flex flex-col lg:flex-row relative overflow-hidden"
       style={{
         background:
           "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
@@ -84,16 +85,16 @@ export function Login() {
       {/* Mobile Background Image - Only visible on mobile, shows complete image */}
       <div className="lg:hidden absolute inset-0 overflow-hidden">
         <div
-          className="absolute inset-0 opacity-20"
+          className="absolute inset-0"
           style={{
-            backgroundImage: `url(${estudiantesImage})`,
+            backgroundImage: `url(${fondoImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
           }}
         />
-        {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50" />
+        {/* Gradient overlay for better text readability - with increased opacity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30" />
       </div>
 
       {/* Mobile Header - Only visible on mobile */}
@@ -179,8 +180,8 @@ export function Login() {
       </div>
 
       {/* Right Section - Login Form */}
-      <div className="w-full md:w-1/2 lg:w-1/3 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 flex-1 lg:flex-none">
-        <div className="w-full max-w-sm sm:max-w-md">
+      <div className="w-full md:w-1/2 lg:w-1/3 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 flex-1 lg:flex-none h-full md:h-auto">
+        <div className="w-full max-w-sm sm:max-w-md mx-auto">
           <div
             className="rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm"
             style={{
