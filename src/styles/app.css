@@ -9,6 +9,26 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
+  
+  /* Evitar líneas blancas no deseadas */
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Evitar espacios en blanco entre elementos */
+  .space-y-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
 }
 
 @layer components {

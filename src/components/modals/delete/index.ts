@@ -1,0 +1,6 @@
+export { DeleteModal } from '../DeleteModal'
+export { DeleteCourseModal } from '../DeleteCourseModal'
+export { DeleteTopicModal } from '../DeleteTopicModal'
+export { DeleteContentModal } from '../DeleteContentModal'
+export { DeleteSectionModal } from '../DeleteSectionModal'
+export { DeleteMaterialModal } from '../DeleteMaterialModal'

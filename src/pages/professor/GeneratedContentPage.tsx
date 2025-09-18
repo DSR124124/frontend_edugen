@@ -2,40 +2,41 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, academicApi, GeneratedContent } from '../../api/endpoints'
 import { useNotificationContext } from '../../hooks/useNotificationContext'
-import { GrapesJSEditor } from '../../components/ai/GrapesJSEditor'
+import { ContentEditorModal } from '../../components/ai/ContentEditorModal'
 import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal'
+import { ContentViewModal } from '../../components/modals/ContentViewModal'
+import { DeleteContentModal } from '../../components/modals/DeleteContentModal'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useTopics } from '../../hooks/useTopics'
-import { useAuthStore } from '../../store/auth'
 import { 
   FiFileText, 
   FiEdit3, 
   FiTrash2, 
   FiUpload, 
-  FiX, 
   FiCalendar,
   FiCheckCircle,
-  FiAlertTriangle,
   FiEye
 } from 'react-icons/fi'
 import { PageLoadingState, PageErrorState } from '../../components/common'
+import { Button } from '../../components/ui/Button'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useNotificationContext()
-  const { user } = useAuthStore()
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [viewingContent, setViewingContent] = useState<GeneratedContent | null>(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deletingContent, setDeletingContent] = useState<GeneratedContent | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   // Obtener secciones y temas del profesor
-  const { sections, loading: loadingSections, error: sectionsError } = useProfessorSections()
+  const { sections } = useProfessorSections()
   const { topics } = useTopics()
   
-
   // Obtener contenidos generados
   const { data: generatedContents, isLoading, error } = useQuery({
     queryKey: ['generated-content'],
@@ -64,12 +65,6 @@ export function GeneratedContentPage() {
     setIsViewModalOpen(true)
   }
 
-  const handleDeleteContent = (id: number, title: string) => {
-    if (window.confirm(`¿Estás seguro de que quieres eliminar "${title}"?`)) {
-      deleteContentMutation.mutate(id)
-    }
-  }
-
   const handleCloseEditor = () => {
     setIsEditorOpen(false)
     setSelectedContent(null)
@@ -80,15 +75,39 @@ export function GeneratedContentPage() {
     setViewingContent(null)
   }
 
+  const handleOpenDeleteModal = (content: GeneratedContent) => {
+    setDeletingContent(content)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeletingContent(null)
+  }
+
+  const handleConfirmDelete = () => {
+    if (deletingContent) {
+      deleteContentMutation.mutate(deletingContent.id)
+      handleCloseDeleteModal()
+    }
+  }
+
   const handleSaveContent = async (updatedContent: unknown) => {
     if (selectedContent) {
+      setIsSaving(true)
       try {
-        await aiContentApi.updateGeneratedContent(selectedContent.id, updatedContent as Record<string, unknown>)
+        const contentData = updatedContent as GeneratedContent
+        await aiContentApi.updateGeneratedContent(selectedContent.id, {
+          title: contentData.title
+        })
+        
         queryClient.invalidateQueries({ queryKey: ['generated-content'] })
-        showSuccess('Contenido Actualizado', 'El contenido se ha guardado exitosamente')
+        showSuccess('Contenido Actualizado', 'El contenido se ha actualizado exitosamente')
         handleCloseEditor()
       } catch {
-        showError('Error', 'No se pudo guardar el contenido')
+        showError('Error', 'No se pudo actualizar el contenido')
+      } finally {
+        setIsSaving(false)
       }
     }
   }
@@ -107,77 +126,35 @@ export function GeneratedContentPage() {
     sectionId: number
     title: string
     description?: string
-    format: 'SCORM' | 'PDF' | 'HTML' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK'
+    format: 'SCORM' | 'PDF' | 'HTML'
     assignmentType: 'general' | 'personalized'
     selectedStudents?: number[]
   }) => {
     if (!assigningContent) return
 
     try {
-      // Verificar que las secciones estén cargadas
-      if (loadingSections) {
-        throw new Error('Las secciones aún se están cargando. Inténtalo de nuevo en unos momentos.')
-      }
-      
-      if (sectionsError) {
-        throw new Error(`Error al cargar secciones: ${sectionsError}`)
-      }
-      
-      if (!sections || sections.length === 0) {
-        throw new Error('No se encontraron secciones asignadas. Contacta al administrador.')
-      }
-      
-      // Obtener la sección (manejar tanto números como strings)
-      const section = sections.find(s => s.id == data.sectionId || s.id === data.sectionId)
-      
-      if (!section) {
-        throw new Error(`No se pudo encontrar la sección con ID ${data.sectionId}`)
-      }
-      
-      if (!section.course) {
-        throw new Error(`La sección ${section.name} no tiene un curso asociado`)
-      }
-
-      // Obtener el primer tema del curso (o crear uno si no existe)
-      let topic = topics.find(t => t.course === section.course?.id)
-      if (!topic) {
-        // Crear un tema por defecto para el curso
-        const topicData = {
-          name: 'Tema Principal',
-          description: 'Tema principal del curso',
-          course: section.course.id
-        }
-        const topicResponse = await academicApi.createTopic(topicData)
-        topic = topicResponse.data
-      }
-
-      // Crear el material
       const materialData = new FormData()
-      materialData.append('name', data.title)
+      materialData.append('title', data.title)
       materialData.append('description', data.description || '')
-      // Asignar el tipo de material correcto según el formato
-      let materialType = 'DOCUMENT' // Por defecto
-      if (data.format === 'SCORM') {
-        materialType = 'SCORM'
-      } else if (data.format === 'VIDEO') {
-        materialType = 'VIDEO'
-      } else if (data.format === 'AUDIO') {
-        materialType = 'AUDIO'
-      } else if (data.format === 'IMAGE') {
-        materialType = 'IMAGE'
-      } else if (data.format === 'LINK') {
-        materialType = 'LINK'
-      }
-      materialData.append('material_type', materialType)
-      materialData.append('topic', topic.id.toString())
-      materialData.append('professor', user?.id?.toString() || '') // Campo requerido
-      materialData.append('is_shared', 'true') // Material compartido para toda la sección
+      materialData.append('section', data.sectionId.toString())
+      materialData.append('material_type', data.format)
+      materialData.append('assignment_type', data.assignmentType)
       
-      // Si es SCORM, agregar el contenido como archivo
+      if (data.selectedStudents && data.selectedStudents.length > 0) {
+        materialData.append('selected_students', JSON.stringify(data.selectedStudents))
+      }
+
+      // Crear el contenido SCORM
       if (data.format === 'SCORM') {
-        // Crear un archivo temporal con el contenido SCORM
-        const scormContent = JSON.stringify(assigningContent)
-        const blob = new Blob([scormContent], { type: 'application/json' })
+        const scormContent = {
+          title: data.title,
+          description: data.description || '',
+          html_content: assigningContent.html_content || '',
+          css_content: assigningContent.css_content || '',
+          js_content: assigningContent.js_content || ''
+        }
+        
+        const blob = new Blob([JSON.stringify(scormContent)], { type: 'application/json' })
         materialData.append('file', blob, 'scorm-content.json')
       }
 
@@ -215,288 +192,293 @@ export function GeneratedContentPage() {
   const contents = generatedContents?.data || []
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 min-h-0">
       {/* Header */}
-      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-          <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
-            Contenidos Generados
-          </h1>
-          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
-            Gestiona y edita todos los contenidos educativos generados con IA
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
+        <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
+          <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+            <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
+              Contenidos Generados
+            </h1>
+            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
+              Gestiona y edita todos los contenidos educativos generados con IA
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Contenido Principal */}
-      {isLoading ? (
-        <div className="card p-4 mb-4">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
-            <h3 className="headline-lg text-base-content mb-2">Cargando Contenidos</h3>
-            <p className="text-small text-base-content/70">Obteniendo contenidos generados...</p>
-          </div>
-        </div>
-      ) : error ? (
-        <div className="card p-4 mb-4">
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 bg-error-100 rounded-full">
-                <FiAlertTriangle className="w-6 h-6 text-error" />
-              </div>
-              <div>
-                <h3 className="headline-xl text-base-content mb-1">Error al Cargar</h3>
-                <p className="text-small text-base-content/70">No se pudieron cargar los contenidos generados</p>
-              </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4">
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center">
+            <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
+              <FiFileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            </div>
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Total Contenidos</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">{contents.length}</p>
             </div>
           </div>
         </div>
-      ) : contents.length === 0 ? (
-        <div className="card p-4 mb-4">
-          <div className="text-center py-12">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 bg-base-200 rounded-full">
-                <FiFileText className="w-6 h-6 text-base-content/40" />
-              </div>
-              <div>
-                <h3 className="headline-xl text-base-content mb-1">No hay contenidos generados</h3>
-                <p className="text-small text-base-content/70">Los contenidos generados con IA aparecerán aquí</p>
-              </div>
+        
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center">
+            <div className="p-2 sm:p-3 bg-success-100 rounded-lg flex-shrink-0">
+              <FiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+            </div>
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Contenidos Activos</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">{contents.length}</p>
             </div>
           </div>
         </div>
-        ) : (
-          <div className="card p-3 sm:p-4 mb-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
-              <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
-                <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                <span>Lista de Contenidos</span>
-              </h2>
-              <div className="text-xs sm:text-sm text-base-content/70">
-                {contents.length} contenido{contents.length !== 1 ? 's' : ''} generado{contents.length !== 1 ? 's' : ''}
-              </div>
+        
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center">
+            <div className="p-2 sm:p-3 bg-secondary-100 rounded-lg flex-shrink-0">
+              <FiCalendar className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
             </div>
-            
-            {/* Vista de Cards para móviles */}
-            <div className="block sm:hidden space-y-3">
+            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Generados Hoy</p>
+              <p className="text-xl sm:text-2xl font-semibold text-base-content">
+                {contents.filter(content => {
+                  const today = new Date()
+                  const contentDate = new Date(content.created_at)
+                  return contentDate.toDateString() === today.toDateString()
+                }).length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenidos Grid */}
+      <div className="card p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
+          <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
+            <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <span>Contenidos Generados</span>
+          </h2>
+          <div className="text-xs sm:text-sm text-base-content/70">
+            {contents.length} {contents.length === 1 ? 'contenido' : 'contenidos'} encontrado{contents.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {contents.length > 0 ? (
+            <>
+            {/* Vista de Cards para móviles y tablets */}
+            <div className="block lg:hidden space-y-4">
               {contents.map((content) => (
-                <div key={content.id} className="card p-3 hover:shadow-md transition-all duration-200">
+                <div key={content.id} className="card p-4 hover:shadow-md transition-all duration-200 w-full">
                   <div className="flex items-start space-x-3 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
                       <FiFileText className="w-4 h-4 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-base text-base-content truncate">
+                      <h3 className="font-semibold text-sm sm:text-base text-base-content line-clamp-2" title={content.title || 'Sin título'}>
                         {content.title || 'Sin título'}
                       </h3>
-                      <p className="text-xs text-base-content/70">ID: {content.id}</p>
+                      <p className="text-xs text-base-content/70 font-mono mt-1">
+                        ID: {content.id}
+                      </p>
                     </div>
-                    <span className="badge badge-primary badge-sm flex-shrink-0">
-                      <FiCheckCircle className="w-3 h-3 mr-1" />
-                      Generado
+                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-success-100 text-success rounded-full flex-shrink-0">
+                      <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                      <span className="hidden sm:inline">Generado</span>
+                      <span className="sm:hidden">✓</span>
                     </span>
                   </div>
                   
                   <div className="space-y-2 mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="badge badge-success badge-sm">Contenido Educativo</span>
+                    <div className="text-sm text-base-content/70">
+                      Contenido Educativo Generado con IA
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <FiCalendar className="w-3 h-3 text-primary" />
-                      <span className="text-xs text-base-content/70">
+                    <div className="flex items-center justify-between text-sm text-base-content/70">
+                      <span>ID: {content.id}</span>
+                      <span>
                         {new Date(content.created_at).toLocaleDateString('es-ES', {
                           year: 'numeric',
                           month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
+                          day: 'numeric'
                         })}
                       </span>
                     </div>
                   </div>
                   
-                  <div className="flex flex-wrap gap-2">
-                    <button
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
                       onClick={() => handleViewContent(content)}
-                      className="btn btn-ghost btn-xs flex items-center space-x-1"
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<FiEye className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
-                      <FiEye className="w-3 h-3" />
-                      <span>Ver</span>
-                    </button>
-                    <button
+                      Ver
+                    </Button>
+                    <Button 
                       onClick={() => handleEditContent(content)}
-                      className="btn btn-ghost btn-xs flex items-center space-x-1"
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<FiEdit3 className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
-                      <FiEdit3 className="w-3 h-3" />
-                      <span>Editar</span>
-                    </button>
-                    <button
+                      Editar
+                    </Button>
+                    <Button 
                       onClick={() => handleAssignMaterial(content)}
-                      className="btn btn-outline btn-xs flex items-center space-x-1"
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<FiUpload className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
-                      <FiUpload className="w-3 h-3" />
-                      <span>Asignar</span>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteContent(content.id, content.title || 'Sin título')}
-                      className="btn btn-error btn-xs flex items-center space-x-1"
-                      disabled={deleteContentMutation.isPending}
+                      Asignar
+                    </Button>
+                    <Button 
+                      onClick={() => handleOpenDeleteModal(content)}
+                      variant="danger"
+                      size="sm"
+                      leftIcon={<FiTrash2 className="w-4 h-4" />}
+                      className="text-sm px-3 py-2 h-auto min-h-[44px]"
                     >
-                      <FiTrash2 className="w-3 h-3" />
-                      <span>Eliminar</span>
-                    </button>
+                      Eliminar
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
-            
-            {/* Vista de Tabla para desktop */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="table table-zebra w-full">
-                <thead>
-                  <tr className="bg-base-200">
-                    <th className="text-base-content font-semibold">Título</th>
-                    <th className="text-base-content font-semibold">Tipo</th>
-                    <th className="text-base-content font-semibold">Fecha de Creación</th>
-                    <th className="text-base-content font-semibold">Estado</th>
-                    <th className="text-base-content font-semibold">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contents.map((content) => (
-                    <tr key={content.id} className="hover:bg-base-50">
-                      <td className="font-medium text-base-content">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                            <FiFileText className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <div className="headline-small text-base-content">
-                              {content.title || 'Sin título'}
+              
+              {/* Vista de Tabla para desktop */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-base-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        Contenido
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        Creado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-base-100 divide-y divide-base-300">
+                    {contents.map((content) => (
+                      <tr key={content.id} className="hover:bg-base-200/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                              <FiFileText className="w-4 h-4 text-primary" />
                             </div>
-                            <div className="text-small text-base-content/70">
-                              ID: {content.id}
+                            <div>
+                              <div className="text-sm font-medium text-base-content">{content.title || 'Sin título'}</div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="text-base-content/70">
-                        <span className="badge badge-success badge-sm">
-                          Contenido Educativo
-                        </span>
-                      </td>
-                      <td className="text-base-content/70">
-                        <div className="flex items-center space-x-2">
-                          <FiCalendar className="w-4 h-4 text-primary" />
-                          <span className="text-small">
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-base-content font-mono bg-base-200 px-2 py-1 rounded">
+                            {content.id}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-base-content">
+                            Contenido Educativo
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-base-content">
                             {new Date(content.created_at).toLocaleDateString('es-ES', {
                               year: 'numeric',
                               month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              day: 'numeric'
                             })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
+                            <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                            Generado
                           </span>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge badge-primary badge-sm">
-                          <FiCheckCircle className="w-3 h-3 mr-1" />
-                          Generado
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <button
-                            onClick={() => handleViewContent(content)}
-                            className="btn btn-ghost btn-sm flex items-center space-x-1"
-                          >
-                            <FiEye className="w-4 h-4" />
-                            <span>Ver</span>
-                          </button>
-                          <button
-                            onClick={() => handleEditContent(content)}
-                            className="btn btn-ghost btn-sm flex items-center space-x-1"
-                          >
-                            <FiEdit3 className="w-4 h-4" />
-                            <span>Editar</span>
-                          </button>
-                          <button
-                            onClick={() => handleAssignMaterial(content)}
-                            className="btn btn-outline btn-sm flex items-center space-x-1"
-                          >
-                            <FiUpload className="w-4 h-4" />
-                            <span>Asignar</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteContent(content.id, content.title || 'Sin título')}
-                            className="btn btn-error btn-sm flex items-center space-x-1"
-                            disabled={deleteContentMutation.isPending}
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                            <span>Eliminar</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-      {/* Modal del Editor */}
-      {isEditorOpen && selectedContent && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
-          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
-            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-7xl h-[95vh] sm:h-[90vh] flex flex-col shadow-xl">
-              <div className="p-3 sm:p-4 border-b border-base-300 bg-base-100">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-                      <FiEdit3 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-lg sm:text-xl font-bold text-base-content truncate">Editor de Contenido</h2>
-                      <p className="text-xs sm:text-sm text-base-content/70 truncate">
-                        Editando: {selectedContent.title || 'Sin título'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button
-                      onClick={handleCloseEditor}
-                      className="btn btn-ghost btn-sm flex items-center space-x-1 sm:space-x-2"
-                    >
-                      <FiX className="w-4 h-4" />
-                      <span className="hidden sm:inline">Cerrar Editor</span>
-                      <span className="sm:hidden">Cerrar</span>
-                    </button>
-                  </div>
-                </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button 
+                              onClick={() => handleViewContent(content)}
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<FiEye className="w-4 h-4" />}
+                            >
+                              Ver
+                            </Button>
+                            <Button 
+                              onClick={() => handleEditContent(content)}
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<FiEdit3 className="w-4 h-4" />}
+                            >
+                              Editar
+                            </Button>
+                            <Button 
+                              onClick={() => handleAssignMaterial(content)}
+                              variant="primary"
+                              size="sm"
+                              leftIcon={<FiUpload className="w-4 h-4" />}
+                            >
+                              Asignar
+                            </Button>
+                            <Button 
+                              onClick={() => handleOpenDeleteModal(content)}
+                              variant="danger"
+                              size="sm"
+                              leftIcon={<FiTrash2 className="w-4 h-4" />}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              
-              <div className="flex-1 bg-base-200 overflow-hidden">
-                <div className="h-full">
-                  <GrapesJSEditor
-                    content={selectedContent}
-                    onSave={handleSaveContent}
-                    useGrapesJS={true}
-                    onToggleGrapesJS={() => {}}
-                  />
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="p-4 bg-base-200 rounded-full">
+                  <FiFileText className="w-10 h-10 text-base-content/40" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-base-content mb-2">No hay contenidos generados</h3>
+                  <p className="text-base-content/70">Los contenidos generados con IA aparecerán aquí</p>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
 
-      {/* Modal de Asignación de Material */}
+      {/* Modales */}
+      <ContentEditorModal
+        content={selectedContent!}
+        isOpen={isEditorOpen}
+        onClose={handleCloseEditor}
+        onSave={handleSaveContent}
+        isSaving={isSaving}
+      />
+
       <AssignMaterialModal
         isOpen={isAssignModalOpen}
         onClose={handleCloseAssignModal}
@@ -506,76 +488,19 @@ export function GeneratedContentPage() {
         topics={topics}
       />
 
-      {/* Modal de Visualización de Contenido */}
-      {isViewModalOpen && viewingContent && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed bg-black/60 backdrop-blur-md transition-opacity"></div>
-          <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
-            <div className="relative z-10 bg-base-100 rounded-lg w-full max-w-4xl h-[95vh] sm:h-[80vh] flex flex-col shadow-xl">
-              <div className="p-3 sm:p-4 border-b border-base-300 bg-base-100">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
-                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-                    <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-                      <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-lg sm:text-xl font-bold text-base-content truncate">Vista Previa del Contenido</h2>
-                      <p className="text-xs sm:text-sm text-base-content/70 truncate">
-                        {viewingContent.title || 'Sin título'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <button
-                      onClick={handleCloseViewModal}
-                      className="btn btn-ghost btn-sm flex items-center space-x-1 sm:space-x-2"
-                    >
-                      <FiX className="w-4 h-4" />
-                      <span>Cerrar</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex-1 bg-base-200 p-3 sm:p-6 overflow-y-auto">
-                <div className="bg-white rounded-lg shadow-sm h-full">
-                  <div className="p-3 sm:p-4 border-b border-gray-200">
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
-                      {viewingContent.title || 'Sin título'}
-                    </h3>
-                  </div>
-                  <div className="h-full overflow-auto">
-                    <iframe
-                      srcDoc={`
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                          <meta charset="UTF-8">
-                          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                          <title>${viewingContent.title || 'Vista Previa'}</title>
-                          <style>
-                            ${viewingContent.css_content || ''}
-                          </style>
-                        </head>
-                        <body>
-                          ${viewingContent.html_content || 'No hay contenido disponible'}
-                          <script>
-                            ${viewingContent.js_content || ''}
-                          </script>
-                        </body>
-                        </html>
-                      `}
-                      className="w-full h-full border-0"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-                      title="Vista Previa del Contenido"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ContentViewModal
+        isOpen={isViewModalOpen}
+        onClose={handleCloseViewModal}
+        content={viewingContent}
+      />
+
+      <DeleteContentModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        loading={deleteContentMutation.isPending}
+        content={deletingContent}
+      />
     </div>
   )
 }

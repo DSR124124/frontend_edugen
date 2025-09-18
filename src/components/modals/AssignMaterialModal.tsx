@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, Section, Topic } from '../../api/endpoints'
 import { GeneratedContent } from '../../api/endpoints'
+import { Modal } from '../ui/Modal'
+import { Button } from '../ui/Button'
+import { Input } from '../ui/Input'
+import { Textarea } from '../ui/Textarea'
+import { Select } from '../ui/Select'
+import { FiUpload, FiGlobe, FiUserCheck, FiInfo } from 'react-icons/fi'
 
 interface AssignMaterialModalProps {
   isOpen: boolean
@@ -19,7 +25,13 @@ interface AssignMaterialModalProps {
   topics?: Topic[]
 }
 
-export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sections = [] }: AssignMaterialModalProps) {
+export function AssignMaterialModal({ 
+  isOpen, 
+  onClose, 
+  onAssign, 
+  content, 
+  sections = [] 
+}: AssignMaterialModalProps) {
   const [formData, setFormData] = useState({
     sectionId: 0,
     title: '',
@@ -29,9 +41,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
     selectedStudents: [] as number[]
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  // Usar secciones pasadas como props
-  const loadingSections = false
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
 
   // Obtener estudiantes de la sección seleccionada
   const { data: sectionStudents, isLoading: loadingStudents, error: studentsError } = useQuery({
@@ -39,8 +49,6 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
     queryFn: () => academicApi.getStudentsBySection(formData.sectionId),
     enabled: isOpen && formData.sectionId > 0 && formData.assignmentType === 'personalized'
   })
-
-
 
   // Inicializar datos del formulario
   useEffect(() => {
@@ -54,6 +62,9 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
         selectedStudents: []
       })
     }
+    // Limpiar errores y estado tocado
+    setErrors({})
+    setTouched({})
   }, [content, isOpen])
 
   // Limpiar estudiantes seleccionados cuando cambia el tipo de asignación
@@ -88,6 +99,9 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     
+    // Marcar campo como tocado
+    setTouched(prev => ({ ...prev, [name]: true }))
+    
     // Validar campo en tiempo real
     const error = validateField(name, value)
     setErrors(prev => ({ ...prev, [name]: error }))
@@ -109,7 +123,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
 
   const handleSelectAllStudents = () => {
     if (sectionStudents?.data?.students) {
-      const allStudentIds = sectionStudents.data.students.map((student: any) => student.id)
+      const allStudentIds = sectionStudents.data.students.map((student: { id: number }) => student.id)
       setFormData(prev => ({ ...prev, selectedStudents: allStudentIds }))
       setErrors(prev => ({ ...prev, selectedStudents: '' }))
     }
@@ -131,6 +145,12 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
     })
 
     setErrors(newErrors)
+    setTouched({
+      sectionId: true,
+      title: true,
+      format: true,
+      selectedStudents: formData.assignmentType === 'personalized'
+    })
 
     if (Object.keys(newErrors).length === 0) {
       onAssign({
@@ -144,79 +164,59 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">
-              📤 Asignar Material a Sección
-            </h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Asigna este contenido generado con IA a una sección específica
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Asignar Material a Sección"
+      size="lg"
+    >
+      <div className="space-y-6">
         {/* Información del Contenido */}
         {content && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-blue-900 mb-2">Contenido a Asignar</h4>
-            <div className="text-sm text-blue-800">
-              <p><strong>Título:</strong> {content.title || 'Sin título'}</p>
-              <p><strong>ID:</strong> {content.id}</p>
-              <p><strong>Fecha de creación:</strong> {new Date(content.created_at).toLocaleDateString('es-ES')}</p>
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+                <FiUpload className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-primary mb-2">Contenido a Asignar</h4>
+                <div className="text-sm text-primary/80 space-y-1">
+                  <p><strong>Título:</strong> {content.title || 'Sin título'}</p>
+                  <p><strong>ID:</strong> {content.id}</p>
+                  <p><strong>Fecha de creación:</strong> {new Date(content.created_at).toLocaleDateString('es-ES')}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Selección de Sección */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sección <span className="text-red-500">*</span>
-            </label>
-            {loadingSections ? (
-              <div className="animate-pulse bg-gray-200 h-10 rounded-md"></div>
-            ) : (
-              <select
-                name="sectionId"
-                value={formData.sectionId}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.sectionId ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value={0}>Seleccionar sección...</option>
-                {sections?.map((section: any) => (
-                  <option key={section.id} value={section.id}>
-                    {section.name} - {section.course?.name} (Capacidad: {section.capacity})
-                  </option>
-                ))}
-              </select>
-            )}
-            {errors.sectionId && (
-              <p className="mt-1 text-sm text-red-600">{errors.sectionId}</p>
-            )}
-          </div>
+          <Select
+            label="Sección"
+            value={formData.sectionId}
+            onChange={handleChange}
+            name="sectionId"
+            required
+            error={errors.sectionId && touched.sectionId ? errors.sectionId : undefined}
+            placeholder="Seleccionar sección..."
+            options={[
+              { value: 0, label: 'Seleccionar sección...' },
+              ...sections.map((section: Section) => ({
+                value: section.id,
+                label: `${section.name} - ${section.course?.name} (Capacidad: ${section.capacity || 'N/A'})`
+              }))
+            ]}
+          />
 
           {/* Tipo de Asignación */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Tipo de Asignación <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-base-content mb-3">
+              Tipo de Asignación <span className="text-error">*</span>
             </label>
             <div className="space-y-3">
-              <label className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label className="flex items-start space-x-3 p-4 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
                 <input
                   type="radio"
                   name="assignmentType"
@@ -225,15 +225,20 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
                   onChange={handleChange}
                   className="mt-1"
                 />
-                <div>
-                  <div className="font-medium text-gray-900">🌐 Asignación General</div>
-                  <div className="text-sm text-gray-600">
-                    El material se asignará a todos los estudiantes de la sección
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-primary-100 rounded-lg">
+                    <FiGlobe className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-base-content">Asignación General</div>
+                    <div className="text-sm text-base-content/70">
+                      El material se asignará a todos los estudiantes de la sección
+                    </div>
                   </div>
                 </div>
               </label>
               
-              <label className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label className="flex items-start space-x-3 p-4 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
                 <input
                   type="radio"
                   name="assignmentType"
@@ -242,10 +247,15 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
                   onChange={handleChange}
                   className="mt-1"
                 />
-                <div>
-                  <div className="font-medium text-gray-900">👥 Asignación Personalizada</div>
-                  <div className="text-sm text-gray-600">
-                    Selecciona estudiantes específicos para recibir el material
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-secondary-100 rounded-lg">
+                    <FiUserCheck className="w-4 h-4 text-secondary" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-base-content">Asignación Personalizada</div>
+                    <div className="text-sm text-base-content/70">
+                      Selecciona estudiantes específicos para recibir el material
+                    </div>
                   </div>
                 </div>
               </label>
@@ -253,147 +263,138 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
           </div>
 
           {/* Título del Material */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Título del Material <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.title ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Ingrese el título del material"
-            />
-            {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-            )}
-          </div>
+          <Input
+            label="Título del Material"
+            value={formData.title}
+            onChange={handleChange}
+            name="title"
+            placeholder="Ingrese el título del material"
+            required
+            error={errors.title && touched.title ? errors.title : undefined}
+          />
 
           {/* Descripción */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Descripción opcional del material"
-            />
-          </div>
+          <Textarea
+            label="Descripción"
+            value={formData.description}
+            onChange={handleChange}
+            name="description"
+            rows={3}
+            placeholder="Descripción opcional del material"
+          />
 
           {/* Formato de Envío */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Formato de Envío <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-base-content mb-3">
+              Formato de Envío <span className="text-error">*</span>
             </label>
-            <div className="space-y-2">
-              <label className="flex items-center">
+            <div className="space-y-3">
+              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
                 <input
                   type="radio"
                   name="format"
                   value="SCORM"
                   checked={formData.format === 'SCORM'}
                   onChange={handleChange}
-                  className="mr-2"
+                  className="radio radio-primary"
                 />
-                <span className="text-sm">
-                  <strong>SCORM</strong> - Formato estándar para LMS (Recomendado)
-                </span>
+                <div>
+                  <div className="font-medium text-base-content">SCORM</div>
+                  <div className="text-sm text-base-content/70">Formato estándar para LMS (Recomendado)</div>
+                </div>
               </label>
-              <label className="flex items-center">
+              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
                 <input
                   type="radio"
                   name="format"
                   value="PDF"
                   checked={formData.format === 'PDF'}
                   onChange={handleChange}
-                  className="mr-2"
+                  className="radio radio-primary"
                 />
-                <span className="text-sm">
-                  <strong>PDF</strong> - Documento estático
-                </span>
+                <div>
+                  <div className="font-medium text-base-content">PDF</div>
+                  <div className="text-sm text-base-content/70">Documento estático</div>
+                </div>
               </label>
-              <label className="flex items-center">
+              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
                 <input
                   type="radio"
                   name="format"
                   value="HTML"
                   checked={formData.format === 'HTML'}
                   onChange={handleChange}
-                  className="mr-2"
+                  className="radio radio-primary"
                 />
-                <span className="text-sm">
-                  <strong>HTML</strong> - Página web interactiva
-                </span>
+                <div>
+                  <div className="font-medium text-base-content">HTML</div>
+                  <div className="text-sm text-base-content/70">Página web interactiva</div>
+                </div>
               </label>
             </div>
             {errors.format && (
-              <p className="mt-1 text-sm text-red-600">{errors.format}</p>
+              <p className="mt-1 text-sm text-error">{errors.format}</p>
             )}
           </div>
 
           {/* Selección de Estudiantes (solo para asignación personalizada) */}
           {formData.assignmentType === 'personalized' && formData.sectionId > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Seleccionar Estudiantes <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-base-content mb-3">
+                Seleccionar Estudiantes <span className="text-error">*</span>
               </label>
               
               {loadingStudents ? (
-                <div className="animate-pulse bg-gray-200 h-32 rounded-md"></div>
+                <div className="animate-pulse bg-base-200 h-32 rounded-lg"></div>
               ) : (
-                <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <div className="border border-base-300 rounded-lg p-4 max-h-64 overflow-y-auto bg-base-100">
                   {studentsError ? (
-                    <div className="text-center py-4 text-red-600">
+                    <div className="text-center py-4 text-error">
                       <p>Error al cargar estudiantes: {studentsError.message}</p>
                     </div>
                   ) : sectionStudents?.data?.students && sectionStudents.data.students.length > 0 ? (
                     <>
-                      <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
-                        <span className="text-sm font-medium text-gray-700">
+                      <div className="flex justify-between items-center mb-3 pb-2 border-b border-base-300">
+                        <span className="text-sm font-medium text-base-content">
                           {formData.selectedStudents.length} de {sectionStudents.data.students.length} estudiantes seleccionados
                         </span>
                         <div className="space-x-2">
-                          <button
+                          <Button
                             type="button"
                             onClick={handleSelectAllStudents}
-                            className="text-xs text-blue-600 hover:text-blue-800"
+                            variant="ghost"
+                            size="sm"
                           >
                             Seleccionar todos
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
                             onClick={handleDeselectAllStudents}
-                            className="text-xs text-gray-600 hover:text-gray-800"
+                            variant="ghost"
+                            size="sm"
                           >
                             Deseleccionar todos
-                          </button>
+                          </Button>
                         </div>
                       </div>
                       
                       <div className="space-y-2">
-                        {sectionStudents.data.students.map((student: any) => (
-                          <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        {sectionStudents.data.students.map((student: { id: number; first_name?: string; last_name?: string; username?: string; email: string }) => (
+                          <label key={student.id} className="flex items-center space-x-3 p-2 hover:bg-base-200 rounded cursor-pointer transition-colors">
                             <input
                               type="checkbox"
                               checked={formData.selectedStudents.includes(student.id)}
                               onChange={() => handleStudentToggle(student.id)}
-                              className="rounded"
+                              className="checkbox checkbox-primary"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-sm text-gray-900">
+                              <div className="font-medium text-sm text-base-content">
                                 {student.first_name && student.last_name 
                                   ? `${student.first_name} ${student.last_name}`
                                   : student.username || 'Sin nombre'
                                 }
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-base-content/70">
                                 {student.email}
                               </div>
                             </div>
@@ -402,7 +403,7 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
                       </div>
                     </>
                   ) : (
-                    <div className="text-center text-gray-500 py-4">
+                    <div className="text-center text-base-content/70 py-4">
                       No hay estudiantes en esta sección
                     </div>
                   )}
@@ -410,55 +411,63 @@ export function AssignMaterialModal({ isOpen, onClose, onAssign, content, sectio
               )}
               
               {errors.selectedStudents && (
-                <p className="mt-1 text-sm text-red-600">{errors.selectedStudents}</p>
+                <p className="mt-1 text-sm text-error">{errors.selectedStudents}</p>
               )}
             </div>
           )}
 
           {/* Información Adicional */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h4 className="font-medium text-yellow-900 mb-2">ℹ️ Información Importante</h4>
-            <ul className="text-sm text-yellow-800 space-y-1">
-              {formData.assignmentType === 'general' ? (
-                <>
-                  <li>• El material se enviará a <strong>TODOS</strong> los estudiantes de la sección</li>
-                  <li>• Los estudiantes podrán acceder al material desde su portafolio</li>
-                  <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
-                  <li>• Una vez asignado, el material estará disponible inmediatamente</li>
-                </>
-              ) : (
-                <>
-                  <li>• El material se enviará <strong>SOLO</strong> a los estudiantes seleccionados</li>
-                  <li>• Los estudiantes seleccionados podrán acceder al material desde su portafolio</li>
-                  <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
-                  <li>• Una vez asignado, el material estará disponible inmediatamente</li>
-                  <li>• Puedes cambiar la selección de estudiantes antes de confirmar</li>
-                </>
-              )}
-            </ul>
+          <div className="bg-info-50 border border-info-200 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="p-1 bg-info-100 rounded-lg flex-shrink-0">
+                <FiInfo className="w-4 h-4 text-info" />
+              </div>
+              <div>
+                <h4 className="font-medium text-info mb-2">Información Importante</h4>
+                <ul className="text-sm text-info/80 space-y-1">
+                  {formData.assignmentType === 'general' ? (
+                    <>
+                      <li>• El material se enviará a <strong>TODOS</strong> los estudiantes de la sección</li>
+                      <li>• Los estudiantes podrán acceder al material desde su portafolio</li>
+                      <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
+                      <li>• Una vez asignado, el material estará disponible inmediatamente</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• El material se enviará <strong>SOLO</strong> a los estudiantes seleccionados</li>
+                      <li>• Los estudiantes seleccionados podrán acceder al material desde su portafolio</li>
+                      <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
+                      <li>• Una vez asignado, el material estará disponible inmediatamente</li>
+                      <li>• Puedes cambiar la selección de estudiantes antes de confirmar</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </div>
           </div>
 
           {/* Botones */}
           <div className="flex justify-end space-x-3 pt-4">
-            <button
+            <Button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              variant="outline"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+              variant="primary"
+              leftIcon={<FiUpload className="w-4 h-4" />}
             >
               {formData.assignmentType === 'general' 
-                ? '📤 Asignar a Toda la Sección' 
-                : `📤 Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
+                ? 'Asignar a Toda la Sección' 
+                : `Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
               }
-            </button>
+            </Button>
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   )
 }
