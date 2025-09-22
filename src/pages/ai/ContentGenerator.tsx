@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { aiContentApi } from '../../api/endpoints'
 import { DeepSeekChat } from '../../components/ai/DeepSeekChat'
+// import { useNotifications } from '../../hooks/useNotifications' // No se usa actualmente
 import { LoadingOverlay, LoadingCard } from '../../components/ui/LoadingSpinner'
 import { 
   FiMessageCircle,
@@ -15,12 +16,14 @@ import {
   FiInfo,
   FiChevronLeft,
   FiChevronRight,
-  FiMenu
+  FiMenu,
+  FiCheckCircle
 } from 'react-icons/fi'
 
 
 export function ContentGenerator() {
   const queryClient = useQueryClient()
+  // const { showError } = useNotifications() // No se usa actualmente
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [currentConversation, setCurrentConversation] = useState<number | null>(null)
@@ -32,7 +35,9 @@ export function ContentGenerator() {
   const [isAutoCreating, setIsAutoCreating] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [requirements, setRequirements] = useState<Record<string, unknown> | null>(null)
-  const [showGenerateButton, setShowGenerateButton] = useState(false)
+  const [showGenerateButton] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const hasProcessedUrlParams = useRef(false)
 
@@ -172,20 +177,65 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
     navigate('/generated-content')
   }
 
-  // Generar contenido automáticamente
+  // Generar contenido con confirmación
   const generateContentMutation = useMutation({
     mutationFn: async (data: { requirements: Record<string, unknown>; title: string }) => {
-      // Starting content generation
-      
       if (!currentConversation) throw new Error('No conversation selected')
-      return aiContentApi.generateContent(currentConversation, data)
+      
+      // Usar el nuevo endpoint de confirmación y generación
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/'
+      const response = await fetch(`${API_URL}ai/gamma/confirm-and-generate/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+          conversation_id: currentConversation,
+          requirements: data.requirements,
+          title: data.title
+        })
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error generando contenido')
+      }
+      
+      return response.json()
     },
     onSuccess: () => {
       // Redirigir a contenidos generados
       navigate('/generated-content')
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error generando contenido:', error)
       setIsGenerating(false)
+      
+      // Mostrar notificación de error mejorada
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al generar contenido'
+      
+      const notification = document.createElement('div')
+      notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md bg-red-100 border border-red-400 text-red-700'
+      
+      notification.innerHTML = `
+        <div class="flex items-start">
+          <div class="flex-1">
+            <p class="font-medium">Error al generar contenido</p>
+            <p class="text-sm mt-1">${errorMessage}</p>
+          </div>
+          <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg leading-none">&times;</button>
+        </div>
+      `
+      
+      document.body.appendChild(notification)
+      
+      // Auto-remove después de 8 segundos
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove()
+        }
+      }, 8000)
     }
   })
 
@@ -194,7 +244,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
     // Si el backend envía requisitos reales, usarlos directamente
     if (req && typeof req === 'object') {
       setRequirements(req as Record<string, unknown>)
-      setShowGenerateButton(true)
+      setShowConfirmation(true) // Mostrar confirmación en lugar del botón directo
       return
     }
     
@@ -208,9 +258,31 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         is_complete: true
       }
       setRequirements(basicRequirements)
-      setShowGenerateButton(true)
+      setShowConfirmation(true) // Mostrar confirmación en lugar del botón directo
       return
     }
+  }
+
+  const handleConfirmRequirements = () => {
+    if (currentConversation && requirements) {
+      setIsConfirming(true)
+      
+      // Crear título específico basado en los requisitos
+      const subject = String(requirements.subject || 'Contenido Educativo')
+      const level = String(requirements.course_level || 'básico')
+      const title = `${subject} - ${level.charAt(0).toUpperCase() + level.slice(1)}`
+      
+      generateContentMutation.mutate({
+        requirements: requirements,
+        title: title
+      })
+    }
+  }
+
+  const handleRejectRequirements = () => {
+    setShowConfirmation(false)
+    setRequirements(null)
+    // El usuario puede continuar la conversación para refinar los requisitos
   }
 
   const handleGenerateContent = () => {
@@ -218,7 +290,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       setIsGenerating(true)
       generateContentMutation.mutate({
         requirements: requirements,
-        title: `Contenido SCORM - ${new Date().toLocaleString()}`
+        title: `Contenido Educativo - ${new Date().toLocaleString()}`
       })
     }
   }
@@ -451,7 +523,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               <FiChevronRight className="w-4 h-4" />
             </button>
           )}
-          {true && (
+          {(
             <>
               <DeepSeekChat
                 conversationId={currentConversation || undefined}
@@ -459,6 +531,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                 showGenerateButton={showGenerateButton}
                 onGenerateContent={handleGenerateContent}
                 isGenerating={isGenerating}
+                onNewConversation={handleStartNewChat}
               />
               
               {/* Loading spinner para generación automática */}
@@ -468,8 +541,8 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                     <div className="flex flex-col items-center space-y-3 sm:space-y-4">
                       <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-primary"></div>
                       <div className="text-center">
-                        <h3 className="text-lg sm:text-xl font-bold text-base-content mb-2">Generando Contenido SCORM</h3>
-                        <p className="text-xs sm:text-sm text-base-content/70 mb-2">Creando contenido educativo interactivo para GrapesJS...</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-base-content mb-2">Generando Contenido Educativo</h3>
+                        <p className="text-xs sm:text-sm text-base-content/70 mb-2">Creando contenido educativo interactivo con el editor Gamma...</p>
                         <p className="text-xs text-accent">Te redirigiremos automáticamente</p>
                       </div>
                     </div>
@@ -482,6 +555,112 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         </div>
       </div>
 
+
+      {/* Modal de confirmación de requisitos */}
+      {showConfirmation && requirements && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleRejectRequirements}></div>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
+            <div className="flex items-center mb-4">
+              <div className="p-2 bg-green-100 rounded-lg mr-3">
+                <FiCheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">
+                ¡Requisitos Recolectados Exitosamente!
+              </h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">
+                Hemos recopilado toda la información necesaria para generar tu contenido educativo. 
+                Por favor, revisa los detalles a continuación:
+              </p>
+              
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Tema/Asignatura:</label>
+                    <p className="text-gray-900">{String(requirements.subject || 'No especificado')}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Nivel Educativo:</label>
+                    <p className="text-gray-900">{String(requirements.course_level || 'No especificado')}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Tipo de Contenido:</label>
+                    <p className="text-gray-900">{String(requirements.content_type || 'No especificado')}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Duración Estimada:</label>
+                    <p className="text-gray-900">{String(requirements.estimated_duration || 'No especificado')}</p>
+                  </div>
+                </div>
+                
+                {requirements.learning_objectives && Array.isArray(requirements.learning_objectives) && requirements.learning_objectives.length > 0 ? (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Objetivos de Aprendizaje:</label>
+                    <ul className="list-disc list-inside text-gray-900 mt-1">
+                      {Array.isArray(requirements.learning_objectives) 
+                        ? requirements.learning_objectives.map((obj: string, index: number) => (
+                            <li key={index}>{obj}</li>
+                          ))
+                        : <li>{String(requirements.learning_objectives)}</li>
+                      }
+                    </ul>
+                  </div>
+                ) : null}
+                
+                {requirements.additional_requirements && String(requirements.additional_requirements).trim() !== '' ? (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Requisitos Adicionales:</label>
+                    <p className="text-gray-900">{String(requirements.additional_requirements)}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <FiInfo className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">¿Estás conforme con esta información?</h4>
+                  <p className="text-blue-700 text-sm">
+                    Si confirmas, se generará el contenido educativo usando el editor Gamma. 
+                    Podrás editarlo y personalizarlo después de la generación.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={handleRejectRequirements}
+                disabled={isConfirming}
+                className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                No, necesito ajustar
+              </button>
+              <button
+                onClick={handleConfirmRequirements}
+                disabled={isConfirming}
+                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 flex items-center space-x-2"
+              >
+                {isConfirming ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Generando...</span>
+                  </>
+                ) : (
+                  <>
+                    <FiCheckCircle className="w-4 h-4" />
+                    <span>Sí, generar contenido</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación para eliminar conversación */}
       {deleteModal.isOpen && (

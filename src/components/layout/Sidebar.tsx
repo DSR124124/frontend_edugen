@@ -45,7 +45,6 @@ import {
   Trophy,
   BookCheck,
   ClipboardList,
-  Edit3,
   FileCheck,
   Library,
   School,
@@ -234,7 +233,7 @@ export function Sidebar() {
               <ClipboardList className="w-3 h-3 text-white/25" />
             </div>
             <div className="absolute right-8 animate-bounce" style={{ top: '45%', animationDelay: '4s' }}>
-              <Edit3 className="w-3 h-3 text-white/20" />
+              <PenTool className="w-3 h-3 text-white/20" />
             </div>
             
             {/* Fila 6 - Top 55% */}

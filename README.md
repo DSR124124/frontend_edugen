@@ -9,7 +9,7 @@ Frontend del sistema EDUGEN construido con React + TypeScript + Vite, diseñado 
 - **Portafolios digitales**: Para estudiantes con artefactos y evidencias
 - **Generador de contenido con IA**: Integración con DeepSeek para creación automática
 - **Analytics avanzados**: Seguimiento de materiales y rendimiento estudiantil
-- **Editor visual**: GrapesJS para creación de contenido interactivo
+- **Editor visual**: Editor Gamma para creación de contenido interactivo
 - **Sistema de notificaciones**: Toast y modales para mejor UX
 
 ## 🛠️ Stack Tecnológico
@@ -76,7 +76,7 @@ frontend_edugen/
 │   │   ├── ai
 │   │   │   ├── ContentEditor.tsx
 │   │   │   ├── DeepSeekChat.tsx
-│   │   │   └── GrapesJSEditor.tsx
+│   │   │   └── GammaEditor.tsx
 │   │   ├── charts
 │   │   │   ├── AnalyticsCharts.tsx
 │   │   │   └── BarChart.tsx
@@ -260,12 +260,12 @@ frontend_edugen/
 ### **Componentes de IA:**
 - **`ContentEditor.tsx`** - Editor de contenido avanzado
 - **`DeepSeekChat.tsx`** - Chat conversacional con IA
-- **`GrapesJSEditor.tsx`** - Editor visual drag-and-drop
+- **`GammaEditor.tsx`** - Editor visual de bloques
 
 ### **Funcionalidades:**
 - Generación automática de contenido educativo
 - Chat conversacional con DeepSeek API
-- Editor visual con GrapesJS
+- Editor visual con Gamma
 - Plantillas de contenido personalizables
 - Gestión de conversaciones y historial
 - Exportación de contenido generado
@@ -347,7 +347,7 @@ VITE_APP_VERSION=1.0.0
 - `AuthLayout.tsx` - Layout de autenticación
 
 ### **Specialized Components:**
-- **AI Components**: Editor de contenido, Chat, GrapesJS
+- **AI Components**: Editor de contenido, Chat, Gamma
 - **Charts**: Analytics, Gráficos de rendimiento
 - **Forms**: Perfil de usuario, Formularios académicos
 - **Tables**: Tablas de datos con paginación

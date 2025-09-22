@@ -43,7 +43,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
           
           <div className="mt-4 text-xs text-gray-500">
             <p>🎓 Generando contenido educativo personalizado</p>
-            <p>⚡ Optimizado para edición con GrapesJS</p>
+            <p>⚡ Optimizado para edición con editor Gamma</p>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, ConversationMessage } from '../../api/endpoints'
+import { useNotifications } from '../../hooks/useNotifications'
 
 interface DeepSeekChatProps {
   conversationId?: number
@@ -8,10 +9,12 @@ interface DeepSeekChatProps {
   showGenerateButton?: boolean
   onGenerateContent?: () => void
   isGenerating?: boolean
+  onNewConversation?: () => void
 }
 
-export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGenerateButton, onGenerateContent, isGenerating }: DeepSeekChatProps) {
+export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGenerateButton, onGenerateContent, isGenerating, onNewConversation }: DeepSeekChatProps) {
   const queryClient = useQueryClient()
+  const { showError, showWarning, showInfo, showSuccess } = useNotifications()
   const [messages, setMessages] = useState<ConversationMessage[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -25,6 +28,27 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
     enabled: !!conversationId
   })
 
+  // Manejar errores de la consulta de mensajes
+  useEffect(() => {
+    if (messagesError) {
+      const axiosError = messagesError as { 
+        response?: { 
+          data?: { error?: string },
+          status?: number
+        },
+        message?: string
+      }
+      
+      if (axiosError.response?.status === 404) {
+        showError('Conversación no encontrada. Por favor, crea una nueva conversación.', 'Conversación no encontrada')
+      } else if (axiosError.response?.status === 401) {
+        showError('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Sesión expirada')
+      } else {
+        showError('Error al cargar los mensajes de la conversación.', 'Error de carga')
+      }
+    }
+  }, [messagesError, onNewConversation, showError])
+
   // Enviar mensaje
   const sendMessageMutation = useMutation({
     mutationFn: (content: string) => aiContentApi.sendMessage(conversationId!, { content }),
@@ -37,6 +61,33 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
       // Invalidar queries para actualizar la lista de conversaciones
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
       queryClient.invalidateQueries({ queryKey: ['conversation-messages', conversationId] })
+    },
+    onError: (error: unknown) => {
+      console.error('Error sending message:', error)
+      const axiosError = error as { 
+        response?: { 
+          data?: { error?: string },
+          status?: number
+        },
+        message?: string
+      }
+      
+      const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al enviar mensaje'
+      
+      // Mostrar notificación basada en el tipo de error
+      if (axiosError.response?.status === 500) {
+        showError('Error interno del servidor. Por favor, intenta de nuevo.', 'Error del servidor')
+      } else if (axiosError.response?.status === 401) {
+        showError('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Sesión expirada')
+      } else if (axiosError.response?.status === 429) {
+        showWarning('Demasiadas solicitudes. Por favor, espera un momento.', 'Límite de solicitudes')
+      } else if (axiosError.response?.status === 503) {
+        showError('Servicio de IA no disponible. Por favor, contacta al administrador.', 'Servicio no disponible')
+      } else if (axiosError.response?.status === 404) {
+        showError('Conversación no encontrada. Por favor, crea una nueva conversación.', 'Conversación no encontrada')
+      } else {
+        showError(errorMessage, 'Error de comunicación')
+      }
     }
   })
 
@@ -45,13 +96,33 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
     mutationFn: () => aiContentApi.extractRequirements(conversationId!),
     onSuccess: (response) => {
       onRequirementsExtracted?.(response.data.requirements)
+      showSuccess('Requisitos extraídos exitosamente', 'Éxito')
       // Invalidar queries para actualizar la lista de conversaciones
       queryClient.invalidateQueries({ queryKey: ['conversations'] })
     },
     onError: (error: unknown) => {
-      // Mostrar mensaje de error al usuario
-      const errorMessage = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Error al extraer requisitos'
-      alert(errorMessage)
+      console.error('Error extracting requirements:', error)
+      
+      const axiosError = error as { 
+        response?: { 
+          data?: { error?: string },
+          status?: number
+        },
+        message?: string
+      }
+      
+      const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al extraer requisitos'
+      
+      // Mostrar notificación basada en el tipo de error
+      if (axiosError.response?.status === 503) {
+        showWarning(errorMessage, 'Servicio no disponible')
+      } else if (axiosError.response?.status === 429) {
+        showInfo(errorMessage, 'Límite de solicitudes')
+      } else if (axiosError.response?.status === 400) {
+        showInfo(errorMessage, 'Información requerida')
+      } else {
+        showError(errorMessage, 'Error al extraer requisitos')
+      }
     }
   })
 
@@ -62,13 +133,80 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
       // Resetear estado cuando cambia la conversación
       setIsContentReady(false)
       
-      // Verificar si el último mensaje del asistente dice que está listo
-      const lastMessage = conversationMessages.data?.[conversationMessages.data.length - 1]
-      if (lastMessage?.role === 'assistant' && 
-          lastMessage.content.toLowerCase().includes('está listo tu contenido para ser generado') &&
-          (lastMessage.content.toLowerCase().includes('extraer requisitos') || 
-           lastMessage.content.toLowerCase().includes('extraer requisitos'))) {
-        setIsContentReady(true)
+      // Verificar si hay suficiente información para extraer requisitos
+      const messages = conversationMessages.data || []
+      if (messages.length >= 2) {
+        // Buscar indicadores de que el contenido está listo
+        const readyIndicators = [
+          '¿estás conforme con esta información o quieres agregar algo más?',
+        ]
+        
+        // Verificar si el último mensaje del asistente indica que está listo
+        const lastMessage = messages[messages.length - 1]
+        if (lastMessage?.role === 'assistant') {
+          const content = lastMessage.content.toLowerCase()
+          if (readyIndicators.some(indicator => content.includes(indicator))) {
+            setIsContentReady(true)
+            return
+          }
+        }
+        
+        // Verificar si el usuario confirmó explícitamente Y el asistente confirmó que está listo
+        const userConfirmations = [
+          'sí, estoy conforme',
+          'perfecto, estoy conforme', 
+          'sí, está bien',
+          'está perfecto',
+          'sí, procede',
+          'conforme',
+          'está bien',
+          'perfecto',
+          'sí',
+          'ok',
+          'okay',
+          'confirmo',
+          'estoy de acuerdo',
+          'procede',
+          'adelante',
+          'si, estoy conforme',
+          'si, está bien',
+          'si, procede',
+          'si',
+          'está listo',
+          'listo',
+          'generar',
+          'extraer requisitos'
+        ]
+        
+        const lastUserMessage = messages.filter(msg => msg.role === 'user').pop()
+        const lastAssistantMessage = messages.filter(msg => msg.role === 'assistant').pop()
+        
+        if (lastUserMessage && lastAssistantMessage) {
+          const userContent = lastUserMessage.content.toLowerCase()
+          const assistantContent = lastAssistantMessage.content.toLowerCase()
+          
+          // Solo activar si el usuario confirmó Y el asistente confirmó que está listo
+          const userConfirmed = userConfirmations.some(confirmation => userContent.includes(confirmation))
+          const assistantConfirmed = readyIndicators.some(indicator => assistantContent.includes(indicator))
+          
+          if (userConfirmed && assistantConfirmed) {
+            setIsContentReady(true)
+            return
+          }
+        }
+        
+        // Verificar si el usuario pidió explícitamente extraer requisitos
+        const lastUserMessages = messages.filter(msg => msg.role === 'user').slice(-2)
+        for (const msg of lastUserMessages) {
+          const content = msg.content.toLowerCase()
+          if (content.includes('extraer requisitos') || content.includes('generar contenido')) {
+            setIsContentReady(true)
+            return
+          }
+        }
+        
+        // NO activar automáticamente basándose en contenido sustancial
+        // Solo activar cuando el usuario confirme explícitamente
       }
     }
   }, [conversationMessages])
@@ -98,8 +236,10 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
 
     try {
       await sendMessageMutation.mutateAsync(input)
-    } catch {
-      // Error handling
+    } catch (error) {
+      // El error ya se maneja en la mutación, solo necesitamos remover el mensaje del usuario si falla
+      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id))
+      console.error('Error sending message:', error)
     } finally {
       setIsLoading(false)
     }
@@ -148,7 +288,7 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
           </div>
         )}
         
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <div key={message.id}>
             <div
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -176,23 +316,6 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
               </div>
             </div>
             
-            {/* Mensaje especial después de confirmación del asistente */}
-            {message.role === 'assistant' && 
-             message.content.includes('¡Empezaré a trabajar en el diseño') && 
-             index === messages.length - 1 && (
-              <div className="flex justify-center mt-4">
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md">
-                  <div className="flex items-center space-x-2">
-                    <div className="text-yellow-600 text-lg">💡</div>
-                    <div>
-                      <p className="text-sm font-medium text-yellow-800">
-                        Dale clic en "Extraer Requisitos" para poder generar el contenido
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         ))}
         
@@ -218,16 +341,21 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
       {/* Input */}
       <div className="p-3 sm:p-4 border-t bg-gray-50">
         {isContentReady ? (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-2">
+                ✅ Tienes suficiente información para generar contenido
+              </p>
+            </div>
             <button
               onClick={handleExtractRequirements}
               disabled={extractRequirementsMutation.isPending || !conversationId}
-              className="px-4 sm:px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2 min-h-[44px] text-sm sm:text-base"
+              className="px-4 sm:px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2 min-h-[44px] text-sm sm:text-base shadow-md"
             >
               {extractRequirementsMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Extrayendo...</span>
+                  <span>Extrayendo requisitos...</span>
                 </>
               ) : (
                 <>
@@ -236,6 +364,9 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
                 </>
               )}
             </button>
+            <p className="text-xs text-gray-500 text-center max-w-md">
+              Esto analizará la conversación y extraerá los requisitos necesarios para generar tu contenido educativo
+            </p>
           </div>
         ) : (
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">

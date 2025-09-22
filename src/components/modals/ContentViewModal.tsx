@@ -72,13 +72,13 @@ export function ContentViewModal({
                       line-height: 1.6;
                       color: #333;
                     }
-                    ${content.css_content || ''}
+                    /* CSS eliminado - usando Gamma */
                   </style>
                 </head>
                 <body>
-                  ${content.html_content || '<div class="text-center text-gray-500 p-8">No hay contenido disponible</div>'}
+                  <div class="text-center text-gray-500 p-8">Contenido Gamma - Usar editor para ver</div>
                   <script>
-                    ${content.js_content || ''}
+                    /* JS eliminado - usando Gamma */
                   </script>
                 </body>
                 </html>
