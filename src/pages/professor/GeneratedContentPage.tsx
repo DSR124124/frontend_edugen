@@ -111,14 +111,26 @@ export function GeneratedContentPage() {
 
   // Convertir Document a GeneratedContent para guardar
   const convertFromDocument = (document: Document): Partial<GeneratedContent> => {
-    return {
+    const data = {
       title: document.title,
       description: document.description,
-      content_type: 'gamma',
+      content_type: 'gamma' as const,
       gamma_blocks: document.blocks,
-      gamma_document: document as unknown as Record<string, unknown>,
-      // Campos HTML eliminados - solo usar Gamma
+      gamma_document: {
+        id: document.id,
+        title: document.title,
+        description: document.description,
+        blocks: document.blocks,
+        metadata: document.metadata,
+        settings: document.settings,
+        createdAt: document.createdAt,
+        updatedAt: document.updatedAt,
+        version: document.version
+      }
     }
+    
+    console.log('Converting document to save:', data)
+    return data
   }
 
   const handleEditContent = (content: GeneratedContent) => {
@@ -156,13 +168,20 @@ export function GeneratedContentPage() {
     if (!selectedContent) return
 
     try {
+      console.log('Saving document:', document)
       const updatedData = convertFromDocument(document)
+      console.log('Converted data:', updatedData)
+      
       await updateContentMutation.mutateAsync({
         id: selectedContent.id,
         data: updatedData
       })
+      
+      console.log('Document saved successfully')
+      showSuccess('Documento guardado exitosamente', 'success')
     } catch (error) {
       console.error('Error saving document:', error)
+      showError('Error al guardar el documento: ' + (error as Error).message, 'error')
     }
   }
 

@@ -23,26 +23,32 @@ export function useDocumentHistory(
   // Add document to history
   const addToHistory = useCallback((document: Document) => {
     setHistory(prev => {
-      const newDocuments = [...prev.documents]
-      const currentDoc = newDocuments[prev.currentIndex]
+      const currentDoc = prev.documents[prev.currentIndex]
 
-      // Only add if document has actually changed
-      if (JSON.stringify(document) !== JSON.stringify(currentDoc)) {
-        // Remove any documents after current index (when branching from history)
-        const trimmedDocuments = newDocuments.slice(0, prev.currentIndex + 1)
+      // Only add if document has actually changed (shallow comparison first for performance)
+      if (document.id !== currentDoc.id || 
+          document.version !== currentDoc.version ||
+          document.blocks.length !== currentDoc.blocks.length ||
+          document.updatedAt !== currentDoc.updatedAt) {
         
-        // Add new document
-        const updatedDocuments = [...trimmedDocuments, document]
-        
-        // Limit history size
-        const finalDocuments = updatedDocuments.length > prev.maxHistorySize
-          ? updatedDocuments.slice(-prev.maxHistorySize)
-          : updatedDocuments
+        // Deep comparison only if shallow comparison suggests changes
+        if (JSON.stringify(document) !== JSON.stringify(currentDoc)) {
+          // Remove any documents after current index (when branching from history)
+          const trimmedDocuments = prev.documents.slice(0, prev.currentIndex + 1)
+          
+          // Add new document
+          const updatedDocuments = [...trimmedDocuments, document]
+          
+          // Limit history size
+          const finalDocuments = updatedDocuments.length > prev.maxHistorySize
+            ? updatedDocuments.slice(-prev.maxHistorySize)
+            : updatedDocuments
 
-        return {
-          ...prev,
-          documents: finalDocuments,
-          currentIndex: Math.min(prev.currentIndex + 1, finalDocuments.length - 1)
+          return {
+            ...prev,
+            documents: finalDocuments,
+            currentIndex: Math.min(prev.currentIndex + 1, finalDocuments.length - 1)
+          }
         }
       }
 
