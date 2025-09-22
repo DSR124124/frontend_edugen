@@ -11,6 +11,44 @@ import {
   Quote
 } from 'lucide-react'
 
+// Función para comprimir imágenes
+const compressImage = (dataUrl: string, maxWidth: number, maxHeight: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new window.Image()
+    
+    img.onload = () => {
+      // Calcular nuevas dimensiones manteniendo la proporción
+      let { width, height } = img
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height
+          height = maxHeight
+        }
+      }
+      
+      canvas.width = width
+      canvas.height = height
+      
+      // Dibujar imagen redimensionada
+      ctx?.drawImage(img, 0, 0, width, height)
+      
+      // Convertir a base64 con compresión
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8)
+      resolve(compressedDataUrl)
+    }
+    
+    img.src = dataUrl
+  })
+}
+
 interface GammaEditorProps {
   document?: Document
   onSave?: (document: Document) => void
@@ -29,6 +67,9 @@ interface BlockComponentProps {
   isLoading: boolean
   onSelect: (blockId: string) => void
   onUpdateContent: (blockId: string, content: string) => void
+  onUpdateCalloutTitle: (blockId: string, title: string) => void
+  onUpdateImageProperties: (blockId: string, media: { src: string; alt: string }) => void
+  onUpdateListItems: (blockId: string, items: string[]) => void
   onBlockAction: (action: string, blockId: string) => void
   onAIAction: (action: string, prompt: string) => void
 }
@@ -43,6 +84,9 @@ const BlockComponent = memo<BlockComponentProps>(({
   isLoading,
   onSelect,
   onUpdateContent,
+  onUpdateCalloutTitle,
+  onUpdateImageProperties,
+  onUpdateListItems,
   onBlockAction,
   onAIAction
 }) => {
@@ -88,21 +132,168 @@ const BlockComponent = memo<BlockComponentProps>(({
 
       {block.type === 'image' && (
         <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <Image className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Imagen: {block.media?.alt || 'Sin título'}</p>
-            <p className="text-sm text-gray-400 mt-2">URL: {block.media?.src}</p>
+          <div 
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors"
+            onDragOver={(e) => {
+              e.preventDefault()
+              e.currentTarget.classList.add('border-blue-400', 'bg-blue-50')
+            }}
+            onDragLeave={(e) => {
+              e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50')
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50')
+              
+              const files = Array.from(e.dataTransfer.files)
+              const imageFile = files.find(file => file.type.startsWith('image/'))
+              
+              if (imageFile) {
+                const reader = new FileReader()
+                reader.onload = async (event) => {
+                  const imageUrl = event.target?.result as string
+                  
+                  // Comprimir imagen si es muy grande
+                  const compressedUrl = await compressImage(imageUrl, 800, 600)
+                  
+                  onUpdateImageProperties(block.id, {
+                    src: compressedUrl,
+                    alt: block.media?.alt || imageFile.name
+                  })
+                }
+                reader.readAsDataURL(imageFile)
+              }
+            }}
+          >
+            {block.media?.src && !block.media.src.startsWith('data:') && !block.media.src.startsWith('http') ? (
+              // Mostrar placeholder si no es una imagen válida
+              <div>
+                <Image className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">Arrastra una imagen aquí</p>
+              </div>
+            ) : block.media?.src ? (
+              // Mostrar imagen real
+              <div>
+                <img 
+                  src={block.media.src} 
+                  alt={block.media.alt || 'Imagen'} 
+                  className="max-w-full max-h-64 mx-auto rounded-lg mb-4"
+                  onError={(e) => {
+                    // Si la imagen falla al cargar, mostrar placeholder
+                    e.currentTarget.style.display = 'none'
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                  }}
+                />
+                <div className="hidden">
+                  <Image className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500 mb-2">Arrastra una imagen aquí</p>
+                </div>
+              </div>
+            ) : (
+              // Mostrar placeholder por defecto
+              <div>
+                <Image className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-500 mb-2">Arrastra una imagen aquí</p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={block.media?.alt || ''}
+                onChange={(e) => onUpdateImageProperties(block.id, { 
+                  src: block.media?.src || '', 
+                  alt: e.target.value 
+                })}
+                className="w-full text-center text-gray-500 border-none outline-none bg-transparent"
+                placeholder="Título de la imagen..."
+              />
+              <input
+                type="text"
+                value={block.media?.src || ''}
+                onChange={(e) => onUpdateImageProperties(block.id, { 
+                  src: e.target.value, 
+                  alt: block.media?.alt || '' 
+                })}
+                className="w-full text-center text-sm text-gray-400 border-none outline-none bg-transparent"
+                placeholder="URL de la imagen..."
+              />
+              <div className="flex flex-col items-center space-y-2">
+                <p className="text-xs text-gray-400">O arrastra una imagen desde tu computadora</p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = async (event) => {
+                        const imageUrl = event.target?.result as string
+                        
+                        // Comprimir imagen si es muy grande
+                        const compressedUrl = await compressImage(imageUrl, 800, 600)
+                        
+                        onUpdateImageProperties(block.id, {
+                          src: compressedUrl,
+                          alt: block.media?.alt || file.name
+                        })
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                  }}
+                  className="hidden"
+                  id={`file-input-${block.id}`}
+                />
+                <button
+                  onClick={() => document.getElementById(`file-input-${block.id}`)?.click()}
+                  className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                >
+                  Seleccionar archivo
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {block.type === 'list' && (
         <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
-          <ul className="list-disc list-inside space-y-2">
+          <div className="space-y-2">
             {block.items.map((item, index) => (
-              <li key={index} className="text-gray-700">{item}</li>
+              <div key={index} className="flex items-center space-x-2">
+                <span className="text-gray-400">•</span>
+                <input
+                  type="text"
+                  value={item}
+                  onChange={(e) => {
+                    const newItems = [...block.items]
+                    newItems[index] = e.target.value
+                    onUpdateListItems(block.id, newItems)
+                  }}
+                  className="flex-1 text-gray-700 border-none outline-none bg-transparent"
+                  placeholder="Elemento de la lista..."
+                />
+                <button
+                  onClick={() => {
+                    const newItems = block.items.filter((_, i) => i !== index)
+                    onUpdateListItems(block.id, newItems)
+                  }}
+                  className="text-red-500 hover:text-red-700 text-sm"
+                >
+                  ×
+                </button>
+              </div>
             ))}
-          </ul>
+            <button
+              onClick={() => {
+                const newItems = [...block.items, 'Nuevo elemento']
+                onUpdateListItems(block.id, newItems)
+              }}
+              className="text-blue-500 hover:text-blue-700 text-sm"
+            >
+              + Agregar elemento
+            </button>
+          </div>
         </div>
       )}
 
@@ -113,8 +304,20 @@ const BlockComponent = memo<BlockComponentProps>(({
           block.variant === 'success' ? 'bg-green-50 border-green-400' :
           'bg-red-50 border-red-400'
         }`}>
-          {block.title && <h3 className="font-semibold mb-2">{block.title}</h3>}
-          <p className="text-gray-700">{block.content}</p>
+          <input
+            type="text"
+            value={block.title || ''}
+            onChange={(e) => onUpdateCalloutTitle(block.id, e.target.value)}
+            className="w-full font-semibold mb-2 border-none outline-none bg-transparent"
+            placeholder="Título del callout (opcional)..."
+          />
+          <textarea
+            value={block.content}
+            onChange={(e) => onUpdateContent(block.id, e.target.value)}
+            className="w-full text-gray-700 border-none outline-none bg-transparent resize-none"
+            placeholder="Contenido del callout..."
+            rows={3}
+          />
         </div>
       )}
 
@@ -334,15 +537,17 @@ export function GammaEditor({
 
       case 'move_up':
         if (blockIndex > 0) {
-          [updatedBlocks[blockIndex - 1], updatedBlocks[blockIndex]] = 
-          [updatedBlocks[blockIndex], updatedBlocks[blockIndex - 1]]
+          const temp = updatedBlocks[blockIndex - 1]
+          updatedBlocks[blockIndex - 1] = updatedBlocks[blockIndex]
+          updatedBlocks[blockIndex] = temp
         }
         break
 
       case 'move_down':
         if (blockIndex < updatedBlocks.length - 1) {
-          [updatedBlocks[blockIndex], updatedBlocks[blockIndex + 1]] = 
-          [updatedBlocks[blockIndex + 1], updatedBlocks[blockIndex]]
+          const temp = updatedBlocks[blockIndex + 1]
+          updatedBlocks[blockIndex + 1] = updatedBlocks[blockIndex]
+          updatedBlocks[blockIndex] = temp
         }
         break
     }
@@ -356,8 +561,7 @@ export function GammaEditor({
 
     setDocument(updatedDocument)
     addToHistory(updatedDocument)
-    onUpdate?.(updatedDocument)
-  }, [document, addToHistory, onUpdate])
+  }, [document, addToHistory])
 
   // Add new block
   const addBlock = useCallback((type: string) => {
@@ -431,6 +635,8 @@ export function GammaEditor({
           return { ...block, content } as Block
         } else if (block.type === 'heading') {
           return { ...block, content } as Block
+        } else if (block.type === 'callout') {
+          return { ...block, content } as Block
         }
       }
       return block
@@ -447,12 +653,72 @@ export function GammaEditor({
     addToHistory(updatedDocument)
   }, [document, addToHistory])
 
-  // Update document when initialDocument changes
+  // Update callout title
+  const updateCalloutTitle = useCallback((blockId: string, title: string) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'callout') {
+        return { ...block, title } as Block
+      }
+      return block
+    })
+
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+  }, [document, addToHistory])
+
+  // Update image properties
+  const updateImageProperties = useCallback((blockId: string, media: { src: string; alt: string }) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'image') {
+        return { ...block, media: { ...block.media, ...media } } as Block
+      }
+      return block
+    })
+
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+  }, [document, addToHistory])
+
+  // Update list items
+  const updateListItems = useCallback((blockId: string, items: string[]) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'list') {
+        return { ...block, items } as Block
+      }
+      return block
+    })
+
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+  }, [document, addToHistory])
+
+  // Update document when initialDocument changes (only if it's a different document)
   useEffect(() => {
-    if (initialDocument) {
+    if (initialDocument && initialDocument.id !== document.id) {
       setDocument(initialDocument)
     }
-  }, [initialDocument])
+  }, [initialDocument, document.id])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -487,6 +753,18 @@ export function GammaEditor({
   const handleUpdateBlockContent = useCallback((blockId: string, content: string) => {
     updateBlockContent(blockId, content)
   }, [updateBlockContent])
+
+  const handleUpdateCalloutTitle = useCallback((blockId: string, title: string) => {
+    updateCalloutTitle(blockId, title)
+  }, [updateCalloutTitle])
+
+  const handleUpdateImageProperties = useCallback((blockId: string, media: { src: string; alt: string }) => {
+    updateImageProperties(blockId, media)
+  }, [updateImageProperties])
+
+  const handleUpdateListItems = useCallback((blockId: string, items: string[]) => {
+    updateListItems(blockId, items)
+  }, [updateListItems])
 
   return (
     <div className={`gamma-editor flex flex-col h-full ${className}`}>
@@ -600,6 +878,9 @@ export function GammaEditor({
               isLoading={isLoading}
               onSelect={handleSelectBlock}
               onUpdateContent={handleUpdateBlockContent}
+              onUpdateCalloutTitle={handleUpdateCalloutTitle}
+              onUpdateImageProperties={handleUpdateImageProperties}
+              onUpdateListItems={handleUpdateListItems}
               onBlockAction={handleBlockAction}
               onAIAction={handleAIAction}
             />

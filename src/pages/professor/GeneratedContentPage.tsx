@@ -83,6 +83,7 @@ export function GeneratedContentPage() {
       ]
     }
 
+
     return {
       id: `doc_${content.id}`,
       title: content.title,
@@ -129,7 +130,6 @@ export function GeneratedContentPage() {
       }
     }
     
-    console.log('Converting document to save:', data)
     return data
   }
 
@@ -168,17 +168,14 @@ export function GeneratedContentPage() {
     if (!selectedContent) return
 
     try {
-      console.log('Saving document:', document)
       const updatedData = convertFromDocument(document)
-      console.log('Converted data:', updatedData)
       
       await updateContentMutation.mutateAsync({
         id: selectedContent.id,
         data: updatedData
       })
       
-      console.log('Document saved successfully')
-      showSuccess('Documento guardado exitosamente', 'success')
+      // La notificación de éxito se maneja en la mutación updateContentMutation
     } catch (error) {
       console.error('Error saving document:', error)
       showError('Error al guardar el documento: ' + (error as Error).message, 'error')
@@ -492,6 +489,35 @@ export function GeneratedContentPage() {
                             <li key={itemIndex} className="text-gray-700">{item}</li>
                           ))}
                         </ul>
+                      )}
+                      {block.type === 'image' && (
+                        <div className="text-center my-6">
+                          {block.media?.src ? (
+                            <div>
+                              <img 
+                                src={block.media.src} 
+                                alt={block.media.alt || 'Imagen'} 
+                                className="max-w-full max-h-96 mx-auto rounded-lg shadow-lg"
+                                onError={(e) => {
+                                  // Si la imagen falla al cargar, mostrar placeholder
+                                  e.currentTarget.style.display = 'none'
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
+                                }}
+                              />
+                              <div className="hidden text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                                <p className="text-gray-500">Imagen no disponible</p>
+                                <p className="text-sm text-gray-400 mt-2">URL: {block.media.src}</p>
+                              </div>
+                              {block.media.alt && (
+                                <p className="text-sm text-gray-600 mt-2 italic">{block.media.alt}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                              <p className="text-gray-500">Imagen no disponible</p>
+                            </div>
+                          )}
+                        </div>
                       )}
                       {block.type === 'callout' && (
                         <div className={`p-4 rounded-lg border-l-4 ${
