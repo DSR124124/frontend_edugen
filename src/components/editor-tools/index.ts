@@ -1,1 +1,0 @@
-export { BasicVisualEditor } from './BasicVisualEditor'

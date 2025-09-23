@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://edugen-backend-yqi8si-eb5351-45-41-205-100.traefik.me/api/v1/' 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/' 
 
 export const http = axios.create({
   baseURL: API_URL,
@@ -55,19 +55,12 @@ http.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access}`
           return http(originalRequest)
         } catch (refreshError) {
-          // Si el refresh falla, limpiar tokens y redirigir
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          
-          // Dispatch custom event for token expiry
+          // Si el refresh falla, NO limpiar tokens inmediatamente
+          // Solo disparar el evento para mostrar el modal
           window.dispatchEvent(new CustomEvent('tokenExpired'))
         }
       } else {
-        // No hay refresh token, limpiar y redirigir
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        
-        // Dispatch custom event for token expiry
+        // No hay refresh token, disparar evento para mostrar modal
         window.dispatchEvent(new CustomEvent('tokenExpired'))
       }
     }

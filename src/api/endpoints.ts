@@ -118,6 +118,7 @@ export interface Material {
   material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'
   file?: string
   url?: string
+  content_data?: string // JSON string para contenido generado por IA
   topic: number
   topic_name: string
   course_id: number
@@ -170,7 +171,6 @@ export interface ContentTemplate {
   name: string
   description: string
   prompt_template: string
-  grapesjs_config: Record<string, unknown>
   is_active: boolean
   created_at: string
 }
@@ -182,11 +182,9 @@ export interface GeneratedContent {
   user_name: string
   title: string
   description?: string
-  content_type?: string
-  html_content: string
-  css_content: string
-  js_content: string
-  grapesjs_components: Record<string, unknown>
+  content_type?: 'gamma'
+  gamma_blocks: unknown[]
+  gamma_document: Record<string, unknown>
   is_public: boolean
   created_at: string
   updated_at: string
@@ -364,6 +362,15 @@ export const academicApi = {
   
   deleteMaterial: (id: number) => 
     http.delete(`academic/materials/${id}/`),
+
+  // Assign material to students
+  assignMaterialToStudents: (data: {
+    material_id: number
+    section_id: number
+    assignment_type: 'general' | 'personalized'
+    selected_students?: number[]
+  }) => 
+    http.post(`academic/materials/assign-to-students/`, data),
 
   // Material Analytics endpoints
   getMaterialAnalytics: () =>
@@ -699,9 +706,56 @@ export const aiContentApi = {
   getGeneratedContentById: (id: number) =>
     http.get<GeneratedContent>(`ai/generated-content/${id}/`),
 
-  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; grapesjs_components?: Record<string, unknown> }) =>
+  updateGeneratedContent: (id: number, data: { title?: string; is_public?: boolean; gamma_blocks?: unknown[]; gamma_document?: Record<string, unknown> }) =>
     http.patch<GeneratedContent>(`ai/generated-content/${id}/`, data),
 
   deleteGeneratedContent: (id: number) =>
     http.delete(`ai/generated-content/${id}/`),
+}
+
+// Gamma Editor API
+export const gammaApi = {
+  // Generar bloques Gamma
+  generateBlocks: (data: {
+    prompt: string
+    content_type?: string
+    educational_level?: string
+    language?: string
+    model?: string
+  }) =>
+    http.post('ai/gamma/generate-blocks/', data),
+
+  // Mejorar un bloque específico
+  improveBlock: (data: {
+    block: any
+    improvement_type?: string
+    tone?: string
+    language?: string
+  }) =>
+    http.post('ai/gamma/improve-block/', data),
+
+  // Generar imagen educativa
+  generateImage: (data: {
+    prompt: string
+    style?: string
+    size?: string
+  }) =>
+    http.post('ai/gamma/generate-image/', data),
+
+  // Generar preguntas de quiz
+  generateQuiz: (data: {
+    topic: string
+    difficulty?: string
+    num_questions?: number
+    language?: string
+  }) =>
+    http.post('ai/gamma/generate-quiz/', data),
+
+  // Traducir bloques
+  translateBlocks: (data: {
+    blocks: any[]
+    target_language: string
+    source_language?: string
+  }) =>
+    http.post('ai/gamma/translate-blocks/', data),
 }

@@ -20,7 +20,7 @@ export function ContentViewModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Vista Previa del Contenido"
+      title="Contenido"
       size="xl"
     >
       <div className="space-y-4">
@@ -72,48 +72,24 @@ export function ContentViewModal({
                       line-height: 1.6;
                       color: #333;
                     }
-                    ${content.css_content || ''}
+                    /* CSS eliminado - usando Gamma */
                   </style>
                 </head>
                 <body>
-                  ${content.html_content || '<div class="text-center text-gray-500 p-8">No hay contenido disponible</div>'}
+                  <div class="text-center text-gray-500 p-8">Contenido Gamma - Usar editor para ver</div>
                   <script>
-                    ${content.js_content || ''}
+                    /* JS eliminado - usando Gamma */
                   </script>
                 </body>
                 </html>
               `}
               className="w-full h-full border-0"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-              title="Vista Previa del Contenido"
+              title="Contenido"
             />
           </div>
         </div>
 
-        {/* Información adicional */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-base-200 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-base-content mb-2">
-              Información del Contenido
-            </h4>
-            <div className="space-y-1 text-sm text-base-content/70">
-              <p><strong>Tipo:</strong> {content.content_type || 'No especificado'}</p>
-              <p><strong>Fecha de creación:</strong> {new Date(content.created_at).toLocaleDateString('es-ES')}</p>
-              <p><strong>Última actualización:</strong> {new Date(content.updated_at).toLocaleDateString('es-ES')}</p>
-            </div>
-          </div>
-          
-          <div className="bg-base-200 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-base-content mb-2">
-              Detalles Técnicos
-            </h4>
-            <div className="space-y-1 text-sm text-base-content/70">
-              <p><strong>HTML:</strong> {content.html_content ? `${content.html_content.length} caracteres` : 'No disponible'}</p>
-              <p><strong>CSS:</strong> {content.css_content ? `${content.css_content.length} caracteres` : 'No disponible'}</p>
-              <p><strong>JavaScript:</strong> {content.js_content ? `${content.js_content.length} caracteres` : 'No disponible'}</p>
-            </div>
-          </div>
-        </div>
 
         {/* Botón de cerrar */}
         <div className="flex justify-end pt-4">

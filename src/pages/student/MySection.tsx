@@ -1,24 +1,22 @@
 import { StudentClassroom } from '../../components/modals/StudentClassroom'
-import { Users } from 'lucide-react'
+import { FiUsers } from 'react-icons/fi'
 
 export function MySection() {
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-50)' }}>
-            <Users className="w-6 h-6" style={{ color: 'var(--color-primary)' }} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--color-base-content)' }}>
-              Mi Sección
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--color-base-content)' }}>
-              Visualiza tu sección asignada y conoce a tus compañeros de clase
-            </p>
-          </div>
+      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
+          <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
+            Mi Sección
+          </h1>
+          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
+            Visualiza tu sección asignada y conoce a tus compañeros de clase
+          </p>
         </div>
       </div>
 

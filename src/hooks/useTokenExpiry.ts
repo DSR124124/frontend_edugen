@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/auth'
-import { useError } from '../contexts/ErrorContext'
 
 export const useTokenExpiry = () => {
-  const [isTokenExpired, setIsTokenExpired] = useState(false)
   const [isRedirecting, setIsRedirecting] = useState(false)
-  const { logout } = useAuthStore()
-  const { addError } = useError()
+  const { logout, isTokenExpired, setTokenExpired } = useAuthStore()
 
   useEffect(() => {
     const handleTokenExpired = () => {
-      setIsTokenExpired(true)
-      addError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'warning')
+      // Solo mostrar el modal - NO mostrar notificación toast
+      setTokenExpired(true)
       
-      // Clear auth data
-      logout()
+      // NO hacer logout inmediatamente - esperar a que el usuario confirme
     }
 
     // Listen for token expiry event
@@ -23,10 +19,14 @@ export const useTokenExpiry = () => {
     return () => {
       window.removeEventListener('tokenExpired', handleTokenExpired)
     }
-  }, [logout, addError])
+  }, [setTokenExpired])
 
   const handleRedirectToLogin = () => {
     setIsRedirecting(true)
+    
+    // Ahora sí hacer logout y limpiar datos
+    logout()
+    
     // Small delay to show the loading state
     setTimeout(() => {
       window.location.href = '/login'
@@ -34,7 +34,9 @@ export const useTokenExpiry = () => {
   }
 
   const dismissModal = () => {
-    setIsTokenExpired(false)
+    setTokenExpired(false)
+    // Si el usuario cierra el modal sin ir al login, también hacer logout
+    logout()
   }
 
   return {

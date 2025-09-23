@@ -8,9 +8,11 @@ export interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   isAuthenticated: boolean
+  isTokenExpired: boolean
   login: (user: User, accessToken: string, refreshToken: string) => void
   logout: () => void
   updateUser: (user: Partial<User>) => void
+  setTokenExpired: (expired: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -20,6 +22,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+      isTokenExpired: false,
 
       login: (user, accessToken, refreshToken) => {
         set({
@@ -27,6 +30,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           refreshToken,
           isAuthenticated: true,
+          isTokenExpired: false,
         })
         localStorage.setItem('access_token', accessToken)
         localStorage.setItem('refresh_token', refreshToken)
@@ -42,6 +46,7 @@ export const useAuthStore = create<AuthState>()(
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
+          isTokenExpired: false,
         })
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
@@ -55,6 +60,10 @@ export const useAuthStore = create<AuthState>()(
           })
         }
       },
+
+      setTokenExpired: (expired) => {
+        set({ isTokenExpired: expired })
+      },
     }),
     {
       name: 'auth-storage',
@@ -63,6 +72,7 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
+        isTokenExpired: state.isTokenExpired,
       }),
       // Agregar configuración para evitar problemas de serialización
       storage: {
