@@ -37,11 +37,7 @@ class ApiClient {
       (error) => {
         // Only handle 401 errors for non-auth endpoints
         if (error.response?.status === 401 && !error.config.url?.includes('/login')) {
-          // Clear tokens first
-          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-          localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)
-          
-          // Dispatch custom event for token expiry
+          // NO limpiar tokens inmediatamente - solo disparar evento
           window.dispatchEvent(new CustomEvent('tokenExpired'))
         }
         return Promise.reject(error)

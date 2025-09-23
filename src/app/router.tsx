@@ -25,9 +25,10 @@ import { AppLayout } from '../layouts/AppLayout'
 import { AuthLayout } from '../layouts/AuthLayout'
 
 export function AppRouter() {
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user, isTokenExpired } = useAuthStore()
 
-  if (!isAuthenticated) {
+  // Si no está autenticado Y no es por token expirado, redirigir al login
+  if (!isAuthenticated && !isTokenExpired) {
     return (
       <AuthLayout>
         <Routes>
@@ -35,6 +36,23 @@ export function AppRouter() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthLayout>
+    )
+  }
+
+  // Si el token expiró pero aún está "autenticado" (para mostrar el modal), 
+  // mostrar la app pero sin funcionalidad hasta que se resuelva
+  if (isTokenExpired) {
+    return (
+      <AppLayout>
+        <Routes>
+          <Route path="*" element={<div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Procesando expiración de sesión...</p>
+            </div>
+          </div>} />
+        </Routes>
+      </AppLayout>
     )
   }
 

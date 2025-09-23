@@ -55,19 +55,12 @@ http.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access}`
           return http(originalRequest)
         } catch (refreshError) {
-          // Si el refresh falla, limpiar tokens y redirigir
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          
-          // Dispatch custom event for token expiry
+          // Si el refresh falla, NO limpiar tokens inmediatamente
+          // Solo disparar el evento para mostrar el modal
           window.dispatchEvent(new CustomEvent('tokenExpired'))
         }
       } else {
-        // No hay refresh token, limpiar y redirigir
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        
-        // Dispatch custom event for token expiry
+        // No hay refresh token, disparar evento para mostrar modal
         window.dispatchEvent(new CustomEvent('tokenExpired'))
       }
     }
