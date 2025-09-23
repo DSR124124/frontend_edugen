@@ -285,50 +285,6 @@ export function MaterialAnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4">
-        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center">
-            <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
-              <FiFile className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Total Materiales</p>
-              <p className="text-xl sm:text-2xl font-semibold text-base-content">
-                {Array.isArray(materials) ? materials.length : 0}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
-          <div className="flex items-center">
-            <div className="p-2 sm:p-3 bg-success-100 rounded-lg flex-shrink-0">
-              <FiUsers className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
-            </div>
-            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Secciones Activas</p>
-              <p className="text-xl sm:text-2xl font-semibold text-base-content">
-                {sections?.length || 0}
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center">
-            <div className="p-2 sm:p-3 bg-secondary-100 rounded-lg flex-shrink-0">
-              <FiBook className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
-            </div>
-            <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Cursos Disponibles</p>
-              <p className="text-xl sm:text-2xl font-semibold text-base-content">
-                {courses?.length || 0}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Selectores */}
       <div className="card p-3 sm:p-4">
