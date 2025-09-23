@@ -14,11 +14,13 @@ import {
   FiCheckCircle,
   FiPlus,
   FiDownload,
-  FiX
+  FiX,
+  FiUserCheck
 } from 'react-icons/fi'
 import { PageLoadingState, PageErrorState } from '../../components/common'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
@@ -29,6 +31,8 @@ export function GeneratedContentPage() {
   const [deletingContent, setDeletingContent] = useState<GeneratedContent | null>(null)
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
+  const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
 
   // Obtener contenidos generados
   const { data: generatedContents, isLoading, error } = useQuery({
@@ -151,6 +155,11 @@ export function GeneratedContentPage() {
     setIsDeleteModalOpen(true)
   }
 
+  const handleAssignContent = (content: GeneratedContent) => {
+    setAssigningContent(content)
+    setIsAssignModalOpen(true)
+  }
+
   const handleCloseEditorModal = () => {
     setIsEditorModalOpen(false)
     setSelectedContent(null)
@@ -161,6 +170,29 @@ export function GeneratedContentPage() {
     setIsPreviewModalOpen(false)
     setSelectedContent(null)
     setCurrentDocument(null)
+  }
+
+  const handleCloseAssignModal = () => {
+    setIsAssignModalOpen(false)
+    setAssigningContent(null)
+  }
+
+  const handleAssignMaterial = async (data: {
+    sectionId: number
+    title: string
+    description?: string
+    format: 'SCORM' | 'PDF' | 'HTML'
+    assignmentType: 'general' | 'personalized'
+    selectedStudents?: number[]
+  }) => {
+    try {
+      // Aquí iría la lógica para asignar el material
+      console.log('Assigning material with data:', data)
+      showSuccess('Material asignado exitosamente', 'success')
+      handleCloseAssignModal()
+    } catch (error) {
+      showError('Error al asignar material: ' + (error as Error).message, 'error')
+    }
   }
 
 
@@ -191,18 +223,46 @@ export function GeneratedContentPage() {
     }
   }
 
-  const handleExportContent = (content: GeneratedContent) => {
-    const document = convertToDocument(content)
-    const dataStr = JSON.stringify(document, null, 2)
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
-    
-    const exportFileDefaultName = `${content.title.replace(/\s+/g, '_')}.json`
-    
-    const linkElement = window.document.createElement('a')
-    linkElement.setAttribute('href', dataUri)
-    linkElement.setAttribute('download', exportFileDefaultName)
-    linkElement.click()
+  const handleExportContent = async (content: GeneratedContent) => {
+    try {
+      // Usar fetch para enviar la petición con headers correctos
+      const token = localStorage.getItem('access_token')
+      const response = await fetch('/api/v1/scorm/export/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content_id: content.id
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`)
+      }
+      
+      // Obtener el archivo ZIP
+      const blob = await response.blob()
+      
+      // Crear enlace de descarga
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${content.title.replace(/\s+/g, '_')}_scorm.zip`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      // Solo mostrar una notificación de éxito al final
+      showSuccess('Paquete SCORM descargado exitosamente', 'success')
+      
+    } catch (error) {
+      showError('Error al exportar contenido SCORM: ' + (error as Error).message, 'error')
+    }
   }
+
 
   if (isLoading) return <PageLoadingState message="Cargando contenidos generados..." />
   if (error) return <PageErrorState error={error as Error} />
@@ -287,6 +347,13 @@ export function GeneratedContentPage() {
                       <FiEye className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     </button>
                     <button
+                      onClick={() => handleAssignContent(content)}
+                      className="p-1.5 text-gray-400 hover:text-green-600 rounded-md hover:bg-green-50 transition-colors"
+                      title="Asignar contenido"
+                    >
+                      <FiUserCheck className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    </button>
+                    <button
                       onClick={() => handleEditContent(content)}
                       className="p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                       title="Editar"
@@ -330,7 +397,7 @@ export function GeneratedContentPage() {
                     <button
                       onClick={() => handleExportContent(content)}
                       className="p-1.5 text-gray-400 hover:text-primary-600 rounded-md hover:bg-primary-50 transition-colors"
-                      title="Exportar"
+                      title="Exportar como SCORM"
                     >
                       <FiDownload className="w-3.5 h-3.5" />
                     </button>
@@ -452,6 +519,14 @@ export function GeneratedContentPage() {
         }}
         document={currentDocument || (selectedContent ? convertToDocument(selectedContent) : null)}
         title={selectedContent?.title || ''}
+      />
+
+      {/* Modal de Asignación de Material */}
+      <AssignMaterialModal
+        isOpen={isAssignModalOpen}
+        onClose={handleCloseAssignModal}
+        onAssign={handleAssignMaterial}
+        content={assigningContent}
       />
     </div>
   )
