@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { academicApi, Topic, Material } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
-import { MaterialViewer } from '../../components/modals/MaterialViewer'
+import { PreviewModal } from '../../components/editor/PreviewModal'
+import { Document } from '../../types/block-schema'
 import { Users } from 'lucide-react'
 import { LoadingState, EmptyState } from '../../components/common'
 
@@ -11,7 +12,8 @@ export function MySectionMaterials() {
   const { user } = useAuthStore()
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
-  const [isMaterialViewerOpen, setIsMaterialViewerOpen] = useState(false)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
   // Obtener materiales con analytics
   const { data: materialsWithAnalytics } = useMyMaterialsWithAnalytics()
 
@@ -58,13 +60,31 @@ export function MySectionMaterials() {
     setSelectedTopic(topic)
   }
 
-  const handleMaterialClick = (material: Material) => {
+  const handleMaterialClick = async (material: Material) => {
     setSelectedMaterial(material)
-    setIsMaterialViewerOpen(true)
+    
+    // Si el material tiene content_data (contenido generado por IA), usar PreviewModal
+    if (material.content_data) {
+      try {
+        // Parsear el contenido generado por IA
+        const contentData = JSON.parse(material.content_data)
+        if (contentData && contentData.blocks) {
+          setPreviewDocument(contentData)
+          setIsPreviewModalOpen(true)
+          return
+        }
+      } catch (error) {
+        console.error('Error parsing content_data:', error)
+      }
+    }
+    
+    // Para otros tipos de materiales, mostrar mensaje de que no se puede visualizar
+    alert('Este tipo de material no se puede visualizar en este momento.')
   }
 
-  const handleCloseMaterialViewer = () => {
-    setIsMaterialViewerOpen(false)
+  const handleClosePreviewModal = () => {
+    setIsPreviewModalOpen(false)
+    setPreviewDocument(null)
     setSelectedMaterial(null)
   }
 
@@ -304,12 +324,17 @@ export function MySectionMaterials() {
         </div>
       </div>
 
-      {/* Material Viewer Modal */}
-      {isMaterialViewerOpen && selectedMaterial && (
-        <MaterialViewer
-          material={selectedMaterial}
-          isOpen={isMaterialViewerOpen}
-          onClose={handleCloseMaterialViewer}
+      {/* Preview Modal for AI-generated content */}
+      {isPreviewModalOpen && previewDocument && (
+        <PreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={handleClosePreviewModal}
+          onEdit={() => {
+            // No permitir edición desde el portafolio del estudiante
+            console.log('Edición no permitida desde portafolio de estudiante')
+          }}
+          document={previewDocument}
+          title={selectedMaterial?.name || 'Material'}
         />
       )}
 

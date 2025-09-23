@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Portfolio, PortfolioCourse, Material, academicApi } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
 import { Modal } from '../ui/Modal'
+import { PreviewModal } from '../editor/PreviewModal'
+import { Document } from '../../types/block-schema'
 import { 
   FiCheckCircle,
   FiXCircle,
@@ -30,6 +32,9 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
   const [selectedTopic, setSelectedTopic] = useState<{id: number, name: string, order: number, description?: string} | null>(null)
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
   const [loadingMaterials, setLoadingMaterials] = useState(false)
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
 
   // Funciones de navegación
   const handleCourseClick = (course: PortfolioCourse) => {
@@ -91,115 +96,32 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
     onClose()
   }
 
-  const handleMaterialClick = (material: Material) => {
-    if (material.material_type === 'SCORM' && material.file) {
-      // Abrir contenido SCORM renderizado en nueva ventana
-      const scormWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes')
-      
-      if (scormWindow) {
-        scormWindow.document.write(`
-          <!DOCTYPE html>
-          <html lang="es">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${material.name} - Contenido SCORM</title>
-            <style>
-              body { margin: 0; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-              .scorm-header { 
-                background: #f8f9fa; 
-                padding: 15px; 
-                border-radius: 8px; 
-                margin-bottom: 20px; 
-                border: 1px solid #e9ecef;
-              }
-              .scorm-title { 
-                font-size: 1.5em; 
-                color: #2c3e50; 
-                margin: 0 0 10px 0; 
-              }
-              .scorm-info { 
-                color: #6c757d; 
-                font-size: 0.9em; 
-                margin: 0; 
-              }
-              .loading { 
-                text-align: center; 
-                padding: 50px; 
-                color: #6c757d; 
-              }
-              .error { 
-                text-align: center; 
-                padding: 50px; 
-                color: #dc3545; 
-                background: #f8d7da; 
-                border: 1px solid #f5c6cb; 
-                border-radius: 8px; 
-              }
-            </style>
-          </head>
-          <body>
-            <div class="scorm-header">
-              <h1 class="scorm-title">${material.name}</h1>
-              <p class="scorm-info">Contenido SCORM - Cargando...</p>
-            </div>
-            <div id="scorm-content" class="loading">
-              <p>Cargando contenido educativo...</p>
-            </div>
-            <script>
-              async function loadSCORMContent() {
-                try {
-                  const response = await fetch('${material.file}');
-                  if (!response.ok) throw new Error('Error al cargar el contenido');
-                  
-                  const data = await response.json();
-                  
-                  // Aplicar CSS del contenido SCORM
-                  if (data.css_content) {
-                    const style = document.createElement('style');
-                    style.textContent = data.css_content;
-                    document.head.appendChild(style);
-                  }
-                  
-                  // Mostrar HTML del contenido SCORM
-                  if (data.html_content) {
-                    document.getElementById('scorm-content').innerHTML = data.html_content;
-                  } else {
-                    document.getElementById('scorm-content').innerHTML = '<p>No hay contenido HTML disponible</p>';
-                  }
-                  
-                  // Ejecutar JavaScript del contenido SCORM
-                  if (data.js_content) {
-                    const script = document.createElement('script');
-                    script.textContent = data.js_content;
-                    document.body.appendChild(script);
-                  }
-                  
-                  // Actualizar información del header
-                  document.querySelector('.scorm-info').textContent = 
-                    'Generado por: ' + (data.user_name || 'Usuario') + ' • ' + 
-                    new Date(data.created_at || Date.now()).toLocaleDateString('es-ES');
-                  
-                } catch (error) {
-                  document.getElementById('scorm-content').innerHTML = 
-                    '<div class="error"><h3>Error al cargar el contenido</h3><p>' + error.message + '</p></div>';
-                }
-              }
-              
-              loadSCORMContent();
-            </script>
-          </body>
-          </html>
-        `)
-        scormWindow.document.close()
+  const handleMaterialClick = async (material: Material) => {
+    setSelectedMaterial(material)
+    
+    // Si el material tiene content_data (contenido generado por IA), usar PreviewModal
+    if (material.content_data) {
+      try {
+        // Parsear el contenido generado por IA
+        const contentData = JSON.parse(material.content_data)
+        if (contentData && contentData.blocks) {
+          setPreviewDocument(contentData)
+          setIsPreviewModalOpen(true)
+          return
+        }
+      } catch (error) {
+        console.error('Error parsing content_data:', error)
       }
-    } else if (material.url) {
-      // Abrir URL externa para otros tipos de materiales
-      window.open(material.url, '_blank')
-    } else if (material.file) {
-      // Abrir archivo local
-      window.open(material.file, '_blank')
     }
+    
+    // Para otros tipos de materiales, mostrar mensaje de que no se puede visualizar
+    alert('Este tipo de material no se puede visualizar en este momento.')
+  }
+
+  const handleClosePreviewModal = () => {
+    setIsPreviewModalOpen(false)
+    setPreviewDocument(null)
+    setSelectedMaterial(null)
   }
 
   if (!portfolio) return null
@@ -591,6 +513,20 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
         )}
 
       </div>
+
+      {/* Preview Modal for AI-generated content */}
+      {isPreviewModalOpen && previewDocument && (
+        <PreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={handleClosePreviewModal}
+          onEdit={() => {
+            // No permitir edición desde el portafolio del estudiante
+            console.log('Edición no permitida desde portafolio de estudiante')
+          }}
+          document={previewDocument}
+          title={selectedMaterial?.name || 'Material'}
+        />
+      )}
     </Modal>
   )
 }

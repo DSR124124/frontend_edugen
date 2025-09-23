@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { usePortfolios } from '../../hooks/usePortfolios'
-import { Portfolio } from '../../api/endpoints'
+import { Portfolio, academicApi } from '../../api/endpoints'
 import { PortfolioDetailModal } from '../../components/modals/PortfolioDetailModal'
 import { 
   FiUsers, 
@@ -24,6 +24,7 @@ export function PortfolioManagement() {
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'public' | 'private'>('all')
+  const [materialCounts, setMaterialCounts] = useState<Record<number, number>>({})
 
   // Cargar portafolios cuando se selecciona una sección
   useEffect(() => {
@@ -31,6 +32,43 @@ export function PortfolioManagement() {
       loadPortfoliosBySection(selectedSectionId)
     }
   }, [selectedSectionId, loadPortfoliosBySection])
+
+  // Cargar contadores de materiales cuando se cargan los portafolios
+  useEffect(() => {
+    if (portfolios && portfolios.length > 0) {
+      const loadMaterialCounts = async () => {
+        const counts: Record<number, number> = {}
+        
+        for (const portfolio of portfolios) {
+          try {
+            let totalMaterials = 0
+            
+            // Obtener materiales de todos los cursos del portafolio
+            for (const course of portfolio.courses) {
+              for (const topic of course.topics) {
+                try {
+                  const response = await academicApi.getMaterialsByTopic(topic.id)
+                  const materials = Array.isArray(response.data) ? response.data : response.data?.results || []
+                  totalMaterials += materials.length
+                } catch (error) {
+                  console.error(`Error loading materials for topic ${topic.id}:`, error)
+                }
+              }
+            }
+            
+            counts[portfolio.id] = totalMaterials
+          } catch (error) {
+            console.error(`Error loading material count for portfolio ${portfolio.id}:`, error)
+            counts[portfolio.id] = 0
+          }
+        }
+        
+        setMaterialCounts(counts)
+      }
+      
+      loadMaterialCounts()
+    }
+  }, [portfolios])
 
   // Seleccionar primera sección por defecto
   useEffect(() => {
@@ -257,7 +295,7 @@ export function PortfolioManagement() {
                         <div className="flex items-center space-x-3 text-small text-base-content/70 mb-2">
                           <div className="flex items-center space-x-1">
                             <FiCheckCircle className="w-3 h-3 text-success" />
-                            <span>{portfolio.completed_assignments_count}/{portfolio.activity_assignments_count} actividades</span>
+                            <span>{materialCounts[portfolio.id] || 0} materiales</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <FiClock className="w-3 h-3" />

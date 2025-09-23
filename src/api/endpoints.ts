@@ -118,6 +118,7 @@ export interface Material {
   material_type: 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'
   file?: string
   url?: string
+  content_data?: string // JSON string para contenido generado por IA
   topic: number
   topic_name: string
   course_id: number
@@ -361,6 +362,15 @@ export const academicApi = {
   
   deleteMaterial: (id: number) => 
     http.delete(`academic/materials/${id}/`),
+
+  // Assign material to students
+  assignMaterialToStudents: (data: {
+    material_id: number
+    section_id: number
+    assignment_type: 'general' | 'personalized'
+    selected_students?: number[]
+  }) => 
+    http.post(`academic/materials/assign-to-students/`, data),
 
   // Material Analytics endpoints
   getMaterialAnalytics: () =>

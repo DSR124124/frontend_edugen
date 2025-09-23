@@ -16,7 +16,6 @@ interface AssignMaterialModalProps {
     sectionId: number
     title: string
     description?: string
-    format: 'SCORM' | 'PDF' | 'HTML'
     assignmentType: 'general' | 'personalized'
     selectedStudents?: number[]
   }) => void
@@ -36,7 +35,6 @@ export function AssignMaterialModal({
     sectionId: 0,
     title: '',
     description: '',
-    format: 'SCORM' as 'SCORM' | 'PDF' | 'HTML',
     assignmentType: 'general' as 'general' | 'personalized',
     selectedStudents: [] as number[]
   })
@@ -57,7 +55,6 @@ export function AssignMaterialModal({
         sectionId: 0,
         title: content.title || '',
         description: '',
-        format: 'SCORM',
         assignmentType: 'general',
         selectedStudents: []
       })
@@ -83,8 +80,6 @@ export function AssignMaterialModal({
         return value === 0 ? 'Debe seleccionar una sección' : ''
       case 'title':
         return !value || (value as string).trim() === '' ? 'El título es obligatorio' : ''
-      case 'format':
-        return !value ? 'Debe seleccionar un formato' : ''
       case 'selectedStudents':
         if (formData.assignmentType === 'personalized') {
           return (value as number[]).length === 0 ? 'Debe seleccionar al menos un estudiante' : ''
@@ -148,7 +143,6 @@ export function AssignMaterialModal({
     setTouched({
       sectionId: true,
       title: true,
-      format: true,
       selectedStudents: formData.assignmentType === 'personalized'
     })
 
@@ -157,7 +151,6 @@ export function AssignMaterialModal({
         sectionId: formData.sectionId,
         title: formData.title,
         description: formData.description,
-        format: formData.format,
         assignmentType: formData.assignmentType,
         selectedStudents: formData.assignmentType === 'personalized' ? formData.selectedStudents : undefined
       })
@@ -168,7 +161,7 @@ export function AssignMaterialModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Asignar Material a Sección"
+      title="Asignar Material"
       size="lg"
     >
       <div className="space-y-6">
@@ -183,7 +176,6 @@ export function AssignMaterialModal({
                 <h4 className="font-medium text-primary mb-2">Contenido a Asignar</h4>
                 <div className="text-sm text-primary/80 space-y-1">
                   <p><strong>Título:</strong> {content.title || 'Sin título'}</p>
-                  <p><strong>ID:</strong> {content.id}</p>
                   <p><strong>Fecha de creación:</strong> {new Date(content.created_at).toLocaleDateString('es-ES')}</p>
                 </div>
               </div>
@@ -205,7 +197,7 @@ export function AssignMaterialModal({
               { value: 0, label: 'Seleccionar sección...' },
               ...sections.map((section: Section) => ({
                 value: section.id,
-                label: `${section.name} - ${section.course?.name} (Capacidad: ${section.capacity || 'N/A'})`
+                label: `${section.name} - ${section.course?.name} (${section.grade_level?.name || 'Sin grado'} - Nivel ${section.grade_level?.level || 'N/A'})`
               }))
             ]}
           />
@@ -283,59 +275,6 @@ export function AssignMaterialModal({
             placeholder="Descripción opcional del material"
           />
 
-          {/* Formato de Envío */}
-          <div>
-            <label className="block text-sm font-medium text-base-content mb-3">
-              Formato de Envío <span className="text-error">*</span>
-            </label>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="format"
-                  value="SCORM"
-                  checked={formData.format === 'SCORM'}
-                  onChange={handleChange}
-                  className="radio radio-primary"
-                />
-                <div>
-                  <div className="font-medium text-base-content">SCORM</div>
-                  <div className="text-sm text-base-content/70">Formato estándar para LMS (Recomendado)</div>
-                </div>
-              </label>
-              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="format"
-                  value="PDF"
-                  checked={formData.format === 'PDF'}
-                  onChange={handleChange}
-                  className="radio radio-primary"
-                />
-                <div>
-                  <div className="font-medium text-base-content">PDF</div>
-                  <div className="text-sm text-base-content/70">Documento estático</div>
-                </div>
-              </label>
-              <label className="flex items-center space-x-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="format"
-                  value="HTML"
-                  checked={formData.format === 'HTML'}
-                  onChange={handleChange}
-                  className="radio radio-primary"
-                />
-                <div>
-                  <div className="font-medium text-base-content">HTML</div>
-                  <div className="text-sm text-base-content/70">Página web interactiva</div>
-                </div>
-              </label>
-            </div>
-            {errors.format && (
-              <p className="mt-1 text-sm text-error">{errors.format}</p>
-            )}
-          </div>
 
           {/* Selección de Estudiantes (solo para asignación personalizada) */}
           {formData.assignmentType === 'personalized' && formData.sectionId > 0 && (
@@ -429,14 +368,12 @@ export function AssignMaterialModal({
                     <>
                       <li>• El material se enviará a <strong>TODOS</strong> los estudiantes de la sección</li>
                       <li>• Los estudiantes podrán acceder al material desde su portafolio</li>
-                      <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
                       <li>• Una vez asignado, el material estará disponible inmediatamente</li>
                     </>
                   ) : (
                     <>
                       <li>• El material se enviará <strong>SOLO</strong> a los estudiantes seleccionados</li>
                       <li>• Los estudiantes seleccionados podrán acceder al material desde su portafolio</li>
-                      <li>• El formato SCORM permite seguimiento de progreso y calificaciones</li>
                       <li>• Una vez asignado, el material estará disponible inmediatamente</li>
                       <li>• Puedes cambiar la selección de estudiantes antes de confirmar</li>
                     </>
