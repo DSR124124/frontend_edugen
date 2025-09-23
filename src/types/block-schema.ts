@@ -20,6 +20,7 @@ export interface BlockProps {
   rounded?: boolean
   fullWidth?: boolean
   maxWidth?: number
+  style?: 'divider' | 'quote' | 'code' | 'normal' | 'accordion' | 'tabs' | 'quiz' | 'flashcard' | 'poll' | 'form' | 'carousel' | 'gallery' | 'embed' | 'audio' | 'slideshow' | 'card' | 'spacer' | 'columns' | 'highlight' | 'math' | 'timeline' | 'chart' | 'map' | 'button' | 'stats' | 'testimonial' | 'pricing' | 'faq' | 'contact' | 'alert' | 'progress'
 }
 
 export interface BaseBlock {
@@ -160,6 +161,18 @@ export interface CalloutBlock extends BaseBlock {
   icon?: string
 }
 
+export interface TableBlock extends BaseBlock {
+  type: 'table'
+  tableData: {
+    headers: string[]
+    rows: string[][]
+  }
+  caption?: string
+  striped?: boolean
+  bordered?: boolean
+  hoverable?: boolean
+}
+
 // Union type for all blocks
 export type Block = 
   | HeroBlock
@@ -168,6 +181,7 @@ export type Block =
   | ListBlock
   | ImageBlock
   | VideoBlock
+  | TableBlock
   | ColumnsBlock
   | CardBlock
   | ButtonBlock
@@ -218,7 +232,7 @@ export const createBlock = <T extends Block>(type: T['type'], data: Omit<T, 'id'
 // Block validation
 export const validateBlock = (block: unknown): block is Block => {
   if (!block || typeof block !== 'object') return false
-  const b = block as any
+  const b = block as Record<string, unknown>
   return !!(b.id && b.type && typeof b.id === 'string' && typeof b.type === 'string')
 }
 
@@ -235,3 +249,4 @@ export const isFormBlock = (block: Block): block is FormBlock => block.type === 
 export const isQuizBlock = (block: Block): block is QuizBlock => block.type === 'quiz'
 export const isCodeBlock = (block: Block): block is CodeBlock => block.type === 'code'
 export const isCalloutBlock = (block: Block): block is CalloutBlock => block.type === 'callout'
+export const isTableBlock = (block: Block): block is TableBlock => block.type === 'table'

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, GeneratedContent } from '../../api/endpoints'
 import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GammaEditor } from '../../components/editor/GammaEditor'
+import { PreviewModal } from '../../components/editor/PreviewModal'
 import { Document, createBlock, Block, ParagraphBlock } from '../../types/block-schema'
 import { 
   FiFileText, 
@@ -23,6 +24,7 @@ export function GeneratedContentPage() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useNotificationContext()
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
+  const [currentDocument, setCurrentDocument] = useState<Document | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deletingContent, setDeletingContent] = useState<GeneratedContent | null>(null)
   const [isEditorModalOpen, setIsEditorModalOpen] = useState(false)
@@ -135,6 +137,7 @@ export function GeneratedContentPage() {
 
   const handleEditContent = (content: GeneratedContent) => {
     setSelectedContent(content)
+    setCurrentDocument(convertToDocument(content))
     setIsEditorModalOpen(true)
   }
 
@@ -151,12 +154,15 @@ export function GeneratedContentPage() {
   const handleCloseEditorModal = () => {
     setIsEditorModalOpen(false)
     setSelectedContent(null)
+    setCurrentDocument(null)
   }
 
   const handleClosePreviewModal = () => {
     setIsPreviewModalOpen(false)
     setSelectedContent(null)
+    setCurrentDocument(null)
   }
+
 
   const confirmDelete = () => {
     if (deletingContent) {
@@ -174,6 +180,9 @@ export function GeneratedContentPage() {
         id: selectedContent.id,
         data: updatedData
       })
+      
+      // Cerrar el modal después de guardar exitosamente
+      handleCloseEditorModal()
       
       // La notificación de éxito se maneja en la mutación updateContentMutation
     } catch (error) {
@@ -385,41 +394,40 @@ export function GeneratedContentPage() {
                   {selectedContent.title}
                 </h2>
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    setIsEditorModalOpen(false)
-                    setIsPreviewModalOpen(true)
-                  }}
-                  className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Vista Previa
-                </button>
-                <button
-                  onClick={() => handleExportContent(selectedContent)}
-                  className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Exportar
-                </button>
-                <button
-                  onClick={handleCloseEditorModal}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
-              </div>
+               <div className="flex items-center space-x-2">
+                 <button
+                   onClick={handleCloseEditorModal}
+                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                 >
+                   <FiX className="w-5 h-5" />
+                 </button>
+               </div>
             </div>
 
             {/* Editor */}
             <div className="flex-1 overflow-auto">
               <GammaEditor
-                document={convertToDocument(selectedContent)}
+                document={currentDocument || convertToDocument(selectedContent)}
                 onSave={handleSaveDocument}
                 onUpdate={(doc) => {
+                  console.log('GammaEditor onUpdate called with document:', doc)
+                  setCurrentDocument(doc)
                   setSelectedContent(prev => prev ? {
                     ...prev,
                     title: doc.title,
-                    description: doc.description
+                    description: doc.description,
+                    gamma_blocks: doc.blocks,
+                    gamma_document: {
+                      id: doc.id,
+                      title: doc.title,
+                      description: doc.description,
+                      blocks: doc.blocks,
+                      metadata: doc.metadata,
+                      settings: doc.settings,
+                      createdAt: doc.createdAt,
+                      updatedAt: doc.updatedAt,
+                      version: doc.version
+                    }
                   } : null)
                 }}
                 enableAI={true}
@@ -431,113 +439,20 @@ export function GeneratedContentPage() {
       )}
 
       {/* Modal de Vista Previa */}
-      {isPreviewModalOpen && selectedContent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black bg-opacity-50" onClick={handleClosePreviewModal}></div>
-          <div className="relative bg-white rounded-lg shadow-xl w-[95vw] h-[95vh] max-w-6xl flex flex-col">
-            {/* Header del Modal */}
-            <div className="flex items-center justify-between p-4 border-b">
-              <div className="flex items-center space-x-3">
-                <FiEye className="w-6 h-6 text-blue-600" />
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Vista Previa: {selectedContent.title}
-                </h2>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    setIsPreviewModalOpen(false)
-                    setIsEditorModalOpen(true)
-                  }}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={handleClosePreviewModal}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                >
-                  <FiX className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Preview */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <Card className="p-6">
-                <div className="prose max-w-none">
-                  {convertToDocument(selectedContent).blocks.map((block, index) => (
-                    <div key={block.id || index} className="mb-4">
-                      {block.type === 'hero' && (
-                        <div className="text-center py-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg">
-                          <h1 className="text-4xl font-bold mb-4">{block.title}</h1>
-                          {block.subtitle && <p className="text-xl mb-4">{block.subtitle}</p>}
-                          {block.body && <p className="text-lg">{block.body}</p>}
-                        </div>
-                      )}
-                      {block.type === 'paragraph' && (
-                        <p className="text-gray-700 leading-relaxed">{block.content}</p>
-                      )}
-                      {block.type === 'heading' && (
-                        <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-4">
-                          {block.content}
-                        </h2>
-                      )}
-                      {block.type === 'list' && (
-                        <ul className="list-disc list-inside space-y-2">
-                          {block.items.map((item: string, itemIndex: number) => (
-                            <li key={itemIndex} className="text-gray-700">{item}</li>
-                          ))}
-                        </ul>
-                      )}
-                      {block.type === 'image' && (
-                        <div className="text-center my-6">
-                          {block.media?.src ? (
-                            <div>
-                              <img 
-                                src={block.media.src} 
-                                alt={block.media.alt || 'Imagen'} 
-                                className="max-w-full max-h-96 mx-auto rounded-lg shadow-lg"
-                                onError={(e) => {
-                                  // Si la imagen falla al cargar, mostrar placeholder
-                                  e.currentTarget.style.display = 'none'
-                                  e.currentTarget.nextElementSibling?.classList.remove('hidden')
-                                }}
-                              />
-                              <div className="hidden text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                                <p className="text-gray-500">Imagen no disponible</p>
-                                <p className="text-sm text-gray-400 mt-2">URL: {block.media.src}</p>
-                              </div>
-                              {block.media.alt && (
-                                <p className="text-sm text-gray-600 mt-2 italic">{block.media.alt}</p>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                              <p className="text-gray-500">Imagen no disponible</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      {block.type === 'callout' && (
-                        <div className={`p-4 rounded-lg border-l-4 ${
-                          block.variant === 'info' ? 'bg-blue-50 border-blue-400' :
-                          block.variant === 'warning' ? 'bg-yellow-50 border-yellow-400' :
-                          block.variant === 'success' ? 'bg-green-50 border-green-400' :
-                          'bg-red-50 border-red-400'
-                        }`}>
-                          {block.title && <h3 className="font-semibold mb-2">{block.title}</h3>}
-                          <p className="text-gray-700">{block.content}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      )}
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={handleClosePreviewModal}
+        onEdit={() => {
+          // Mantener el currentDocument actualizado al regresar al editor
+          if (currentDocument) {
+            setCurrentDocument(currentDocument)
+          }
+          setIsPreviewModalOpen(false)
+          setIsEditorModalOpen(true)
+        }}
+        document={currentDocument || (selectedContent ? convertToDocument(selectedContent) : null)}
+        title={selectedContent?.title || ''}
+      />
     </div>
   )
 }
