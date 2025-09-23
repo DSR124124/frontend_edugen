@@ -4,6 +4,7 @@ import { formatDate } from '../../utils/helpers'
 import { Modal } from '../ui/Modal'
 import { PreviewModal } from '../editor/PreviewModal'
 import { Document } from '../../types/block-schema'
+import { useAuthStore } from '../../store/auth'
 import { 
   FiCheckCircle,
   FiXCircle,
@@ -28,6 +29,7 @@ interface PortfolioDetailModalProps {
 }
 
 export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDetailModalProps) {
+  const { user } = useAuthStore()
   const [selectedCourse, setSelectedCourse] = useState<PortfolioCourse | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<{id: number, name: string, order: number, description?: string} | null>(null)
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
@@ -520,11 +522,16 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
           isOpen={isPreviewModalOpen}
           onClose={handleClosePreviewModal}
           onEdit={() => {
-            // No permitir edición desde el portafolio del estudiante
-            console.log('Edición no permitida desde portafolio de estudiante')
+            // Solo permitir edición si es profesor
+            if (user?.role === 'PROFESOR') {
+              console.log('Edición permitida para profesores')
+            } else {
+              console.log('Edición no permitida para estudiantes')
+            }
           }}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
+          canEdit={user?.role === 'PROFESOR'}
         />
       )}
     </Modal>

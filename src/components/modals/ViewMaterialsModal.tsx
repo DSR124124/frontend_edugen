@@ -433,6 +433,7 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
           }}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
+          canEdit={false}
         />
       )}
     </>

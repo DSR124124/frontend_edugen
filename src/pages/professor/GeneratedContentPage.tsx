@@ -761,6 +761,7 @@ export function GeneratedContentPage() {
           onEdit={() => handleEditContent(selectedContent)}
           document={currentDocument}
           title={selectedContent.title}
+          canEdit={true}
         />
       )}
 

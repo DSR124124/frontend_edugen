@@ -8,6 +8,7 @@ interface PreviewModalProps {
   onEdit: () => void
   document: Document | null
   title: string
+  canEdit?: boolean
 }
 
 export function PreviewModal({ 
@@ -15,7 +16,8 @@ export function PreviewModal({
   onClose, 
   onEdit, 
   document, 
-  title 
+  title,
+  canEdit = true
 }: PreviewModalProps) {
   if (!isOpen || !document) return null
 
@@ -34,7 +36,12 @@ export function PreviewModal({
           <div className="flex items-center space-x-2">
             <button
               onClick={onEdit}
-              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              disabled={!canEdit}
+              className={`px-3 py-1 text-sm rounded ${
+                canEdit 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Editar
             </button>

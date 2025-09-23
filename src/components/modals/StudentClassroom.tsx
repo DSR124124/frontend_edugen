@@ -1,8 +1,17 @@
 import React from 'react'
-import { Users, Clock, Award, Eye, User } from 'lucide-react'
+import { 
+  FiUsers,
+  FiClock,
+  FiAward,
+  FiEye,
+  FiUser,
+  FiBook,
+  FiCalendar
+} from 'react-icons/fi'
 import { ClassmatesModal } from './ClassmatesModal'
 import { useClassmates, ClassmatesResponse, Classmate } from '../../hooks/useClassmates'
 import { useAuthStore } from '../../store/auth'
+import { EmptyState } from '../common'
 
 interface StudentClassroomProps {
   className?: string
@@ -17,16 +26,12 @@ export function StudentClassroom({ className = '' }: StudentClassroomProps) {
 
   if (!user?.section) {
     return (
-      <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No tienes un salón asignado</h2>
-          <p className="text-gray-600">
-            Contacta a tu administrador para que te asigne a un salón.
-          </p>
-        </div>
+      <div className={`card p-3 sm:p-4 ${className}`}>
+        <EmptyState 
+          title="No tienes un salón asignado"
+          description="Contacta a tu administrador para que te asigne a un salón."
+          icon={<FiUsers className="w-full h-full text-base-content/40" />}
+        />
       </div>
     )
   }
@@ -37,96 +42,100 @@ export function StudentClassroom({ className = '' }: StudentClassroomProps) {
 
   return (
     <>
-      <div className={`bg-white rounded-lg shadow-lg p-4 ${className}`}>
-        {/* Header con botón */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-100)' }}>
-              <Users className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-base" style={{ color: 'var(--color-base-content)' }}>
-                {section.name}
-              </h3>
-              <p className="text-xs" style={{ color: 'var(--color-base-content)' }}>
-                {section.grade_level_name} • {section.term_name}
-              </p>
-            </div>
-          </div>
-          
-          <button
-            onClick={() => setIsClassmatesModalOpen(true)}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-colors text-sm"
-            style={{
-              color: 'var(--color-primary)',
-              backgroundColor: 'var(--color-primary-100)',
-              border: '1px solid var(--color-primary-200)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-primary-200)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--color-primary-100)'
-            }}
-          >
-            <Eye className="w-4 h-4" />
-            <span>Ver Compañeros</span>
-          </button>
+      <div className={`card p-3 sm:p-4 ${className}`}>
+        {/* Header */}
+        <div className="flex items-center space-x-2 mb-3 sm:mb-4">
+          <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+          <h2 className="text-lg sm:text-xl font-bold text-base-content">Compañeros de Salón</h2>
         </div>
 
-        {/* Estadísticas compactas */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {/* Total de Estudiantes */}
-          <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'var(--color-primary-50)' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: 'var(--color-primary-100)' }}>
-              <Users className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
-            </div>
-            <h4 className="font-bold text-lg mb-1" style={{ color: 'var(--color-primary)' }}>
-              {totalClassmates}
-            </h4>
-            <p className="text-xs font-medium" style={{ color: 'var(--color-primary-700)' }}>
-              Total
-            </p>
-          </div>
-          
-          {/* Estudiantes Activos */}
-          <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'var(--color-success-50)' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: 'var(--color-success-100)' }}>
-              <User className="w-4 h-4" style={{ color: 'var(--color-success)' }} />
-            </div>
-            <h4 className="font-bold text-lg mb-1" style={{ color: 'var(--color-success)' }}>
-              {activeClassmates}
-            </h4>
-            <p className="text-xs font-medium" style={{ color: 'var(--color-success-700)' }}>
-              Activos
-            </p>
-          </div>
-          
-          {/* Estado del Salón */}
-          <div className="text-center p-3 rounded-lg" style={{ backgroundColor: 'var(--color-warning-50)' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-2" style={{ backgroundColor: 'var(--color-warning-100)' }}>
-              <Clock className="w-4 h-4" style={{ color: 'var(--color-warning)' }} />
-            </div>
-            <h4 className="font-bold text-lg mb-1" style={{ color: 'var(--color-warning)' }}>
-              ✓
-            </h4>
-            <p className="text-xs font-medium" style={{ color: 'var(--color-warning-700)' }}>
+        {/* Información de la Sección */}
+        <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 mb-4">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="font-semibold text-base sm:text-lg text-base-content truncate flex-1 min-w-0 mr-2">
+              {section.name}
+            </h3>
+            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-success-100 text-success flex-shrink-0">
+              <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
               Activo
-            </p>
-          </div>
-        </div>
-
-        {/* Información compacta */}
-        <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-base-100)' }}>
-          <div className="flex items-center space-x-2 mb-1">
-            <Award className="w-3 h-3" style={{ color: 'var(--color-primary)' }} />
-            <span className="text-xs font-medium" style={{ color: 'var(--color-base-content)' }}>
-              Información
             </span>
           </div>
-          <p className="text-xs" style={{ color: 'var(--color-base-content)' }}>
-            Accede a materiales, actividades e interactúa con tus compañeros.
-          </p>
+          <div className="space-y-2">
+            {section.course_name && (
+              <div className="flex items-start space-x-2">
+                <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-base-content/70 flex-shrink-0 mt-0.5" />
+                <span className="text-xs sm:text-sm text-base-content/70 truncate">
+                  <span className="font-medium">Curso:</span> {section.course_name}
+                </span>
+              </div>
+            )}
+            {section.grade_level_name && (
+              <div className="flex items-start space-x-2">
+                <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-base-content/70 flex-shrink-0 mt-0.5" />
+                <span className="text-xs sm:text-sm text-base-content/70 truncate">
+                  <span className="font-medium">Grado:</span> {section.grade_level_name}
+                </span>
+              </div>
+            )}
+            {section.term_name && (
+              <div className="flex items-start space-x-2">
+                <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-base-content/70 flex-shrink-0 mt-0.5" />
+                <span className="text-xs sm:text-sm text-base-content/70 truncate">
+                  <span className="font-medium">Período:</span> {section.term_name}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+          <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
+            <div className="flex items-center">
+              <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
+                <FiUsers className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Total Estudiantes</p>
+                <p className="text-xl sm:text-2xl font-semibold text-base-content">{totalClassmates}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200">
+            <div className="flex items-center">
+              <div className="p-2 sm:p-3 bg-success-100 rounded-lg flex-shrink-0">
+                <FiUser className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Estudiantes Activos</p>
+                <p className="text-xl sm:text-2xl font-semibold text-base-content">{activeClassmates}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card p-3 sm:p-4 hover:shadow-md transition-all duration-200 sm:col-span-2 lg:col-span-1">
+            <div className="flex items-center">
+              <div className="p-2 sm:p-3 bg-warning-100 rounded-lg flex-shrink-0">
+                <FiClock className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-base-content/70 truncate">Estado</p>
+                <p className="text-xl sm:text-2xl font-semibold text-base-content">Activo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Botón para ver compañeros */}
+        <div className="flex justify-center">
+          <button
+            onClick={() => setIsClassmatesModalOpen(true)}
+            className="btn btn-primary btn-sm flex items-center space-x-2"
+          >
+            <FiEye className="w-4 h-4" />
+            <span>Ver Compañeros</span>
+          </button>
         </div>
       </div>
 

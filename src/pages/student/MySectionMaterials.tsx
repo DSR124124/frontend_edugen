@@ -335,6 +335,7 @@ export function MySectionMaterials() {
           }}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
+          canEdit={false}
         />
       )}
 
