@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, memo } from 'react'
-import { Document, Block, createBlock, HeroBlock, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, BlockMedia, BlockProps } from '../../types/block-schema'
+import { Document, Block, createBlock, HeroBlock, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, BlockMedia, BlockProps, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { ContextualToolbar } from './ContextualToolbar'
 import { BlockSelector } from './BlockSelector'
 import { useDocumentHistory } from '../../hooks/useDocumentHistory'
@@ -70,10 +70,15 @@ interface BlockComponentProps {
   onUpdateVideoProperties: (blockId: string, media: { src: string; alt: string }) => void
   onUpdateListItems: (blockId: string, items: string[]) => void
   onUpdateTableData: (blockId: string, tableData: { headers: string[]; rows: string[][] }) => void
+  onUpdateForm: (blockId: string, formData: { title?: string; description?: string; fields: Array<{ id: string; type: string; label: string; placeholder?: string; required?: boolean; options?: string[] }> }) => void
+  onUpdateQuiz: (blockId: string, quizData: { question: string; options: string[]; correctAnswer: number; explanation?: string; points?: number }) => void
+  onUpdateFlashcard: (blockId: string, flashcardData: { front: string; back: string; category?: string; difficulty?: 'easy' | 'medium' | 'hard'; tags?: string[] }) => void
   onBlockAction: (action: string, blockId: string) => void
   onAIAction: (action: string, prompt: string) => void
   openAccordions: Set<string>
   onToggleAccordion: (blockId: string) => void
+  flippedCards: Set<string>
+  onToggleFlashcard: (blockId: string) => void
 }
 
 // Memoized BlockComponent to prevent unnecessary re-renders
@@ -91,10 +96,15 @@ const BlockComponent = memo<BlockComponentProps>(({
   onUpdateVideoProperties,
   onUpdateListItems,
   onUpdateTableData,
+  onUpdateForm,
+  onUpdateQuiz,
+  onUpdateFlashcard,
   onBlockAction,
   onAIAction,
   openAccordions,
-  onToggleAccordion
+  onToggleAccordion,
+  flippedCards,
+  onToggleFlashcard
 }) => {
   return (
     <div
@@ -110,6 +120,532 @@ const BlockComponent = memo<BlockComponentProps>(({
           <h1 className="text-4xl font-bold mb-4">{block.title}</h1>
           {block.subtitle && <p className="text-xl mb-4">{block.subtitle}</p>}
           {block.body && <p className="text-lg">{block.body}</p>}
+        </div>
+      )}
+
+      {block.type === 'form' && (
+        <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
+          {(() => {
+            const formBlock = block as FormBlock
+              return (
+                <div className="border border-orange-200 rounded-lg bg-orange-50">
+                  <div className="bg-orange-100 px-4 py-2 border-b border-orange-200 font-semibold text-orange-800">
+                    📝 Formulario
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Título del formulario
+                      </label>
+                      <input
+                        type="text"
+                        value={formBlock.title || ''}
+                        onChange={(e) => {
+                        onUpdateForm(block.id, {
+                            title: e.target.value,
+                            description: formBlock.description,
+                            fields: formBlock.fields
+                          })
+                        }}
+                        className="w-full p-3 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="Título del formulario..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción
+                      </label>
+                      <textarea
+                        value={formBlock.description || ''}
+                        onChange={(e) => {
+                        onUpdateForm(block.id, {
+                            title: formBlock.title,
+                            description: e.target.value,
+                            fields: formBlock.fields
+                          })
+                        }}
+                        className="w-full p-3 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="Descripción del formulario..."
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Campos del formulario
+                      </label>
+                      <div className="space-y-3">
+                        {formBlock.fields?.map((field, index) => (
+                          <div key={field.id} className="p-3 border border-orange-200 rounded-lg bg-white">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-gray-700">
+                                Campo {index + 1}: {field.label}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  const updatedFields = formBlock.fields.filter((_, i) => i !== index)
+                                onUpdateForm(block.id, {
+                                    title: formBlock.title,
+                                    description: formBlock.description,
+                                    fields: updatedFields
+                                  })
+                                }}
+                                className="text-red-600 hover:text-red-800 text-sm"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <label className="block text-gray-600">Tipo:</label>
+                                <span className="text-gray-800">{field.type}</span>
+                              </div>
+                              <div>
+                                <label className="block text-gray-600">Requerido:</label>
+                                <span className="text-gray-800">{field.required ? 'Sí' : 'No'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const newField = {
+                            id: `field_${Date.now()}`,
+                            type: 'text' as const,
+                            label: 'Nuevo campo',
+                            placeholder: 'Placeholder...',
+                            required: false
+                          }
+                        onUpdateForm(block.id, {
+                            title: formBlock.title,
+                            description: formBlock.description,
+                            fields: [...(formBlock.fields || []), newField]
+                          })
+                        }}
+                        className="mt-2 px-3 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                      >
+                        + Agregar campo
+                      </button>
+                    </div>
+                    
+                    {/* Vista previa del formulario */}
+                    <div className="mt-4 p-4 bg-white rounded-lg border">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Vista previa:
+                      </label>
+                      <div className="space-y-4">
+                        {formBlock.title && (
+                          <h3 className="text-lg font-semibold text-gray-800">{formBlock.title}</h3>
+                        )}
+                        {formBlock.description && (
+                          <p className="text-gray-600">{formBlock.description}</p>
+                        )}
+                        <div className="space-y-3">
+                          {formBlock.fields?.map((field) => (
+                            <div key={field.id}>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {field.label}
+                                {field.required && <span className="text-red-500 ml-1">*</span>}
+                              </label>
+                              {field.type === 'textarea' ? (
+                                <textarea
+                                  placeholder={field.placeholder}
+                                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                  rows={3}
+                                />
+                              ) : (
+                                <input
+                                  type={field.type}
+                                  placeholder={field.placeholder}
+                                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                          Enviar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+          })()}
+        </div>
+      )}
+
+      {block.type === 'quiz' && (
+        <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
+          {(() => {
+            const quizBlock = block as QuizBlock
+            return (
+              <div className="border border-blue-200 rounded-lg bg-blue-50">
+                <div className="bg-blue-100 px-4 py-2 border-b border-blue-200 font-semibold text-blue-800">
+                  ❓ Quiz
+                </div>
+                <div className="p-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Pregunta
+                    </label>
+                    <textarea
+                      value={quizBlock.question}
+                      onChange={(e) => {
+                        onUpdateQuiz(block.id, {
+                          question: e.target.value,
+                          options: quizBlock.options,
+                          correctAnswer: quizBlock.correctAnswer,
+                          explanation: quizBlock.explanation,
+                          points: quizBlock.points
+                        })
+                      }}
+                      className="w-full min-h-[80px] p-3 border border-blue-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Escribe tu pregunta aquí..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Opciones de respuesta
+                    </label>
+                    <div className="space-y-2">
+                      {quizBlock.options.map((option, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            name={`correct-${block.id}`}
+                            checked={quizBlock.correctAnswer === index}
+                            onChange={() => {
+                              onUpdateQuiz(block.id, {
+                                question: quizBlock.question,
+                                options: quizBlock.options,
+                                correctAnswer: index,
+                                explanation: quizBlock.explanation,
+                                points: quizBlock.points
+                              })
+                            }}
+                            className="text-blue-600 focus:ring-blue-500"
+                          />
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...quizBlock.options]
+                              newOptions[index] = e.target.value
+                              onUpdateQuiz(block.id, {
+                                question: quizBlock.question,
+                                options: newOptions,
+                                correctAnswer: quizBlock.correctAnswer,
+                                explanation: quizBlock.explanation,
+                                points: quizBlock.points
+                              })
+                            }}
+                            className="flex-1 p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder={`Opción ${index + 1}`}
+                          />
+                          <button
+                            onClick={() => {
+                              const newOptions = quizBlock.options.filter((_, i) => i !== index)
+                              const newCorrectAnswer = quizBlock.correctAnswer > index 
+                                ? quizBlock.correctAnswer - 1 
+                                : quizBlock.correctAnswer === index 
+                                  ? 0 
+                                  : quizBlock.correctAnswer
+                              onUpdateQuiz(block.id, {
+                                question: quizBlock.question,
+                                options: newOptions,
+                                correctAnswer: newCorrectAnswer,
+                                explanation: quizBlock.explanation,
+                                points: quizBlock.points
+                              })
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm px-2 py-1"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={() => {
+                        onUpdateQuiz(block.id, {
+                          question: quizBlock.question,
+                          options: [...quizBlock.options, `Opción ${quizBlock.options.length + 1}`],
+                          correctAnswer: quizBlock.correctAnswer,
+                          explanation: quizBlock.explanation,
+                          points: quizBlock.points
+                        })
+                      }}
+                      className="mt-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      + Agregar opción
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Explicación (opcional)
+                    </label>
+                    <textarea
+                      value={quizBlock.explanation || ''}
+                      onChange={(e) => {
+                        onUpdateQuiz(block.id, {
+                          question: quizBlock.question,
+                          options: quizBlock.options,
+                          correctAnswer: quizBlock.correctAnswer,
+                          explanation: e.target.value,
+                          points: quizBlock.points
+                        })
+                      }}
+                      className="w-full min-h-[60px] p-3 border border-blue-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Explica por qué esta es la respuesta correcta..."
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Puntos
+                    </label>
+                    <input
+                      type="number"
+                      value={quizBlock.points || 10}
+                      onChange={(e) => {
+                        onUpdateQuiz(block.id, {
+                          question: quizBlock.question,
+                          options: quizBlock.options,
+                          correctAnswer: quizBlock.correctAnswer,
+                          explanation: quizBlock.explanation,
+                          points: parseInt(e.target.value) || 10
+                        })
+                      }}
+                      className="w-20 p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      min="1"
+                      max="100"
+                    />
+                  </div>
+                  
+                  {/* Vista previa del quiz */}
+                  <div className="mt-4 p-4 bg-white rounded-lg border">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Vista previa:
+                    </label>
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-800">{quizBlock.question}</h3>
+                      <div className="space-y-2">
+                        {quizBlock.options.map((option, index) => (
+                          <label key={index} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`preview-${block.id}`}
+                              className="text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-gray-700">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Enviar respuesta
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
+      )}
+
+      {block.type === 'flashcard' && (
+        <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
+          {(() => {
+            const flashcardBlock = block as FlashcardBlock
+            const isFlipped = flippedCards.has(block.id)
+            
+            return (
+              <div className="border border-green-200 rounded-lg bg-green-50">
+                <div className="bg-green-100 px-4 py-2 border-b border-green-200 font-semibold text-green-800 flex items-center justify-between">
+                  <span>🃏 Tarjeta de Memoria</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs bg-green-200 px-2 py-1 rounded">
+                      {flashcardBlock.category || 'General'}
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      flashcardBlock.difficulty === 'easy' ? 'bg-green-200' :
+                      flashcardBlock.difficulty === 'medium' ? 'bg-yellow-200' :
+                      'bg-red-200'
+                    }`}>
+                      {flashcardBlock.difficulty === 'easy' ? 'Fácil' :
+                       flashcardBlock.difficulty === 'medium' ? 'Medio' : 'Difícil'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-4 space-y-4">
+                  {/* Tarjeta interactiva */}
+                  <div className="relative">
+                    <div 
+                      className={`w-full h-48 bg-white rounded-lg border-2 border-green-300 cursor-pointer transition-transform duration-500 transform-gpu ${
+                        isFlipped ? 'rotate-y-180' : ''
+                      }`}
+                      style={{ transformStyle: 'preserve-3d' }}
+                      onClick={() => onToggleFlashcard(block.id)}
+                    >
+                      {/* Frente de la tarjeta */}
+                      <div className={`absolute inset-0 p-4 flex items-center justify-center ${
+                        isFlipped ? 'opacity-0' : 'opacity-100'
+                      } transition-opacity duration-500`}>
+                        <div className="text-center">
+                          <div className="text-sm text-green-600 mb-2">FRENTE</div>
+                          <div className="text-lg font-semibold text-gray-800">
+                            {flashcardBlock.front}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Reverso de la tarjeta */}
+                      <div className={`absolute inset-0 p-4 flex items-center justify-center ${
+                        isFlipped ? 'opacity-100' : 'opacity-0'
+                      } transition-opacity duration-500`}>
+                        <div className="text-center">
+                          <div className="text-sm text-green-600 mb-2">REVERSO</div>
+                          <div className="text-lg font-semibold text-gray-800">
+                            {flashcardBlock.back}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center mt-2">
+                      <button
+                        onClick={() => onToggleFlashcard(block.id)}
+                        className="text-sm text-green-600 hover:text-green-800 underline"
+                      >
+                        {isFlipped ? 'Ver frente' : 'Ver reverso'}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Editor de contenido */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Frente (Término/Concepto)
+                      </label>
+                      <textarea
+                        value={flashcardBlock.front}
+                        onChange={(e) => {
+                          onUpdateFlashcard(block.id, {
+                            front: e.target.value,
+                            back: flashcardBlock.back,
+                            category: flashcardBlock.category,
+                            difficulty: flashcardBlock.difficulty,
+                            tags: flashcardBlock.tags
+                          })
+                        }}
+                        className="w-full min-h-[100px] p-3 border border-green-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Escribe el término o concepto aquí..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Reverso (Definición/Explicación)
+                      </label>
+                      <textarea
+                        value={flashcardBlock.back}
+                        onChange={(e) => {
+                          onUpdateFlashcard(block.id, {
+                            front: flashcardBlock.front,
+                            back: e.target.value,
+                            category: flashcardBlock.category,
+                            difficulty: flashcardBlock.difficulty,
+                            tags: flashcardBlock.tags
+                          })
+                        }}
+                        className="w-full min-h-[100px] p-3 border border-green-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Escribe la definición o explicación aquí..."
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Configuración adicional */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Categoría
+                      </label>
+                      <input
+                        type="text"
+                        value={flashcardBlock.category || ''}
+                        onChange={(e) => {
+                          onUpdateFlashcard(block.id, {
+                            front: flashcardBlock.front,
+                            back: flashcardBlock.back,
+                            category: e.target.value,
+                            difficulty: flashcardBlock.difficulty,
+                            tags: flashcardBlock.tags
+                          })
+                        }}
+                        className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Ej: Matemáticas, Historia, etc."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Dificultad
+                      </label>
+                      <select
+                        value={flashcardBlock.difficulty || 'medium'}
+                        onChange={(e) => {
+                          onUpdateFlashcard(block.id, {
+                            front: flashcardBlock.front,
+                            back: flashcardBlock.back,
+                            category: flashcardBlock.category,
+                            difficulty: e.target.value as 'easy' | 'medium' | 'hard',
+                            tags: flashcardBlock.tags
+                          })
+                        }}
+                        className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      >
+                        <option value="easy">Fácil</option>
+                        <option value="medium">Medio</option>
+                        <option value="hard">Difícil</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Etiquetas (separadas por comas)
+                    </label>
+                    <input
+                      type="text"
+                      value={flashcardBlock.tags?.join(', ') || ''}
+                      onChange={(e) => {
+                        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
+                        onUpdateFlashcard(block.id, {
+                          front: flashcardBlock.front,
+                          back: flashcardBlock.back,
+                          category: flashcardBlock.category,
+                          difficulty: flashcardBlock.difficulty,
+                          tags: tags
+                        })
+                      }}
+                      className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="ejemplo, concepto, importante"
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
         </div>
       )}
 
@@ -182,21 +718,6 @@ const BlockComponent = memo<BlockComponentProps>(({
                 </div>
               </div>
             </div>
-          ) : block.props?.style === 'tabs' ? (
-            // Renderizar como pestañas
-            <div className="border border-gray-200 rounded-lg">
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 font-semibold text-gray-700">
-                📑 Pestañas
-              </div>
-              <div className="p-4">
-                <textarea
-                  value={block.content}
-                  onChange={(e) => onUpdateContent(block.id, e.target.value)}
-                  className="w-full min-h-[100px] p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Contenido de las pestañas..."
-                />
-              </div>
-            </div>
           ) : block.props?.style === 'quiz' ? (
             // Renderizar como quiz
             <div className="border border-blue-200 rounded-lg bg-blue-50">
@@ -224,36 +745,6 @@ const BlockComponent = memo<BlockComponentProps>(({
                   onChange={(e) => onUpdateContent(block.id, e.target.value)}
                   className="w-full min-h-[120px] p-3 border border-green-300 rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Frente: Término o concepto&#10;&#10;Reverso: Definición o explicación"
-                />
-              </div>
-            </div>
-          ) : block.props?.style === 'poll' ? (
-            // Renderizar como encuesta
-            <div className="border border-purple-200 rounded-lg bg-purple-50">
-              <div className="bg-purple-100 px-4 py-2 border-b border-purple-200 font-semibold text-purple-800">
-                📊 Encuesta
-              </div>
-              <div className="p-4">
-                <textarea
-                  value={block.content}
-                  onChange={(e) => onUpdateContent(block.id, e.target.value)}
-                  className="w-full min-h-[100px] p-3 border border-purple-300 rounded-lg resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Pregunta de la encuesta:&#10;&#10;• Opción 1&#10;• Opción 2&#10;• Opción 3"
-                />
-              </div>
-            </div>
-          ) : block.props?.style === 'form' ? (
-            // Renderizar como formulario
-            <div className="border border-orange-200 rounded-lg bg-orange-50">
-              <div className="bg-orange-100 px-4 py-2 border-b border-orange-200 font-semibold text-orange-800">
-                📝 Formulario
-              </div>
-              <div className="p-4">
-                <textarea
-                  value={block.content}
-                  onChange={(e) => onUpdateContent(block.id, e.target.value)}
-                  className="w-full min-h-[100px] p-3 border border-orange-300 rounded-lg resize-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Formulario:&#10;&#10;Nombre: _____________&#10;Email: _____________&#10;Mensaje: _____________"
                 />
               </div>
             </div>
@@ -446,19 +937,101 @@ const BlockComponent = memo<BlockComponentProps>(({
             </div>
           ) : block.props?.style === 'button' ? (
             // Renderizar como botón
-            <div className="border border-indigo-200 rounded-lg bg-indigo-50">
-              <div className="bg-indigo-100 px-4 py-2 border-b border-indigo-200 font-semibold text-indigo-800">
-                🔘 Botón
-              </div>
-              <div className="p-4">
-                <textarea
-                  value={block.content}
-                  onChange={(e) => onUpdateContent(block.id, e.target.value)}
-                  className="w-full min-h-[100px] p-3 border border-indigo-300 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder="Botón de acción:&#10;&#10;Texto: Hacer clic aquí&#10;Acción: Enlace o función&#10;Estilo: Primario, secundario, outline"
-                />
-              </div>
-            </div>
+            (() => {
+              // Parsear el contenido del botón
+              const lines = block.content.split('\n')
+              const buttonText = lines.find(line => line.startsWith('Texto:'))?.replace('Texto:', '').trim() || 'Hacer clic aquí'
+              const buttonAction = lines.find(line => line.startsWith('Acción:'))?.replace('Acción:', '').trim() || '#'
+              const buttonStyle = lines.find(line => line.startsWith('Estilo:'))?.replace('Estilo:', '').trim() || 'Primario'
+              
+              return (
+                <div className="border border-indigo-200 rounded-lg bg-indigo-50">
+                  <div className="bg-indigo-100 px-4 py-2 border-b border-indigo-200 font-semibold text-indigo-800">
+                    🔘 Botón
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Texto del botón
+                      </label>
+                      <input
+                        type="text"
+                        value={buttonText}
+                        onChange={(e) => {
+                          const newText = e.target.value
+                          const updatedContent = block.content.replace(/Texto:.*/, `Texto: ${newText}`)
+                          onUpdateContent(block.id, updatedContent)
+                        }}
+                        className="w-full p-3 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Texto del botón..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Acción (URL o función)
+                      </label>
+                      <input
+                        type="text"
+                        value={buttonAction}
+                        onChange={(e) => {
+                          const newAction = e.target.value
+                          const updatedContent = block.content.replace(/Acción:.*/, `Acción: ${newAction}`)
+                          onUpdateContent(block.id, updatedContent)
+                        }}
+                        className="w-full p-3 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="https://ejemplo.com o función..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Estilo del botón
+                      </label>
+                      <select
+                        value={buttonStyle}
+                        onChange={(e) => {
+                          const newStyle = e.target.value
+                          const updatedContent = block.content.replace(/Estilo:.*/, `Estilo: ${newStyle}`)
+                          onUpdateContent(block.id, updatedContent)
+                        }}
+                        className="w-full p-3 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        <option value="Primario">Primario</option>
+                        <option value="Secundario">Secundario</option>
+                        <option value="Outline">Outline</option>
+                        <option value="Ghost">Ghost</option>
+                      </select>
+                    </div>
+                    
+                    {/* Vista previa del botón */}
+                    <div className="mt-4 p-4 bg-white rounded-lg border">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Vista previa:
+                      </label>
+                      <button
+                        className={`
+                          px-4 py-2 rounded-lg font-medium transition-colors
+                          ${buttonStyle === 'Primario' ? 'bg-indigo-600 text-white hover:bg-indigo-700' : ''}
+                          ${buttonStyle === 'Secundario' ? 'bg-gray-600 text-white hover:bg-gray-700' : ''}
+                          ${buttonStyle === 'Outline' ? 'border border-indigo-600 text-indigo-600 hover:bg-indigo-50' : ''}
+                          ${buttonStyle === 'Ghost' ? 'text-indigo-600 hover:bg-indigo-50' : ''}
+                        `}
+                        onClick={() => {
+                          if (buttonAction.startsWith('http')) {
+                            window.open(buttonAction, '_blank')
+                          } else {
+                            console.log('Acción del botón:', buttonAction)
+                          }
+                        }}
+                      >
+                        {buttonText}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()
           ) : block.props?.style === 'stats' ? (
             // Renderizar como estadísticas
             <div className="border border-emerald-200 rounded-lg bg-emerald-50">
@@ -1035,6 +1608,7 @@ export function GammaEditor({
   const [newlyAddedBlockId, setNewlyAddedBlockId] = useState<string | null>(null)
   const [showSidebar, setShowSidebar] = useState(true)
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set())
+  const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set())
 
   // Manual save functionality (auto-save disabled to prevent conflicts)
   const [isSaving, setIsSaving] = useState(false)
@@ -1450,9 +2024,104 @@ export function GammaEditor({
     updateTableData(blockId, tableData)
   }, [updateTableData])
 
+  const handleUpdateForm = useCallback((blockId: string, formData: { title?: string; description?: string; fields: Array<{ id: string; type: string; label: string; placeholder?: string; required?: boolean; options?: string[] }> }) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'form') {
+        return {
+          ...block,
+          title: formData.title,
+          description: formData.description,
+          fields: formData.fields,
+          updatedAt: new Date().toISOString()
+        } as FormBlock
+      }
+      return block
+    })
+    
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+    
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+    onUpdate?.(updatedDocument)
+  }, [document, addToHistory, onUpdate])
+
+  const handleUpdateQuiz = useCallback((blockId: string, quizData: { question: string; options: string[]; correctAnswer: number; explanation?: string; points?: number }) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'quiz') {
+        return {
+          ...block,
+          question: quizData.question,
+          options: quizData.options,
+          correctAnswer: quizData.correctAnswer,
+          explanation: quizData.explanation,
+          points: quizData.points,
+          updatedAt: new Date().toISOString()
+        } as QuizBlock
+      }
+      return block
+    })
+    
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+    
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+    onUpdate?.(updatedDocument)
+  }, [document, addToHistory, onUpdate])
+
+  const handleUpdateFlashcard = useCallback((blockId: string, flashcardData: { front: string; back: string; category?: string; difficulty?: 'easy' | 'medium' | 'hard'; tags?: string[] }) => {
+    const updatedBlocks = document.blocks.map(block => {
+      if (block.id === blockId && block.type === 'flashcard') {
+        return {
+          ...block,
+          front: flashcardData.front,
+          back: flashcardData.back,
+          category: flashcardData.category,
+          difficulty: flashcardData.difficulty,
+          tags: flashcardData.tags,
+          updatedAt: new Date().toISOString()
+        } as FlashcardBlock
+      }
+      return block
+    })
+    
+    const updatedDocument = {
+      ...document,
+      blocks: updatedBlocks,
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+    
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+    onUpdate?.(updatedDocument)
+  }, [document, addToHistory, onUpdate])
+
   // Toggle accordion
   const toggleAccordion = useCallback((blockId: string) => {
     setOpenAccordions(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(blockId)) {
+        newSet.delete(blockId)
+      } else {
+        newSet.add(blockId)
+      }
+      return newSet
+    })
+  }, [])
+
+  // Toggle flashcard
+  const toggleFlashcard = useCallback((blockId: string) => {
+    setFlippedCards(prev => {
       const newSet = new Set(prev)
       if (newSet.has(blockId)) {
         newSet.delete(blockId)
@@ -1562,10 +2231,15 @@ export function GammaEditor({
                 onUpdateVideoProperties={handleUpdateVideoProperties}
                 onUpdateListItems={handleUpdateListItems}
                 onUpdateTableData={handleUpdateTableData}
+                onUpdateForm={handleUpdateForm}
+                onUpdateQuiz={handleUpdateQuiz}
+                onUpdateFlashcard={handleUpdateFlashcard}
                 onBlockAction={handleBlockAction}
                 onAIAction={handleAIAction}
                 openAccordions={openAccordions}
                 onToggleAccordion={toggleAccordion}
+                flippedCards={flippedCards}
+                onToggleFlashcard={toggleFlashcard}
               />
             ))
           )}

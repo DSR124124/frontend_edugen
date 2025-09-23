@@ -1,4 +1,4 @@
-import { Document } from '../../types/block-schema'
+import { Document, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { Card } from '../ui/Card'
 import { Eye, X } from 'lucide-react'
 
@@ -197,8 +197,152 @@ export function PreviewModal({
                       </pre>
                     </div>
                   )}
+                  {block.type === 'form' && (
+                    <div className="my-6 p-6 bg-orange-50 border border-orange-200 rounded-lg">
+                      <div className="bg-orange-100 px-4 py-2 border-b border-orange-200 font-semibold text-orange-800 mb-4">
+                        📝 Formulario
+                      </div>
+                      {(() => {
+                        const formBlock = block as FormBlock
+                        return (
+                          <div className="space-y-4">
+                            {formBlock.title && (
+                              <h3 className="text-lg font-semibold text-gray-800">{formBlock.title}</h3>
+                            )}
+                            {formBlock.description && (
+                              <p className="text-gray-600">{formBlock.description}</p>
+                            )}
+                            <div className="space-y-3">
+                              {formBlock.fields?.map((field) => (
+                                <div key={field.id}>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    {field.label}
+                                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                                  </label>
+                                  {field.type === 'textarea' ? (
+                                    <textarea
+                                      placeholder={field.placeholder}
+                                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                      rows={3}
+                                      disabled
+                                    />
+                                  ) : (
+                                    <input
+                                      type={field.type}
+                                      placeholder={field.placeholder}
+                                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                      disabled
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                              Enviar
+                            </button>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )}
+                  {block.type === 'quiz' && (
+                    <div className="my-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="bg-blue-100 px-4 py-2 border-b border-blue-200 font-semibold text-blue-800 mb-4">
+                        ❓ Quiz
+                      </div>
+                      {(() => {
+                        const quizBlock = block as QuizBlock
+                        return (
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gray-800">{quizBlock.question}</h3>
+                            <div className="space-y-2">
+                              {quizBlock.options.map((option, index) => (
+                                <label key={index} className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`quiz-${block.id}`}
+                                    className="text-blue-600 focus:ring-blue-500"
+                                    disabled
+                                  />
+                                  <span className="text-gray-700">{option}</span>
+                                </label>
+                              ))}
+                            </div>
+                            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                              Enviar respuesta
+                            </button>
+                            {quizBlock.explanation && (
+                              <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                                <p className="text-sm text-blue-800">
+                                  <strong>Explicación:</strong> {quizBlock.explanation}
+                                </p>
+                              </div>
+                            )}
+                            {quizBlock.points && (
+                              <div className="text-sm text-gray-600">
+                                Puntos: {quizBlock.points}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )}
+                  {block.type === 'flashcard' && (
+                    <div className="my-6 p-6 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="bg-green-100 px-4 py-2 border-b border-green-200 font-semibold text-green-800 mb-4 flex items-center justify-between">
+                        <span>🃏 Tarjeta de Memoria</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs bg-green-200 px-2 py-1 rounded">
+                            {(block as FlashcardBlock).category || 'General'}
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            (block as FlashcardBlock).difficulty === 'easy' ? 'bg-green-200' :
+                            (block as FlashcardBlock).difficulty === 'medium' ? 'bg-yellow-200' :
+                            'bg-red-200'
+                          }`}>
+                            {(block as FlashcardBlock).difficulty === 'easy' ? 'Fácil' :
+                             (block as FlashcardBlock).difficulty === 'medium' ? 'Medio' : 'Difícil'}
+                          </span>
+                        </div>
+                      </div>
+                      {(() => {
+                        const flashcardBlock = block as FlashcardBlock
+                        return (
+                          <div className="space-y-4">
+                            {/* Tarjeta estática mostrando ambos lados */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-white p-4 rounded-lg border-2 border-green-300">
+                                <div className="text-sm text-green-600 mb-2 font-medium">FRENTE</div>
+                                <div className="text-lg font-semibold text-gray-800">
+                                  {flashcardBlock.front}
+                                </div>
+                              </div>
+                              <div className="bg-white p-4 rounded-lg border-2 border-green-300">
+                                <div className="text-sm text-green-600 mb-2 font-medium">REVERSO</div>
+                                <div className="text-lg font-semibold text-gray-800">
+                                  {flashcardBlock.back}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Tags si existen */}
+                            {flashcardBlock.tags && flashcardBlock.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {flashcardBlock.tags.map((tag, index) => (
+                                  <span key={index} className="px-2 py-1 bg-green-200 text-green-800 text-xs rounded">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )}
                   {/* Para bloques que no tienen renderizado específico */}
-                  {!['hero', 'paragraph', 'heading', 'list', 'image', 'callout', 'table', 'video', 'code'].includes(block.type) && (
+                  {!['hero', 'paragraph', 'heading', 'list', 'image', 'callout', 'table', 'video', 'code', 'form', 'quiz', 'flashcard'].includes(block.type) && (
                     <div className="my-6 p-4 bg-gray-50 rounded-lg border-l-4 border-orange-400">
                       <p className="text-gray-600 text-sm">
                         <strong>Tipo de bloque:</strong> {block.type}

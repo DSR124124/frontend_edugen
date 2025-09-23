@@ -1,4 +1,4 @@
-import { createBlock, Block, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, VideoBlock, TableBlock } from '../../types/block-schema'
+import { createBlock, Block, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, VideoBlock, TableBlock, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { 
   Type,
   Image,
@@ -32,7 +32,6 @@ export type BlockType =
   | 'math'
   | 'timeline'
   | 'accordion'
-  | 'tabs'
   | 'card'
   | 'alert'
   | 'progress'
@@ -51,7 +50,6 @@ export type BlockType =
   | 'form'
   | 'quiz'
   | 'flashcard'
-  | 'poll'
   | 'audio'
   | 'slideshow'
   | 'columns'
@@ -160,13 +158,6 @@ export const BLOCK_CONFIGS: BlockConfig[] = [
     category: 'interactive'
   },
   {
-    type: 'tabs',
-    name: 'Pestañas',
-    description: 'Contenido en pestañas',
-    icon: FileText,
-    category: 'interactive'
-  },
-  {
     type: 'button',
     name: 'Botón',
     description: 'Botones de acción',
@@ -192,13 +183,6 @@ export const BLOCK_CONFIGS: BlockConfig[] = [
     name: 'Tarjeta de Memoria',
     description: 'Tarjetas para estudiar',
     icon: FileText,
-    category: 'interactive'
-  },
-  {
-    type: 'poll',
-    name: 'Encuesta',
-    description: 'Encuestas rápidas',
-    icon: Users,
     category: 'interactive'
   },
 
@@ -454,48 +438,61 @@ export const createBlockByType = (type: BlockType): Block => {
         }
       })
 
-    case 'tabs':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Contenido de las pestañas',
-        props: { 
-          padding: 'medium',
-          style: 'tabs'
-        }
-      })
 
     case 'quiz':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Pregunta: ¿Cuál es la respuesta correcta?\n\nA) Opción 1\nB) Opción 2\nC) Opción 3\nD) Opción 4',
+      return createBlock<QuizBlock>('quiz', {
+        question: '¿Cuál es la respuesta correcta?',
+        options: ['Opción 1', 'Opción 2', 'Opción 3', 'Opción 4'],
+        correctAnswer: 0,
+        explanation: 'Explicación de por qué esta es la respuesta correcta',
+        points: 10,
         props: { 
-          padding: 'medium',
-          style: 'quiz'
+          padding: 'medium'
         }
       })
 
     case 'flashcard':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Frente: Término o concepto\n\nReverso: Definición o explicación',
+      return createBlock<FlashcardBlock>('flashcard', {
+        front: 'Término o concepto',
+        back: 'Definición o explicación',
+        category: 'General',
+        difficulty: 'medium',
+        tags: [],
         props: { 
-          padding: 'medium',
-          style: 'flashcard'
+          padding: 'medium'
         }
       })
 
-    case 'poll':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Pregunta de la encuesta:\n\n• Opción 1\n• Opción 2\n• Opción 3',
-        props: { 
-          padding: 'medium',
-          style: 'poll'
-        }
-      })
 
     case 'form':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Formulario:\n\nNombre: _____________\nEmail: _____________\nMensaje: _____________',
+      return createBlock<FormBlock>('form', {
+        title: 'Formulario de Contacto',
+        description: 'Complete el formulario para contactarnos',
+        fields: [
+          {
+            id: 'name',
+            type: 'text',
+            label: 'Nombre',
+            placeholder: 'Ingrese su nombre',
+            required: true
+          },
+          {
+            id: 'email',
+            type: 'email',
+            label: 'Email',
+            placeholder: 'Ingrese su email',
+            required: true
+          },
+          {
+            id: 'message',
+            type: 'textarea',
+            label: 'Mensaje',
+            placeholder: 'Escriba su mensaje aquí',
+            required: false
+          }
+        ],
         props: { 
-          padding: 'medium',
-          style: 'form'
+          padding: 'medium'
         }
       })
 

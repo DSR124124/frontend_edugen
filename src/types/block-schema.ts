@@ -20,7 +20,7 @@ export interface BlockProps {
   rounded?: boolean
   fullWidth?: boolean
   maxWidth?: number
-  style?: 'divider' | 'quote' | 'code' | 'normal' | 'accordion' | 'tabs' | 'quiz' | 'flashcard' | 'poll' | 'form' | 'carousel' | 'gallery' | 'embed' | 'audio' | 'slideshow' | 'card' | 'spacer' | 'columns' | 'highlight' | 'math' | 'timeline' | 'chart' | 'map' | 'button' | 'stats' | 'testimonial' | 'pricing' | 'faq' | 'contact' | 'alert' | 'progress'
+  style?: 'divider' | 'quote' | 'code' | 'normal' | 'accordion' | 'tabs' | 'quiz' | 'flashcard' | 'form' | 'carousel' | 'gallery' | 'embed' | 'audio' | 'slideshow' | 'card' | 'spacer' | 'columns' | 'highlight' | 'math' | 'timeline' | 'chart' | 'map' | 'button' | 'stats' | 'testimonial' | 'pricing' | 'faq' | 'contact' | 'alert' | 'progress'
 }
 
 export interface BaseBlock {
@@ -145,6 +145,15 @@ export interface QuizBlock extends BaseBlock {
   points?: number
 }
 
+export interface FlashcardBlock extends BaseBlock {
+  type: 'flashcard'
+  front: string
+  back: string
+  category?: string
+  difficulty?: 'easy' | 'medium' | 'hard'
+  tags?: string[]
+}
+
 export interface CodeBlock extends BaseBlock {
   type: 'code'
   language: string
@@ -173,6 +182,7 @@ export interface TableBlock extends BaseBlock {
   hoverable?: boolean
 }
 
+
 // Union type for all blocks
 export type Block = 
   | HeroBlock
@@ -187,6 +197,7 @@ export type Block =
   | ButtonBlock
   | FormBlock
   | QuizBlock
+  | FlashcardBlock
   | CodeBlock
   | CalloutBlock
 
@@ -247,6 +258,7 @@ export const isCardBlock = (block: Block): block is CardBlock => block.type === 
 export const isButtonBlock = (block: Block): block is ButtonBlock => block.type === 'button'
 export const isFormBlock = (block: Block): block is FormBlock => block.type === 'form'
 export const isQuizBlock = (block: Block): block is QuizBlock => block.type === 'quiz'
+export const isFlashcardBlock = (block: Block): block is FlashcardBlock => block.type === 'flashcard'
 export const isCodeBlock = (block: Block): block is CodeBlock => block.type === 'code'
 export const isCalloutBlock = (block: Block): block is CalloutBlock => block.type === 'callout'
 export const isTableBlock = (block: Block): block is TableBlock => block.type === 'table'
