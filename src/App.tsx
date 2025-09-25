@@ -5,7 +5,7 @@ import { ErrorProvider } from './contexts/ErrorContext'
 import { NotificationProvider } from './contexts/NotificationContextProvider'
 import { ToastContainer } from './components/ui/Toast'
 import { TokenExpiredModal } from './components/modals/TokenExpiredModal'
-import { LoadingScreen } from './components/common/LoadingScreen'
+import { PageLoadingState } from './components/common/LoadingState'
 import { useTokenExpiry } from './hooks/useTokenExpiry'
 
 // Componente interno que usa el hook dentro del ErrorProvider
@@ -22,7 +22,7 @@ function AppContent() {
         onRedirectToLogin={handleRedirectToLogin}
       />
       {isRedirecting && (
-        <LoadingScreen message="Redirigiendo al login..." />
+        <PageLoadingState message="Redirigiendo al login..." />
       )}
     </div>
   )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { User } from '../../api/endpoints'
 import { Modal } from '../ui/Modal'
-import { UserProfile } from '../forms/UserProfile'
+import { UserProfile } from '../cards/UserProfile'
 
 interface UserDetailModalProps {
   isOpen: boolean
