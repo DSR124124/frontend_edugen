@@ -4,23 +4,24 @@ import { academicApi, Material } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 import { AnalyticsCharts } from '../../components/charts/AnalyticsCharts'
 import { 
-  FiBarChart,
-  FiUsers,
-  FiBook,
-  FiCalendar,
-  FiDownload,
-  FiPlay,
-  FiFile,
-  FiImage,
-  FiLink,
-  FiMusic,
-  FiAlertTriangle,
-  FiRefreshCw,
-  FiFilter,
-  FiTarget,
-  FiAward,
-  FiInfo
-} from 'react-icons/fi'
+  BarChart3,
+  Users,
+  Book,
+  Calendar,
+  Download,
+  Play,
+  FileText,
+  Image,
+  Link,
+  Music,
+  AlertTriangle,
+  RefreshCw,
+  Filter,
+  Target,
+  Award,
+  Info,
+  Sparkles
+} from 'lucide-react'
 import { EmptyState } from '../../components/common'
 
 interface Course {
@@ -206,14 +207,15 @@ export function MaterialAnalyticsDashboard() {
     return (
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-          <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-            <FiBarChart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate flex items-center gap-2">
               Analytics de Materiales
+              <Sparkles className="w-5 h-5 text-yellow-500" />
             </h1>
-            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               Análisis detallado del uso de materiales educativos
             </p>
           </div>
@@ -221,7 +223,7 @@ export function MaterialAnalyticsDashboard() {
         <EmptyState 
           title="Acceso Denegado"
           description="Solo los profesores pueden acceder a esta página."
-          icon={<FiAlertTriangle className="w-full h-full text-error" />}
+          icon={<AlertTriangle className="w-full h-full text-red-500" />}
         />
       </div>
     )
@@ -241,15 +243,15 @@ export function MaterialAnalyticsDashboard() {
 
   const getMaterialTypeIcon = (type: string) => {
     const icons = {
-      'SCORM': <FiBook className="w-5 h-5 text-secondary" />,
-      'VIDEO': <FiPlay className="w-5 h-5 text-primary" />,
-      'AUDIO': <FiMusic className="w-5 h-5 text-warning" />,
-      'IMAGE': <FiImage className="w-5 h-5 text-success" />,
-      'DOCUMENT': <FiFile className="w-5 h-5 text-error" />,
-      'LINK': <FiLink className="w-5 h-5 text-info" />,
-      'OTHER': <FiFile className="w-5 h-5 text-base-content/70" />
+      'SCORM': <Book className="w-5 h-5 text-purple-600" />,
+      'VIDEO': <Play className="w-5 h-5 text-blue-600" />,
+      'AUDIO': <Music className="w-5 h-5 text-yellow-600" />,
+      'IMAGE': <Image className="w-5 h-5 text-green-600" />,
+      'DOCUMENT': <FileText className="w-5 h-5 text-red-600" />,
+      'LINK': <Link className="w-5 h-5 text-cyan-600" />,
+      'OTHER': <FileText className="w-5 h-5 text-gray-500" />
     }
-    return icons[type as keyof typeof icons] || <FiFile className="w-5 h-5 text-base-content/70" />
+    return icons[type as keyof typeof icons] || <FileText className="w-5 h-5 text-gray-500" />
   }
 
   const getMaterialTypeLabel = (type: string) => {
@@ -269,39 +271,42 @@ export function MaterialAnalyticsDashboard() {
   return (
     <div className="space-y-3 sm:space-y-4 min-h-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
-        <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
-          <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-            <FiBarChart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
-              Analytics de Materiales
-            </h1>
-            <p className="text-xs sm:text-sm text-base-content/70 mt-1">
-              Análisis detallado del uso de materiales educativos
-            </p>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+        <div className="flex items-center p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                <span>Analytics de Materiales</span>
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Análisis detallado del uso de materiales educativos
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
 
       {/* Selectores */}
-      <div className="card p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
-          <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
-            <FiFilter className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <span>Seleccionar Material para Análisis</span>
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 flex items-center space-x-2">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+            <span className="truncate">Seleccionar Material para Análisis</span>
           </h2>
-          <div className="text-xs sm:text-sm text-base-content/70">
+          <div className="text-xs sm:text-sm text-gray-600 bg-blue-50 px-2 sm:px-3 py-1 rounded-lg whitespace-nowrap">
             {Array.isArray(materials) ? materials.length : 0} {Array.isArray(materials) && materials.length === 1 ? 'material' : 'materiales'} disponible{Array.isArray(materials) && materials.length !== 1 ? 's' : ''}
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           {/* Selector de Grado */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiAward className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <Award className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
               <span>Grado</span>
             </label>
             <select
@@ -313,7 +318,7 @@ export function MaterialAnalyticsDashboard() {
                 setSelectedTopic(null)
                 setSelectedMaterial(null)
               }}
-              className="select select-bordered w-full focus:select-primary text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-sm"
               disabled={loadingGradeLevels}
             >
               <option value="">Seleccionar grado...</option>
@@ -327,8 +332,8 @@ export function MaterialAnalyticsDashboard() {
 
           {/* Selector de Sección */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 text-success flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
               <span>Sección</span>
             </label>
             <select
@@ -339,7 +344,7 @@ export function MaterialAnalyticsDashboard() {
                 setSelectedTopic(null)
                 setSelectedMaterial(null)
               }}
-              className="select select-bordered w-full focus:select-success text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-xs sm:text-sm"
               disabled={loadingSections || !selectedGradeLevel}
             >
               <option value="">Seleccionar sección...</option>
@@ -353,8 +358,8 @@ export function MaterialAnalyticsDashboard() {
 
           {/* Selector de Curso */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiBook className="w-3 h-3 sm:w-4 sm:h-4 text-info flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <Book className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-600 flex-shrink-0" />
               <span>Curso</span>
             </label>
             <select
@@ -364,7 +369,7 @@ export function MaterialAnalyticsDashboard() {
                 setSelectedTopic(null)
                 setSelectedMaterial(null)
               }}
-              className="select select-bordered w-full focus:select-info text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-xs sm:text-sm"
               disabled={loadingCourses || !selectedSection}
             >
               <option value="">Seleccionar curso...</option>
@@ -378,8 +383,8 @@ export function MaterialAnalyticsDashboard() {
 
           {/* Selector de Tema */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiTarget className="w-3 h-3 sm:w-4 sm:h-4 text-warning flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600 flex-shrink-0" />
               <span>Tema</span>
             </label>
             <select
@@ -388,7 +393,7 @@ export function MaterialAnalyticsDashboard() {
                 setSelectedTopic(e.target.value ? parseInt(e.target.value) : null)
                 setSelectedMaterial(null)
               }}
-              className="select select-bordered w-full focus:select-warning text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-xs sm:text-sm"
               disabled={loadingTopics || !selectedCourse}
             >
               <option value="">Seleccionar tema...</option>
@@ -402,14 +407,14 @@ export function MaterialAnalyticsDashboard() {
 
           {/* Selector de Material */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiFile className="w-3 h-3 sm:w-4 sm:h-4 text-error flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 flex-shrink-0" />
               <span>Material</span>
             </label>
             <select
               value={selectedMaterial || ''}
               onChange={(e) => setSelectedMaterial(e.target.value ? parseInt(e.target.value) : null)}
-              className="select select-bordered w-full focus:select-error text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-xs sm:text-sm"
               disabled={loadingMaterials || !selectedTopic}
             >
               <option value="">Seleccionar material...</option>
@@ -423,14 +428,14 @@ export function MaterialAnalyticsDashboard() {
 
           {/* Selector de Rango de Tiempo */}
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-base-content mb-2 flex items-center space-x-1">
-              <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-secondary flex-shrink-0" />
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center space-x-1">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0" />
               <span>Período</span>
             </label>
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | 'all')}
-              className="select select-bordered w-full focus:select-secondary text-xs sm:text-sm"
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-xs sm:text-sm"
             >
               <option value="7d">Últimos 7 días</option>
               <option value="30d">Últimos 30 días</option>
@@ -445,40 +450,38 @@ export function MaterialAnalyticsDashboard() {
       {selectedMaterial && materialAnalytics && (
         <>
           {/* Información del Material */}
-          <div className="card p-3 sm:p-4 mb-3 sm:mb-4">
-            <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
-              <div className="flex items-start space-x-3 min-w-0 flex-1">
-                <div className="p-2 sm:p-3 bg-primary-100 rounded-lg flex-shrink-0">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 mb-3 sm:mb-4">
+            <div className="flex flex-col space-y-3 lg:flex-row lg:items-center lg:space-y-0 lg:space-x-4">
+              <div className="flex items-start space-x-2 sm:space-x-3 min-w-0 flex-1">
+                <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl flex-shrink-0">
                   {getMaterialTypeIcon(materialAnalytics.material_type)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-lg sm:text-xl font-bold text-base-content truncate">{materialAnalytics.material_name}</h3>
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-2">
-                    <div className="flex items-center space-x-2">
-                      <FiFile className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                      <span className="text-xs sm:text-sm text-base-content/70">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate">{materialAnalytics.material_name}</h3>
+                  <div className="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 mt-1 sm:mt-2">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-gray-600">
                         <strong>Tipo:</strong> {getMaterialTypeLabel(materialAnalytics.material_type)}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <FiCalendar className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-                      <span className="text-xs sm:text-sm text-base-content/70">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm text-gray-600">
                         <strong>Período:</strong> {getTimeRangeLabel(timeRange)}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2 flex-shrink-0">
-                <button className="btn btn-sm btn-outline btn-primary flex items-center space-x-1">
-                  <FiRefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Actualizar</span>
-                  <span className="sm:hidden">Actualizar</span>
+              <div className="flex items-center justify-end space-x-2 flex-shrink-0">
+                <button className="px-2 sm:px-4 py-1.5 sm:py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors flex items-center space-x-1 sm:space-x-2">
+                  <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm hidden sm:inline">Actualizar</span>
                 </button>
-                <button className="btn btn-sm btn-outline btn-secondary flex items-center space-x-1">
-                  <FiDownload className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Exportar</span>
-                  <span className="sm:hidden">Exportar</span>
+                <button className="px-2 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center space-x-1 sm:space-x-2">
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="text-xs sm:text-sm hidden sm:inline">Exportar</span>
                 </button>
               </div>
             </div>
@@ -491,28 +494,28 @@ export function MaterialAnalyticsDashboard() {
 
       {/* Estado de Carga */}
       {loadingAnalytics && selectedMaterial && (
-        <div className="card p-3 sm:p-4 mb-3 sm:mb-4">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 mb-3 sm:mb-4">
           <div className="flex flex-col items-center justify-center py-6 sm:py-8">
-            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary mb-3 sm:mb-4"></div>
-            <h3 className="text-lg sm:text-xl font-bold text-base-content mb-2">Cargando Analytics</h3>
-            <p className="text-xs sm:text-sm text-base-content/70 text-center">Obteniendo datos del material seleccionado...</p>
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600 mb-3 sm:mb-4"></div>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Cargando Analytics</h3>
+            <p className="text-xs sm:text-sm text-gray-600 text-center px-4">Obteniendo datos del material seleccionado...</p>
           </div>
         </div>
       )}
 
       {/* Mensaje cuando no hay material seleccionado */}
       {!selectedMaterial && (
-        <div className="card p-3 sm:p-4 mb-3 sm:mb-4">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 mb-3 sm:mb-4">
           <div className="text-center py-8 sm:py-12">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="p-3 bg-base-200 rounded-full">
-                <FiBarChart className="w-6 h-6 text-base-content/40" />
+            <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+              <div className="p-3 sm:p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
               </div>
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold text-base-content mb-1">Selecciona un Material</h3>
-                <p className="text-xs sm:text-sm text-base-content/70 mb-4">Elige un curso y material para ver las analytics detalladas.</p>
-                <div className="flex items-center justify-center space-x-2 text-xs sm:text-sm text-base-content/70">
-                  <FiInfo className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <div className="px-4">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Selecciona un Material</h3>
+                <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Elige un curso y material para ver las analytics detalladas.</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 text-xs sm:text-sm text-gray-600 bg-blue-50 px-3 sm:px-4 py-2 rounded-lg">
+                  <Info className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                   <span className="text-center">Usa los filtros de arriba para navegar por los materiales disponibles</span>
                 </div>
               </div>

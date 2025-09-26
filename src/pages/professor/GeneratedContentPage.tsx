@@ -60,13 +60,13 @@ export function GeneratedContentPage() {
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => aiContentApi.updateGeneratedContent(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['generated-content'] })
-      showSuccess('Contenido actualizado exitosamente', 'success')
+      showSuccess('Contenido guardado exitosamente', 'Los cambios se han guardado correctamente')
       setIsEditorModalOpen(false)
       setSelectedContent(null)
       setCurrentDocument(null)
     },
     onError: (error: Error) => {
-      showError('Error al actualizar contenido', error.message || 'Error desconocido')
+      showError('❌ Error al guardar contenido', error.message || 'No se pudieron guardar los cambios. Inténtalo de nuevo.')
     }
   })
 
@@ -249,12 +249,16 @@ export function GeneratedContentPage() {
   }
 
   const handleSaveDocument = (document: Document) => {
-    if (!selectedContent) return
+    if (!selectedContent) {
+      showError('Error al guardar', 'No se ha seleccionado ningún contenido para guardar')
+      return
+    }
 
     updateContentMutation.mutate({
       id: selectedContent.id,
       data: {
-        content: JSON.stringify(document),
+        gamma_document: document,  // ✅ Correcto: usar gamma_document
+        gamma_blocks: document.blocks || [], // También guardamos los bloques por separado
         title: document.title || selectedContent.title
       }
     })
@@ -758,10 +762,8 @@ export function GeneratedContentPage() {
       <PreviewModal
         isOpen={isPreviewModalOpen}
           onClose={handleClosePreview}
-          onEdit={() => handleEditContent(selectedContent)}
           document={currentDocument}
           title={selectedContent.title}
-          canEdit={true}
         />
       )}
 

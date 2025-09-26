@@ -5,19 +5,15 @@ import { Eye, X } from 'lucide-react'
 interface PreviewModalProps {
   isOpen: boolean
   onClose: () => void
-  onEdit: () => void
   document: Document | null
   title: string
-  canEdit?: boolean
 }
 
 export function PreviewModal({ 
   isOpen, 
   onClose, 
-  onEdit, 
   document, 
-  title,
-  canEdit = true
+  title
 }: PreviewModalProps) {
   if (!isOpen || !document) return null
 
@@ -34,17 +30,6 @@ export function PreviewModal({
             </h2>
           </div>
           <div className="flex items-center space-x-2">
-            <button
-              onClick={onEdit}
-              disabled={!canEdit}
-              className={`px-3 py-1 text-sm rounded ${
-                canEdit 
-                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Editar
-            </button>
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"

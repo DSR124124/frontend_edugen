@@ -464,13 +464,8 @@ export function StudentPortfolio() {
         <PreviewModal
           isOpen={isPreviewModalOpen}
           onClose={handleClosePreviewModal}
-          onEdit={() => {
-            // No permitir edición desde el portafolio del estudiante
-            console.log('Edición no permitida desde portafolio de estudiante')
-          }}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
-          canEdit={false}
         />
       )}
     </div>
