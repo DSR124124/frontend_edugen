@@ -4,7 +4,6 @@ import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { Term } from '../../api/endpoints'
 import { TermModal } from '../../components/modals/TermModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
-import { LoadingState, EmptyTermsState } from '../../components/common'
 import { 
   Calendar,
   Plus,
@@ -16,9 +15,7 @@ import {
   XCircle,
   Sparkles,
   BookOpen,
-  TrendingUp,
-  Activity,
-  AlertCircle
+  Activity
 } from 'lucide-react'
 
 export function TermsPage() {

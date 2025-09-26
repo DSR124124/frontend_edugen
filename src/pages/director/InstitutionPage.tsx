@@ -4,7 +4,6 @@ import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { Institution } from '../../api/endpoints'
 import { Input } from '../../components/ui/Input'
 import { Textarea } from '../../components/ui/Textarea'
-import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 import { 
   Building2,
   Edit3,
@@ -124,7 +123,7 @@ export function InstitutionPage() {
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Error al cargar</h3>
-              <p className="text-sm text-red-600 mb-4">{error}</p>
+              <p className="text-sm text-red-600 mb-4">{error instanceof Error ? error.message : String(error)}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors"

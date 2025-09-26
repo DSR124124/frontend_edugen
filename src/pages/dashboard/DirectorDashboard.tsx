@@ -75,7 +75,7 @@ export function DirectorDashboard() {
 
   const handleCreateUser = async (userData: Partial<User>) => {
     try {
-      const newUser = await createUser(userData)
+      const newUser = await createUser({ ...userData, password: 'defaultPassword123' })
       
       // Mostrar notificación de éxito con detalles específicos
       if (userData.role === 'PROFESOR') {

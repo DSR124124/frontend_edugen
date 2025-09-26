@@ -2,9 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { academicApi, assignmentApi } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
 import { 
-  Book,
   Users,
-  FileText,
   Calendar,
   Award,
   CheckCircle,
@@ -13,9 +11,7 @@ import {
   GraduationCap,
   Sparkles,
   BookOpen,
-  Target,
-  TrendingUp,
-  AlertCircle
+  Target
 } from 'lucide-react'
 
 export function AlumnoDashboard() {

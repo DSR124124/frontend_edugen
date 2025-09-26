@@ -4,7 +4,6 @@ import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GradeLevel } from '../../api/endpoints'
 import { GradeLevelModal } from '../../components/modals/GradeLevelModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
-import { LoadingState, EmptyGradeLevelsState } from '../../components/common'
 import { 
   GraduationCap,
   Plus,
@@ -14,9 +13,7 @@ import {
   Hash,
   Sparkles,
   Award,
-  BookOpen,
-  TrendingUp,
-  AlertCircle
+  BookOpen
 } from 'lucide-react'
 
 export function GradeLevelsPage() {
@@ -169,7 +166,7 @@ export function GradeLevelsPage() {
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg flex-shrink-0">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Nivel Máximo</p>
