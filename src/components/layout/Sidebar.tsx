@@ -92,14 +92,45 @@ const studentNavigation: NavigationItem[] = [
 ]
 
 const directorNavigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
-  { name: 'Institución', href: '/director/institution', icon: Building2 },
-  { name: 'Grados', href: '/director/grades', icon: Layers },
-  { name: 'Períodos', href: '/director/terms', icon: Calendar },
-  { name: 'Secciones', href: '/director/sections', icon: Users },
-  { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
-  { name: 'Profesores', href: '/director/professors', icon: UserCheck },
-  { name: 'Configuración', href: '/profile', icon: Settings },
+  // Inicio
+  { 
+    name: 'Inicio', 
+    icon: Home,
+    subItems: [
+      { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
+    ]
+  },
+  
+  // Académico
+  { 
+    name: 'Académico', 
+    icon: BookOpen,
+    subItems: [
+      { name: 'Grados', href: '/director/grades', icon: Layers },
+      { name: 'Períodos', href: '/director/terms', icon: Calendar },
+      { name: 'Secciones', href: '/director/sections', icon: School },
+    ]
+  },
+  
+  // Personas
+  { 
+    name: 'Personas', 
+    icon: Users,
+    subItems: [
+      { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
+      { name: 'Profesores', href: '/director/professors', icon: UserCheck },
+    ]
+  },
+  
+  // Administración
+  { 
+    name: 'Administración', 
+    icon: Settings,
+    subItems: [
+      { name: 'Institución', href: '/director/institution', icon: Building2 },
+      { name: 'Configuración', href: '/profile', icon: Wrench },
+    ]
+  },
 ]
 
 const professorNavigation: NavigationItem[] = [
@@ -144,7 +175,15 @@ export function Sidebar() {
   const { user } = useAuthStore()
   const { sidebarOpen, setSidebarOpen, closeSidebarOnMobile, isMobile } = useSidebar()
   const sidebarRef = useRef<HTMLDivElement>(null)
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Docencia']) // Docencia expandido por defecto
+  const [expandedItems, setExpandedItems] = useState<string[]>(() => {
+    // Configurar expansión por defecto según el rol del usuario
+    if (user?.role === 'DIRECTOR') {
+      return ['Inicio', 'Académico'] // Para directores, expandir Inicio y Académico por defecto
+    } else if (user?.role === 'PROFESOR') {
+      return ['Docencia'] // Para profesores, expandir Docencia por defecto
+    }
+    return [] // Para estudiantes u otros roles, no expandir nada por defecto
+  })
 
   const getNavigation = () => {
     switch (user?.role) {
