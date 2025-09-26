@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuthStore } from '../../store/auth'
 import { useSidebar } from '../../hooks/useSidebar'
 import logoImage from '../../assets/images/logos/logo.png?url'
@@ -66,43 +66,124 @@ import {
   Video,
   Headphones,
   Printer,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 
-const studentNavigation = [
+// Interfaces para la navegación
+interface SubNavigationItem {
+  name: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+}
+
+interface NavigationItem {
+  name: string
+  href?: string
+  icon: React.ComponentType<{ className?: string }>
+  subItems?: SubNavigationItem[]
+}
+
+const studentNavigation: NavigationItem[] = [
   { name: 'Inicio', href: '/dashboard', icon: Home },
   { name: 'Mi Sección', href: '/my-section', icon: Users },
   { name: 'Mi Portafolio', href: '/student-portfolio', icon: FolderOpen },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
-const directorNavigation = [
-  { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
-  { name: 'Institución', href: '/director/institution', icon: Building2 },
-  { name: 'Grados', href: '/director/grades', icon: Layers },
-  { name: 'Períodos', href: '/director/terms', icon: Calendar },
-  { name: 'Secciones', href: '/director/sections', icon: Users },
-  { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
-  { name: 'Profesores', href: '/director/professors', icon: UserCheck },
-  { name: 'Configuración', href: '/profile', icon: Settings },
+const directorNavigation: NavigationItem[] = [
+  // Inicio
+  { 
+    name: 'Inicio', 
+    icon: Home,
+    subItems: [
+      { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
+    ]
+  },
+  
+  // Académico
+  { 
+    name: 'Académico', 
+    icon: BookOpen,
+    subItems: [
+      { name: 'Grados', href: '/director/grades', icon: Layers },
+      { name: 'Períodos', href: '/director/terms', icon: Calendar },
+      { name: 'Secciones', href: '/director/sections', icon: School },
+    ]
+  },
+  
+  // Personas
+  { 
+    name: 'Personas', 
+    icon: Users,
+    subItems: [
+      { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
+      { name: 'Profesores', href: '/director/professors', icon: UserCheck },
+    ]
+  },
+  
+  // Administración
+  { 
+    name: 'Administración', 
+    icon: Settings,
+    subItems: [
+      { name: 'Institución', href: '/director/institution', icon: Building2 },
+      { name: 'Configuración', href: '/profile', icon: Wrench },
+    ]
+  },
 ]
 
-const professorNavigation = [
-  { name: 'Dashboard', href: '/professor', icon: LayoutDashboard },
-  { name: 'Mis Cursos', href: '/professor/courses', icon: BookOpen },
-  { name: 'Temas', href: '/professor/topics', icon: Layers },
-  { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
-  { name: 'Mis Estudiantes', href: '/professor/students', icon: GraduationCap },
-  { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
-  { name: 'Analytics', href: '/material-analytics', icon: BarChart3 },
-  { name: 'IA Generador', href: '/ai-content', icon: Bot },
-  { name: 'Contenidos Generados', href: '/generated-content', icon: FileText },
-  { name: 'Configuración', href: '/profile', icon: Settings },
+const professorNavigation: NavigationItem[] = [
+  // Inicio
+  { name: 'Inicio', href: '/professor', icon: Home },
+  
+  // Docencia
+  { 
+    name: 'Docencia', 
+    icon: GraduationCap,
+    subItems: [
+      { name: 'Mis Cursos', href: '/professor/courses', icon: BookOpen },
+      { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
+      { name: 'Mis Estudiantes', href: '/professor/students', icon: UserCheck },
+      { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
+      { name: 'Temas', href: '/professor/topics', icon: Layers },
+    ]
+  },
+  
+  // Contenido & IA
+  { 
+    name: 'Contenido & IA', 
+    icon: Bot,
+    subItems: [
+      { name: 'IA Generador', href: '/ai-content', icon: Brain },
+      { name: 'Contenidos Generados', href: '/generated-content', icon: FileText },
+    ]
+  },
+  
+  // Gestión
+  { 
+    name: 'Gestión', 
+    icon: Settings,
+    subItems: [
+      { name: 'Analytics', href: '/material-analytics', icon: BarChart3 },
+      { name: 'Configuración', href: '/profile', icon: Wrench },
+    ]
+  },
 ]
 
 export function Sidebar() {
   const { user } = useAuthStore()
   const { sidebarOpen, setSidebarOpen, closeSidebarOnMobile, isMobile } = useSidebar()
   const sidebarRef = useRef<HTMLDivElement>(null)
+  const [expandedItems, setExpandedItems] = useState<string[]>(() => {
+    // Configurar expansión por defecto según el rol del usuario
+    if (user?.role === 'DIRECTOR') {
+      return ['Inicio', 'Académico'] // Para directores, expandir Inicio y Académico por defecto
+    } else if (user?.role === 'PROFESOR') {
+      return ['Docencia'] // Para profesores, expandir Docencia por defecto
+    }
+    return [] // Para estudiantes u otros roles, no expandir nada por defecto
+  })
 
   const getNavigation = () => {
     switch (user?.role) {
@@ -118,6 +199,20 @@ export function Sidebar() {
   }
 
   const allNavigation = getNavigation()
+
+  // Función para alternar la expansión de un item
+  const toggleItemExpansion = (itemName: string) => {
+    setExpandedItems(prev => 
+      prev.includes(itemName) 
+        ? prev.filter(name => name !== itemName)
+        : [...prev, itemName]
+    )
+  }
+
+  // Verificar si un item está expandido
+  const isItemExpanded = (itemName: string) => {
+    return expandedItems.includes(itemName)
+  }
 
   // Handle click outside to close sidebar on mobile
   useEffect(() => {
@@ -363,26 +458,78 @@ export function Sidebar() {
           {/* Línea divisoria debajo del logo */}
           <div className="mx-4 border-b-2 border-white opacity-60"></div>
           
-          <nav className="flex-1 px-4 py-6 space-y-2 relative z-10">
+          <nav className="flex-1 px-4 py-6 space-y-1 relative z-10">
             {allNavigation.map((item) => {
               const Icon = item.icon
+              const hasSubItems = item.subItems && item.subItems.length > 0
+              const isExpanded = isItemExpanded(item.name)
+
               return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  end={item.href === '/professor' || item.href === '/director' || item.href === '/dashboard'}
-                  className={({ isActive }) => 
-                    `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                      isActive 
-                        ? 'bg-white bg-opacity-20 text-white font-semibold' 
-                        : 'text-white hover:bg-white hover:bg-opacity-10'
-                    }`
-                  }
-                  onClick={closeSidebarOnMobile}
-                >
-                  <Icon className="mr-3 h-5 w-5" />
-                  {item.name}
-                </NavLink>
+                <div key={item.name}>
+                  {/* Item principal */}
+                  {hasSubItems ? (
+                    <button
+                      onClick={() => toggleItemExpansion(item.name)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors text-white hover:bg-white hover:bg-opacity-10"
+                    >
+                      <div className="flex items-center">
+                        <Icon className="mr-3 h-5 w-5" />
+                        {item.name}
+                      </div>
+                      <div className="transition-transform duration-200">
+                        {isExpanded ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </div>
+                    </button>
+                  ) : (
+                    <NavLink
+                      to={item.href || '#'}
+                      end={item.href === '/professor' || item.href === '/director' || item.href === '/dashboard'}
+                      className={({ isActive }) => 
+                        `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                          isActive 
+                            ? 'bg-white bg-opacity-20 text-white font-semibold' 
+                            : 'text-white hover:bg-white hover:bg-opacity-10'
+                        }`
+                      }
+                      onClick={closeSidebarOnMobile}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.name}
+                    </NavLink>
+                  )}
+
+                  {/* Sub-items expandibles */}
+                  {hasSubItems && (
+                    <div className={`ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ${
+                      isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      {item.subItems?.map((subItem) => {
+                        const SubIcon = subItem.icon
+                        return (
+                          <NavLink
+                            key={subItem.name}
+                            to={subItem.href}
+                            className={({ isActive }) => 
+                              `flex items-center px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                                isActive 
+                                  ? 'bg-white bg-opacity-25 text-white font-semibold' 
+                                  : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-15 hover:text-opacity-100'
+                              }`
+                            }
+                            onClick={closeSidebarOnMobile}
+                          >
+                            <SubIcon className="mr-2 h-4 w-4" />
+                            {subItem.name}
+                          </NavLink>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </nav>

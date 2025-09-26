@@ -12,14 +12,14 @@ import {
 } from 'chart.js'
 import { Bar, Line } from 'react-chartjs-2'
 import { 
-  FiEye, 
-  FiUsers, 
-  FiClock, 
-  FiCheckCircle, 
-  FiTrendingUp, 
-  FiBarChart,
-  FiActivity
-} from 'react-icons/fi'
+  Eye, 
+  Users, 
+  Clock, 
+  CheckCircle, 
+  TrendingUp, 
+  BarChart3,
+  Activity
+} from 'lucide-react'
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -83,10 +83,10 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="card p-6 bg-base-100 border border-base-300">
+          <div key={i} className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
             <div className="animate-pulse">
-              <div className="h-4 bg-base-300 rounded w-1/4 mb-4"></div>
-              <div className="h-64 bg-base-300 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
             </div>
           </div>
         ))}
@@ -96,11 +96,11 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
 
   if (!data) {
     return (
-      <div className="card p-8 bg-base-100 border border-base-300 text-center">
-        <div className="p-4 bg-info-100 rounded-full w-fit mx-auto mb-4">
-          <FiBarChart className="w-8 h-8 text-info" />
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 text-center">
+        <div className="p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full w-fit mx-auto mb-4">
+          <BarChart3 className="w-8 h-8 text-blue-600" />
         </div>
-        <p className="text-base-content/70">Selecciona un material para ver los gráficos</p>
+        <p className="text-gray-600">Selecciona un material para ver los gráficos</p>
       </div>
     )
   }
@@ -117,14 +117,14 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
         data: data.daily_stats.map(stat => stat.views),
         backgroundColor: 'rgba(59, 130, 246, 0.8)',
         borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 1,
+        borderWidth: 2,
       },
       {
         label: 'Usuarios Únicos',
         data: data.daily_stats.map(stat => stat.unique_viewers),
         backgroundColor: 'rgba(16, 185, 129, 0.8)',
         borderColor: 'rgba(16, 185, 129, 1)',
-        borderWidth: 1,
+        borderWidth: 2,
       }
     ]
   }
@@ -142,8 +142,8 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
           // Calcular duración promedio en minutos basada en datos reales
           return stat.views > 0 ? Math.round((stat.duration / stat.views) / 60) : 0
         }),
-        borderColor: 'rgba(168, 85, 247, 1)',
-        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+        borderColor: 'rgba(147, 51, 234, 1)',
+        backgroundColor: 'rgba(147, 51, 234, 0.1)',
         tension: 0.4,
         fill: true,
       }
@@ -158,16 +158,16 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
       {
         label: 'Sesiones',
         data: data.student_details.map(student => student.sessions_count),
-        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-        borderColor: 'rgba(99, 102, 241, 1)',
-        borderWidth: 1,
+        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
       },
       {
         label: 'Tasa de Finalización (%)',
         data: data.student_details.map(student => student.completion_rate),
-        backgroundColor: 'rgba(245, 158, 11, 0.8)',
-        borderColor: 'rgba(245, 158, 11, 1)',
-        borderWidth: 1,
+        backgroundColor: 'rgba(147, 51, 234, 0.8)',
+        borderColor: 'rgba(147, 51, 234, 1)',
+        borderWidth: 2,
         yAxisID: 'y1',
       }
     ]
@@ -332,76 +332,76 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
   return (
     <div className="space-y-4 sm:space-y-6 max-h-screen sm:max-h-none overflow-y-auto sm:overflow-y-visible">
       {/* Resumen de métricas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="card p-3 sm:p-4 bg-primary-50 border border-primary-200">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 sm:mb-6">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-3 sm:p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-              <FiEye className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <div className="p-2 sm:p-3 bg-blue-600 rounded-xl flex-shrink-0">
+              <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-primary truncate">Total Visualizaciones</p>
-              <p className="text-lg sm:text-xl font-bold text-primary">{data.total_views}</p>
+            <div className="ml-2 sm:ml-3 min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-blue-700 truncate">Total Visualizaciones</p>
+              <p className="text-lg sm:text-xl font-bold text-blue-800">{data.total_views}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-3 sm:p-4 bg-success-50 border border-success-200">
+        <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-success-100 rounded-lg flex-shrink-0">
-              <FiUsers className="w-5 h-5 sm:w-6 sm:h-6 text-success" />
+            <div className="p-3 bg-green-600 rounded-xl flex-shrink-0">
+              <Users className="w-5 h-5 text-white" />
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-success truncate">Usuarios Únicos</p>
-              <p className="text-lg sm:text-xl font-bold text-success">{data.unique_viewers}</p>
+              <p className="text-sm font-medium text-green-700 truncate">Usuarios Únicos</p>
+              <p className="text-xl font-bold text-green-800">{data.unique_viewers}</p>
             </div>
           </div>
         </div>
 
-        <div className="card p-3 sm:p-4 bg-info-50 border border-info-200">
+        <div className="bg-gradient-to-r from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-info-100 rounded-lg flex-shrink-0">
-              <FiClock className="w-5 h-5 sm:w-6 sm:h-6 text-info" />
+            <div className="p-3 bg-cyan-600 rounded-xl flex-shrink-0">
+              <Clock className="w-5 h-5 text-white" />
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-info truncate">Duración Promedio</p>
-              <p className="text-lg sm:text-xl font-bold text-info">
+              <p className="text-sm font-medium text-cyan-700 truncate">Duración Promedio</p>
+              <p className="text-xl font-bold text-cyan-800">
                 {Math.floor(data.average_duration / 60)}m {Math.floor(data.average_duration % 60)}s
               </p>
             </div>
           </div>
         </div>
 
-        <div className="card p-3 sm:p-4 bg-warning-50 border border-warning-200">
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4">
           <div className="flex items-center">
-            <div className="p-2 bg-warning-100 rounded-lg flex-shrink-0">
-              <FiCheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-warning" />
+            <div className="p-3 bg-purple-600 rounded-xl flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-white" />
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-warning truncate">Tasa de Finalización</p>
-              <p className="text-lg sm:text-xl font-bold text-warning">{data.completion_rate.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-purple-700 truncate">Tasa de Finalización</p>
+              <p className="text-xl font-bold text-purple-800">{data.completion_rate.toFixed(1)}%</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabla de Comparativa por Alumno */}
-      <div className="card p-3 sm:p-6 bg-base-100 border border-base-300">
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-2">
-            <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-            <h3 className="text-sm sm:text-lg font-bold text-base-content">Comparativa por Alumno</h3>
+            <Users className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <h3 className="text-lg font-bold text-gray-900">Comparativa por Alumno</h3>
           </div>
-          <div className="text-xs sm:text-sm text-base-content/70">
+          <div className="text-sm text-gray-600 bg-blue-50 px-3 py-1 rounded-lg">
             {data.student_details.length} estudiante{data.student_details.length !== 1 ? 's' : ''}
           </div>
         </div>
         
         {data.student_details.length === 0 ? (
           <div className="text-center py-8">
-            <div className="p-4 bg-info-100 rounded-full w-fit mx-auto mb-4">
-              <FiUsers className="w-8 h-8 text-info" />
+            <div className="p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full w-fit mx-auto mb-4">
+              <Users className="w-8 h-8 text-blue-600" />
             </div>
-            <p className="text-base-content/70">No hay datos de estudiantes disponibles</p>
+            <p className="text-gray-600">No hay datos de estudiantes disponibles</p>
           </div>
         ) : (
           <>
@@ -584,34 +584,34 @@ export function AnalyticsCharts({ data, loading }: AnalyticsChartsProps) {
       {/* Gráficos */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 max-h-screen sm:max-h-none overflow-y-auto sm:overflow-y-visible">
         {/* Gráfico de barras - Visualizaciones diarias */}
-        <div className="card p-3 sm:p-6 bg-base-100 border border-base-300">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-6">
           <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiBarChart className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-            <h3 className="text-sm sm:text-lg font-bold text-base-content truncate">Visualizaciones Diarias</h3>
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">Visualizaciones Diarias</h3>
           </div>
-          <div className="h-40 sm:h-64 w-full overflow-hidden">
+          <div className="h-48 sm:h-64 w-full overflow-hidden">
             <Bar data={dailyViewsData} options={barChartOptions} />
           </div>
         </div>
 
         {/* Gráfico de líneas - Duración promedio */}
-        <div className="card p-3 sm:p-6 bg-base-100 border border-base-300">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-6">
           <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiTrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-info flex-shrink-0" />
-            <h3 className="text-sm sm:text-lg font-bold text-base-content truncate">Duración Promedio por Día</h3>
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">Duración Promedio por Día</h3>
           </div>
-          <div className="h-40 sm:h-64 w-full overflow-hidden">
+          <div className="h-48 sm:h-64 w-full overflow-hidden">
             <Line data={durationData} options={lineChartOptions} />
           </div>
         </div>
 
         {/* Gráfico de barras - Rendimiento por estudiante */}
-        <div className="card p-3 sm:p-6 bg-base-100 border border-base-300 xl:col-span-2">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-6 xl:col-span-2">
           <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiActivity className="w-4 h-4 sm:w-5 sm:h-5 text-warning flex-shrink-0" />
-            <h3 className="text-sm sm:text-lg font-bold text-base-content truncate">Rendimiento por Estudiante</h3>
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">Rendimiento por Estudiante</h3>
           </div>
-          <div className="h-40 sm:h-64 w-full overflow-hidden">
+          <div className="h-48 sm:h-64 w-full overflow-hidden">
             <Bar data={studentPerformanceData} options={studentChartOptions} />
           </div>
         </div>

@@ -5,9 +5,18 @@ import { directorApi } from '../../api/endpoints'
 import { Section } from '../../api/endpoints'
 import { SectionModal } from '../../components/modals/SectionModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
-import { Button } from '../../components/ui/Button'
-import { LoadingState, EmptySectionsState } from '../../components/common'
+import { 
+  Users,
+  Plus,
+  Edit3,
+  Trash2,
+  BookOpen,
+  Award,
+  Sparkles,
+  Calendar,
+  TrendingUp,
+  School
+} from 'lucide-react'
 
 export function SectionsPage() {
   const {
@@ -97,98 +106,258 @@ export function SectionsPage() {
     setSectionToDelete(null)
   }
 
+  // Calcular estadísticas
+  const totalCapacity = sections.reduce((total, section) => total + (section.capacity || 0), 0)
+  const averageCapacity = sections.length > 0 ? Math.round(totalCapacity / sections.length) : 0
+  const sectionsWithGrade = sections.filter(section => section.grade_level).length
+
   if (isLoading) {
-    return <LoadingState message="Cargando secciones..." />
+    return (
+      <div className="space-y-3 sm:space-y-4 min-h-0">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+          <div className="flex items-center p-3 sm:p-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+                <School className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  <span>Gestión de Secciones</span>
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  Administra las secciones académicas de tu institución
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="text-center py-8 sm:py-12">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Cargando secciones</h3>
+              <p className="text-xs sm:text-sm text-gray-600">Obteniendo información académica...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="headline-2xl text-base-content">Gestión de Secciones</h1>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          leftIcon={
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          }
-        >
-          Crear Sección
-        </Button>
+    <div className="space-y-3 sm:space-y-4 min-h-0">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+        <div className="flex items-center justify-between p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <School className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                <span>Gestión de Secciones</span>
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Administra las secciones académicas de tu institución
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors text-sm font-medium space-x-2"
+          >
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Crear Sección</span>
+            <span className="sm:hidden">Crear</span>
+          </button>
+        </div>
       </div>
 
-      <Card variant="elevated">
-        <CardHeader>
-          <CardTitle className="text-base-content">Lista de Secciones</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg flex-shrink-0">
+              <School className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Total Secciones</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{sections.length}</p>
+              <p className="text-xs text-blue-600 font-medium">Configuradas</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg flex-shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Capacidad Total</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{totalCapacity}</p>
+              <p className="text-xs text-green-600 font-medium">Estudiantes</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Promedio</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{averageCapacity}</p>
+              <p className="text-xs text-purple-600 font-medium">Por sección</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg flex-shrink-0">
+              <Award className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Con Grado</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{sectionsWithGrade}</p>
+              <p className="text-xs text-orange-600 font-medium">Asignadas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div className="border-b border-gray-200 p-3 sm:p-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
+              <School className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">Lista de Secciones</h2>
+              <p className="text-xs sm:text-sm text-gray-600">Administra las secciones académicas de la institución</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-3 sm:p-4">
           {sections.length === 0 ? (
-            <EmptySectionsState 
-              onAddSection={() => setShowCreateModal(true)}
-            />
+            <div className="text-center py-8 sm:py-12">
+              <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                <div className="p-3 bg-yellow-100 rounded-full">
+                  <School className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No hay secciones configuradas</h3>
+                  <p className="text-sm text-gray-600 mb-4">Comienza creando las secciones académicas de tu institución.</p>
+                  <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors inline-flex items-center space-x-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Crear Primera Sección</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-base-300">
-                <thead className="bg-base-200">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                      Nombre
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center space-x-1">
+                        <BookOpen className="w-3 h-3" />
+                        <span>Nombre</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                      Grado
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center space-x-1">
+                        <Award className="w-3 h-3" />
+                        <span>Grado</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                      Capacidad
+                    <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center space-x-1">
+                        <Users className="w-3 h-3" />
+                        <span>Capacidad</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                      Fecha de Creación
+                    <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Fecha de Creación</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-base-100 divide-y divide-base-300">
+                <tbody className="bg-white divide-y divide-gray-200">
                   {sections.map((section) => (
-                    <tr key={section.id} className="hover:bg-base-200/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-base-content">
-                        {section.name}
+                    <tr key={section.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          <div className="flex-shrink-0">
+                            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                              <span className="text-white text-xs sm:text-sm font-bold">
+                                {section.name.charAt(0)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                              {section.name}
+                            </div>
+                            <div className="text-xs text-gray-500 sm:hidden">
+                              {section.grade_level?.name || `Grado ${section.grade_level}`} • {section.capacity} estudiantes
+                            </div>
+                            <div className="text-xs text-gray-500 lg:hidden">
+                              {new Date(section.created_at).toLocaleDateString('es-ES')}
+                            </div>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
-                        {section.grade_level?.name || `Grado ${section.grade_level}`}
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          <Award className="w-3 h-3 mr-1" />
+                          {section.grade_level?.name || `Grado ${section.grade_level}`}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
-                        {section.capacity}
+                      <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                          <Users className="w-3 h-3 mr-1" />
+                          {section.capacity} estudiantes
+                        </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content/70">
-                        {new Date(section.created_at).toLocaleDateString()}
+                      <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(section.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Button
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                          <button
                             onClick={() => handleEditSection(section)}
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            }
+                            className="inline-flex items-center px-2 py-1 border border-blue-300 text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors text-xs"
                           >
-                            Editar
-                          </Button>
-                          <Button
+                            <Edit3 className="w-3 h-3 mr-1" />
+                            <span className="hidden sm:inline">Editar</span>
+                          </button>
+                          <button
                             onClick={() => handleDeleteSection(section.id)}
-                            variant="danger"
-                            size="sm"
-                            leftIcon={
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            }
+                            className="inline-flex items-center px-2 py-1 border border-red-300 text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors text-xs"
                           >
-                            Eliminar
-                          </Button>
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            <span className="hidden sm:inline">Eliminar</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -197,8 +366,8 @@ export function SectionsPage() {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Modal de crear sección */}
       <SectionModal

@@ -6,19 +6,20 @@ import { DeepSeekChat } from '../../components/ai/DeepSeekChat'
 // import { useNotifications } from '../../hooks/useNotifications' // No se usa actualmente
 import { LoadingOverlay, LoadingCard } from '../../components/ui/LoadingSpinner'
 import { 
-  FiMessageCircle,
-  FiUsers,
-  FiBook,
-  FiCalendar,
-  FiPlus,
-  FiTrash2,
-  FiAlertTriangle,
-  FiInfo,
-  FiChevronLeft,
-  FiChevronRight,
-  FiMenu,
-  FiCheckCircle
-} from 'react-icons/fi'
+  MessageCircle,
+  Users,
+  Book,
+  Calendar,
+  Plus,
+  Trash2,
+  AlertTriangle,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  Sparkles,
+  Brain
+} from 'lucide-react'
 
 
 export function ContentGenerator() {
@@ -328,138 +329,148 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       />
       
       {/* Header */}
-      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-          <FiMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-6">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-4">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+              <Brain className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                Asistente de Contenido Educativo IA
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Describe qué contenido educativo quieres crear (nivel, materia, tema) y te ayudaré paso a paso
+              </p>
+            </div>
+          </div>
+          
+          {/* Botón para ocultar panel de acciones */}
+          {!isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-white/50 rounded-lg transition-colors flex items-center gap-2"
+              title="Ocultar panel de acciones"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              <span className="text-sm font-medium hidden lg:block">Ocultar</span>
+            </button>
+          )}
+          
+          {/* Botón para mostrar panel de acciones */}
+          {isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-white/50 rounded-lg transition-colors flex items-center gap-2"
+              title="Mostrar panel de acciones"
+            >
+              <ChevronRight className="w-5 h-5" />
+              <span className="text-sm font-medium hidden lg:block">Mostrar</span>
+            </button>
+          )}
         </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
-            Asistente de Contenido Educativo IA
-          </h1>
-          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
-            Chatea con la IA para definir requisitos y genera contenido educativo personalizado
-          </p>
-        </div>
-        {/* Botón para colapsar/expandir sidebar - Solo en móviles */}
-        <button
-          onClick={() => {
-            console.log('Toggle sidebar, current state:', isSidebarCollapsed)
-            setIsSidebarCollapsed(!isSidebarCollapsed)
-          }}
-          className="btn btn-ghost btn-sm lg:hidden"
-          title={isSidebarCollapsed ? "Mostrar conversaciones" : "Ocultar conversaciones"}
-        >
-          <FiMenu className="w-4 h-4" />
-        </button>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 h-[calc(100vh-200px)]">
+      <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-200px)]">
         {/* Sidebar con conversaciones */}
-        <div className={`w-full lg:w-80 card p-3 sm:p-4 flex flex-col transition-all duration-300 ${
+        <div className={`w-full lg:w-80 bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col transition-all duration-300 ease-in-out ${
           isSidebarCollapsed 
             ? 'hidden lg:hidden' 
-            : 'block'
-        }`} style={{ display: isSidebarCollapsed ? 'none' : 'block' }}>
-          <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 flex-shrink-0">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
-                <FiPlus className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            : 'flex'
+        }`}>
+          <div className="flex-shrink-0 mb-6">
+            <div className="mb-4">
+              <h2 className="text-lg lg:text-xl font-bold text-gray-900 flex items-center space-x-2">
+                <Plus className="w-5 h-5 text-blue-600" />
                 <span>Acciones</span>
               </h2>
-              {/* Botón para colapsar sidebar en desktop */}
-              <button
-                onClick={() => setIsSidebarCollapsed(true)}
-                className="btn btn-ghost btn-sm hidden lg:flex"
-                title="Ocultar conversaciones"
-              >
-                <FiChevronLeft className="w-4 h-4" />
-              </button>
             </div>
             
-            <div className="space-y-2 sm:space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               <button
                 onClick={handleStartNewChat}
                 disabled={createConversationMutation.isPending}
-                className="btn btn-primary w-full btn-sm sm:btn-lg gap-2"
+                className="w-full px-4 py-3 lg:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] lg:min-h-[52px]"
               >
                 {createConversationMutation.isPending ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white"></div>
-                    <span className="text-xs sm:text-base">Creando...</span>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span className="text-sm lg:text-base font-medium">Creando...</span>
                   </>
                 ) : (
                   <>
-                    <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-base">Nueva Conversación</span>
+                    <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
+                    <span className="text-sm lg:text-base font-medium">Nueva Conversación</span>
                   </>
                 )}
               </button>
               
               <button
                 onClick={handleViewGeneratedContent}
-                className="btn btn-outline btn-secondary w-full btn-sm sm:btn-lg gap-2"
+                className="w-full px-4 py-3 lg:py-4 bg-white border-2 border-blue-200 text-blue-700 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px] lg:min-h-[52px]"
               >
-                <FiBook className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-xs sm:text-base">Ver Contenido Generado</span>
+                <Book className="w-4 h-4 lg:w-5 lg:h-5" />
+                <span className="text-sm lg:text-base font-medium">Ver Contenido Generado</span>
               </button>
             </div>
           </div>
         
           <div className="flex-1 flex flex-col min-h-0">
-            <h2 className="text-lg sm:text-xl font-bold text-base-content mb-3 flex items-center space-x-2 flex-shrink-0">
-              <FiMessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2 flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-purple-600" />
               <span>Conversaciones</span>
             </h2>
             
-            <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-3">
               {conversationsError && (
-                <div className="alert alert-error">
-                  <FiAlertTriangle className="w-5 h-5" />
+                <div className="p-3 lg:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                  <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-red-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold">Error al cargar conversaciones</h3>
-                    <div className="text-xs">Intenta recargar la página</div>
+                    <h3 className="font-medium text-red-900 text-sm lg:text-base">Error al cargar conversaciones</h3>
+                    <p className="text-xs lg:text-sm text-red-700">Intenta recargar la página</p>
                   </div>
                 </div>
               )}
               
               {deleteConversationMutation.isPending && (
-                <div className="alert alert-info">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-info"></div>
-                  <span className="text-sm">Eliminando conversación...</span>
+                <div className="p-3 lg:p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-sm lg:text-base text-blue-700">Eliminando conversación...</span>
                 </div>
               )}
             
               {!conversationsError && Array.isArray(conversationsData) && conversationsData.map((conv) => (
                 <div
                   key={conv.id}
-                  className={`card p-2 sm:p-3 cursor-pointer transition-all duration-200 ${
+                  className={`p-3 lg:p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                     currentConversation === conv.id
-                      ? 'ring-2 ring-primary bg-primary/5'
-                      : 'hover:shadow-md'
+                      ? 'border-blue-300 bg-blue-50 shadow-sm'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-sm bg-white'
                   }`}
                   onClick={() => {
                     setCurrentConversation(conv.id)
                   }}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1 sm:mb-2">
-                        <FiMessageCircle className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                          currentConversation === conv.id ? 'text-primary' : 'text-base-content/70'
+                      <div className="flex items-center space-x-2 mb-2">
+                        <MessageCircle className={`w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0 ${
+                          currentConversation === conv.id ? 'text-blue-600' : 'text-gray-500'
                         }`} />
-                        <h5 className={`font-medium truncate text-sm sm:text-base ${
-                          currentConversation === conv.id ? 'text-primary' : 'text-base-content'
+                        <h5 className={`font-medium truncate text-sm lg:text-base ${
+                          currentConversation === conv.id ? 'text-blue-900' : 'text-gray-900'
                         }`}>
                           {conv.title || 'Sin título'}
                         </h5>
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs text-base-content/70">
+                      <div className="flex flex-col lg:flex-row lg:items-center space-y-1 lg:space-y-0 lg:space-x-4 text-xs lg:text-sm text-gray-600">
                         <div className="flex items-center space-x-1">
-                          <FiCalendar className="w-3 h-3 flex-shrink-0" />
+                          <Calendar className="w-3 h-3 flex-shrink-0" />
                           <span>{new Date(conv.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center space-x-1">
-                          <FiUsers className="w-3 h-3 flex-shrink-0" />
+                          <Users className="w-3 h-3 flex-shrink-0" />
                           <span>{conv.messages_count} mensaje{conv.messages_count !== 1 ? 's' : ''}</span>
                         </div>
                       </div>
@@ -471,26 +482,26 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                         handleDeleteConversation(conv.id, conv.title || 'Sin título')
                       }}
                       disabled={deleteConversationMutation.isPending}
-                      className="btn btn-xs sm:btn-sm btn-ghost btn-circle text-error hover:bg-error/10 flex-shrink-0"
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                       title="Eliminar conversación"
                     >
-                      <FiTrash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               ))}
             
               {!conversationsError && Array.isArray(conversationsData) && conversationsData.length === 0 && (
-                <div className="text-center py-6 sm:py-8">
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="p-3 bg-base-200 rounded-full">
-                      <FiMessageCircle className="w-6 h-6 text-base-content/40" />
+                <div className="text-center py-8">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
+                      <MessageCircle className="w-8 h-8 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-base-content mb-1">No hay conversaciones</h3>
-                      <p className="text-xs sm:text-sm text-base-content/70 mb-4">Crea una nueva para comenzar</p>
-                      <div className="flex items-center justify-center space-x-2 text-xs sm:text-sm text-base-content/70">
-                        <FiInfo className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">No hay conversaciones</h3>
+                      <p className="text-sm text-gray-600 mb-4">Crea una nueva para comenzar a chatear con la IA</p>
+                      <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 bg-gray-50 p-2 rounded-lg">
+                        <Info className="w-4 h-4 flex-shrink-0" />
                         <span className="text-center">Usa el botón "Nueva Conversación" para empezar</span>
                       </div>
                     </div>
@@ -510,19 +521,9 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
         </div>
 
         {/* Área principal */}
-        <div className={`flex-1 card p-3 sm:p-4 min-h-0 transition-all duration-300 relative ${
+        <div className={`flex-1 bg-white border border-gray-200 rounded-xl shadow-sm min-h-0 transition-all duration-300 relative overflow-hidden ${
           isSidebarCollapsed ? 'lg:ml-0' : ''
         }`}>
-          {/* Botón flotante para mostrar sidebar cuando está colapsada */}
-          {isSidebarCollapsed && (
-            <button
-              onClick={() => setIsSidebarCollapsed(false)}
-              className="fixed top-20 left-4 z-40 btn btn-primary btn-sm shadow-lg hidden lg:flex"
-              title="Mostrar conversaciones"
-            >
-              <FiChevronRight className="w-4 h-4" />
-            </button>
-          )}
           {(
             <>
               <DeepSeekChat
@@ -563,7 +564,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
           <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
             <div className="flex items-center mb-4">
               <div className="p-2 bg-green-100 rounded-lg mr-3">
-                <FiCheckCircle className="w-6 h-6 text-green-600" />
+                <CheckCircle className="w-6 h-6 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900">
                 ¡Requisitos Recolectados Exitosamente!
@@ -621,7 +622,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
             
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <div className="flex items-start">
-                <FiInfo className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                <Info className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
                 <div>
                   <h4 className="font-medium text-blue-900 mb-1">¿Estás conforme con esta información?</h4>
                   <p className="text-blue-700 text-sm">
@@ -652,7 +653,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                   </>
                 ) : (
                   <>
-                    <FiCheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-4 h-4" />
                     <span>Sí, generar contenido</span>
                   </>
                 )}
@@ -669,7 +670,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
           <div className="relative bg-base-100 rounded-lg shadow-xl max-w-md w-full mx-4 p-4 sm:p-6">
             <div className="flex items-center mb-3 sm:mb-4">
               <div className="p-2 bg-error-100 rounded-lg mr-3">
-                <FiAlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-error" />
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-error" />
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-base-content">
                 Eliminar Conversación
@@ -682,7 +683,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
             </p>
             <div className="bg-info-50 border border-info-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
               <div className="flex items-start">
-                <FiInfo className="w-4 h-4 sm:w-5 sm:h-5 text-info mr-2 flex-shrink-0 mt-0.5" />
+                <Info className="w-4 h-4 sm:w-5 sm:h-5 text-info mr-2 flex-shrink-0 mt-0.5" />
                 <p className="text-info text-xs sm:text-sm">
                   <strong>Nota:</strong> El contenido generado se conservará y podrás acceder a él desde la sección de contenidos generados.
                 </p>
@@ -709,7 +710,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                   </>
                 ) : (
                   <>
-                    <FiTrash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" />
                     <span>Eliminar</span>
                   </>
                 )}

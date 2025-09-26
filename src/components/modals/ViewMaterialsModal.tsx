@@ -427,13 +427,8 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
         <PreviewModal
           isOpen={isPreviewModalOpen}
           onClose={handleClosePreviewModal}
-          onEdit={() => {
-            // No permitir edición desde el modal de materiales
-            console.log('Edición no permitida desde modal de materiales')
-          }}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
-          canEdit={false}
         />
       )}
     </>

@@ -1,26 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Portfolio, PortfolioCourse, Material, academicApi } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
 import { Modal } from '../ui/Modal'
 import { PreviewModal } from '../editor/PreviewModal'
 import { Document } from '../../types/block-schema'
-import { useAuthStore } from '../../store/auth'
 import { 
-  FiCheckCircle,
-  FiXCircle,
-  FiArrowLeft,
-  FiFile,
-  FiPlay,
-  FiDownload,
-  FiBook,
-  FiCalendar,
-  FiFolder,
-  FiEye,
-  FiClock,
-  FiChevronRight,
-  FiExternalLink,
-  FiRefreshCw
-} from 'react-icons/fi'
+  CheckCircle,
+  XCircle,
+  ArrowLeft,
+  FileText,
+  Book,
+  Calendar,
+  Folder,
+  Eye,
+  Clock,
+  ChevronRight,
+  RefreshCw,
+  Image as ImageIcon,
+  Video,
+  Music,
+  Link
+} from 'lucide-react'
 
 interface PortfolioDetailModalProps {
   isOpen: boolean
@@ -29,7 +29,6 @@ interface PortfolioDetailModalProps {
 }
 
 export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDetailModalProps) {
-  const { user } = useAuthStore()
   const [selectedCourse, setSelectedCourse] = useState<PortfolioCourse | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<{id: number, name: string, order: number, description?: string} | null>(null)
   const [selectedMaterials, setSelectedMaterials] = useState<Material[]>([])
@@ -37,6 +36,33 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
+
+  // Limpiar estado cuando cambie el portafolio
+  useEffect(() => {
+    if (portfolio) {
+      // Reset navigation state when portfolio changes
+      setSelectedCourse(null)
+      setSelectedTopic(null)
+      setSelectedMaterials([])
+      setSelectedMaterial(null)
+      setIsPreviewModalOpen(false)
+      setPreviewDocument(null)
+    }
+  }, [portfolio])
+
+  // Limpiar estado cuando se cierre el modal principal
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset all state when modal is closed
+      setSelectedCourse(null)
+      setSelectedTopic(null)
+      setSelectedMaterials([])
+      setSelectedMaterial(null)
+      setIsPreviewModalOpen(false)
+      setPreviewDocument(null)
+      setLoadingMaterials(false)
+    }
+  }, [isOpen])
 
   // Funciones de navegación
   const handleCourseClick = (course: PortfolioCourse) => {
@@ -95,6 +121,9 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
     setSelectedCourse(null)
     setSelectedTopic(null)
     setSelectedMaterials([])
+    setIsPreviewModalOpen(false)
+    setPreviewDocument(null)
+    setSelectedMaterial(null)
     onClose()
   }
 
@@ -106,8 +135,14 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       try {
         // Parsear el contenido generado por IA
         const contentData = JSON.parse(material.content_data)
-        if (contentData && contentData.blocks) {
-          setPreviewDocument(contentData)
+        if (contentData && (contentData.blocks || contentData.gamma_blocks)) {
+          // Soporte para diferentes formatos de contenido IA
+          const previewDoc = {
+            title: material.name,
+            blocks: contentData.blocks || contentData.gamma_blocks || [],
+            ...contentData
+          }
+          setPreviewDocument(previewDoc)
           setIsPreviewModalOpen(true)
           return
         }
@@ -116,8 +151,21 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       }
     }
     
-    // Para otros tipos de materiales, mostrar mensaje de que no se puede visualizar
-    alert('Este tipo de material no se puede visualizar en este momento.')
+    // Para materiales con archivos o URLs, manejar la descarga/visualización
+    if (material.file) {
+      // Abrir archivo en nueva ventana
+      window.open(material.file, '_blank')
+      return
+    }
+    
+    if (material.url) {
+      // Abrir URL en nueva ventana
+      window.open(material.url, '_blank')
+      return
+    }
+    
+    // Si no hay contenido disponible, mostrar mensaje informativo
+    alert(`El material "${material.name}" no tiene contenido disponible para visualizar en este momento.`)
   }
 
   const handleClosePreviewModal = () => {
@@ -142,9 +190,9 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
           <div className="flex items-center space-x-2">
             <div className="p-1.5 bg-primary-100 rounded-lg">
               {portfolio.is_public ? (
-                <FiCheckCircle className="w-3 h-3 text-success" />
+                <CheckCircle className="w-3 h-3 text-success" />
               ) : (
-                <FiXCircle className="w-3 h-3 text-error" />
+                <XCircle className="w-3 h-3 text-error" />
               )}
             </div>
             <div>
@@ -173,7 +221,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
               <h4 className="headline-lg text-base-content">Cursos en este Portafolio</h4>
               <div className="flex items-center space-x-2">
                 <div className="p-1.5 bg-primary-100 rounded-lg">
-                  <FiBook className="w-4 h-4 text-primary" />
+                  <Book className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-small text-base-content/70">
                   {portfolio.courses.length} curso{portfolio.courses.length !== 1 ? 's' : ''}
@@ -202,7 +250,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                       <div className={`p-2 rounded-lg ${
                         selectedCourse?.id === course.id ? 'bg-primary-100' : 'bg-base-200'
                       }`}>
-                        <FiBook className={`w-4 h-4 ${
+                        <Book className={`w-4 h-4 ${
                           selectedCourse?.id === course.id ? 'text-primary' : 'text-base-content/70'
                         }`} />
                       </div>
@@ -215,19 +263,19 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                         </p>
                       </div>
                     </div>
-                    <FiChevronRight className={`w-4 h-4 transition-transform ${
+                    <ChevronRight className={`w-4 h-4 transition-transform ${
                       selectedCourse?.id === course.id ? 'rotate-90 text-primary' : 'text-base-content/40'
                     }`} />
                   </div>
                   
                   <div className="space-y-1">
                     <div className="flex items-center space-x-1 text-small text-base-content/70">
-                      <FiCalendar className="w-3 h-3" />
+                      <Calendar className="w-3 h-3" />
                       <span>Agregado: {formatDate(course.added_at)}</span>
                     </div>
                     {course.topics && course.topics.length > 0 && (
                       <div className="flex items-center space-x-1 text-small text-base-content/70">
-                        <FiFolder className="w-3 h-3" />
+                        <Folder className="w-3 h-3" />
                         <span>{course.topics.length} tema{course.topics.length !== 1 ? 's' : ''}</span>
                       </div>
                     )}
@@ -242,7 +290,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary-100 rounded-lg">
-                      <FiBook className="w-5 h-5 text-primary" />
+                      <Book className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <h5 className="headline-lg text-base-content">
@@ -257,7 +305,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                     onClick={handleBackToCourses}
                     className="btn-secondary text-small px-3 py-2 flex items-center space-x-2"
                   >
-                    <FiArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-4 h-4" />
                     <span>Volver a Cursos</span>
                   </button>
                 </div>
@@ -271,7 +319,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                       </h6>
                       <div className="flex items-center space-x-2">
                         <div className="p-1.5 bg-success-100 rounded-lg">
-                          <FiFolder className="w-4 h-4 text-success" />
+                          <Folder className="w-4 h-4 text-success" />
                         </div>
                         <span className="text-small text-base-content/70">
                           {selectedCourse.topics.length} tema{selectedCourse.topics.length !== 1 ? 's' : ''}
@@ -294,7 +342,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center space-x-2">
                               <div className="p-1.5 bg-success-100 rounded-lg group-hover:bg-success-200 transition-colors">
-                                <FiFolder className="w-4 h-4 text-success" />
+                                <Folder className="w-4 h-4 text-success" />
                               </div>
                               <div>
                                 <h6 className="font-medium text-base-content text-small">
@@ -305,7 +353,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                                 </p>
                               </div>
                             </div>
-                            <FiChevronRight className="w-4 h-4 text-base-content/40 group-hover:text-success transition-colors" />
+                            <ChevronRight className="w-4 h-4 text-base-content/40 group-hover:text-success transition-colors" />
                           </div>
                           {topic.description && (
                             <p className="text-extra-small text-base-content/70 mt-2 line-clamp-2">
@@ -319,7 +367,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                 ) : (
                   <div className="text-center py-8">
                     <div className="p-3 bg-base-200 rounded-full w-fit mx-auto mb-3">
-                      <FiFolder className="w-6 h-6 text-base-content/40" />
+                      <Folder className="w-6 h-6 text-base-content/40" />
                     </div>
                     <h6 className="headline-lg text-base-content mb-1">Sin temas asignados</h6>
                     <p className="text-small text-base-content/70">
@@ -336,7 +384,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-success-100 rounded-lg">
-                      <FiFolder className="w-5 h-5 text-success" />
+                      <Folder className="w-5 h-5 text-success" />
                     </div>
                     <div>
                       <h5 className="headline-lg text-base-content">
@@ -351,7 +399,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                     onClick={handleBackToTopics}
                     className="btn-secondary text-small px-3 py-2 flex items-center space-x-2"
                   >
-                    <FiArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-4 h-4" />
                     <span>Volver a Temas</span>
                   </button>
                 </div>
@@ -372,7 +420,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                     </h6>
                     <div className="flex items-center space-x-2">
                       <div className="p-1.5 bg-info-100 rounded-lg">
-                        <FiFile className="w-4 h-4 text-info" />
+                        <FileText className="w-4 h-4 text-info" />
                       </div>
                       <span className="text-small text-base-content/70">
                         {selectedMaterials.length} material{selectedMaterials.length !== 1 ? 'es' : ''}
@@ -383,7 +431,7 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                   {loadingMaterials ? (
                     <div className="text-center py-8">
                       <div className="p-3 bg-primary-100 rounded-full w-fit mx-auto mb-3">
-                        <FiRefreshCw className="w-6 h-6 text-primary animate-spin" />
+                        <RefreshCw className="w-6 h-6 text-primary animate-spin" />
                       </div>
                       <h6 className="headline-lg text-base-content mb-1">Cargando materiales...</h6>
                       <p className="text-small text-base-content/70">
@@ -391,110 +439,170 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
                       </p>
                     </div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <table className="table table-zebra w-full">
-                        <thead>
-                          <tr>
-                            <th className="text-small font-medium text-base-content/70">Material</th>
-                            <th className="text-small font-medium text-base-content/70">Tipo</th>
-                            <th className="text-small font-medium text-base-content/70">Asignación</th>
-                            <th className="text-small font-medium text-base-content/70">Fecha</th>
-                            <th className="text-small font-medium text-base-content/70">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedMaterials.map((material) => (
-                            <tr key={material.id} className="hover:bg-base-200/50 transition-colors">
-                              <td>
+                    <>
+                      {/* Vista desktop - Tabla */}
+                      <div className="hidden lg:block overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Material</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Tipo</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Asignación</th>
+                              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Fecha</th>
+                              <th className="text-center py-3 px-4 text-sm font-medium text-gray-700">Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedMaterials.map((material) => (
+                              <tr key={material.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                              <td className="py-3 px-4">
                                 <div className="flex items-center space-x-3">
                                   <div className={`p-2 rounded-lg ${
-                                    material.material_type === 'DOCUMENT' ? 'bg-error-100' :
-                                    material.material_type === 'VIDEO' ? 'bg-primary-100' :
-                                    material.material_type === 'AUDIO' ? 'bg-warning-100' :
-                                    material.material_type === 'IMAGE' ? 'bg-success-100' :
-                                    material.material_type === 'LINK' ? 'bg-info-100' :
-                                    material.material_type === 'SCORM' ? 'bg-secondary-100' :
-                                    'bg-base-200'
+                                    material.material_type === 'DOCUMENT' ? 'bg-red-100' :
+                                    material.material_type === 'VIDEO' ? 'bg-blue-100' :
+                                    material.material_type === 'AUDIO' ? 'bg-yellow-100' :
+                                    material.material_type === 'IMAGE' ? 'bg-green-100' :
+                                    material.material_type === 'LINK' ? 'bg-cyan-100' :
+                                    material.material_type === 'SCORM' ? 'bg-purple-100' :
+                                    'bg-gray-100'
                                   }`}>
-                                    {material.material_type === 'DOCUMENT' && <FiFile className="w-4 h-4 text-error" />}
-                                    {material.material_type === 'VIDEO' && <FiPlay className="w-4 h-4 text-primary" />}
-                                    {material.material_type === 'AUDIO' && <FiPlay className="w-4 h-4 text-warning" />}
-                                    {material.material_type === 'IMAGE' && <FiFile className="w-4 h-4 text-success" />}
-                                    {material.material_type === 'LINK' && <FiExternalLink className="w-4 h-4 text-info" />}
-                                    {material.material_type === 'SCORM' && <FiBook className="w-4 h-4 text-secondary" />}
-                                    {!['DOCUMENT', 'VIDEO', 'AUDIO', 'IMAGE', 'LINK', 'SCORM'].includes(material.material_type) && <FiFile className="w-4 h-4 text-base-content/70" />}
+                                    {material.material_type === 'DOCUMENT' && <FileText className="w-4 h-4 text-red-600" />}
+                                    {material.material_type === 'VIDEO' && <Video className="w-4 h-4 text-blue-600" />}
+                                    {material.material_type === 'AUDIO' && <Music className="w-4 h-4 text-yellow-600" />}
+                                    {material.material_type === 'IMAGE' && <ImageIcon className="w-4 h-4 text-green-600" />}
+                                    {material.material_type === 'LINK' && <Link className="w-4 h-4 text-cyan-600" />}
+                                    {material.material_type === 'SCORM' && <Book className="w-4 h-4 text-purple-600" />}
+                                    {!['DOCUMENT', 'VIDEO', 'AUDIO', 'IMAGE', 'LINK', 'SCORM'].includes(material.material_type) && <FileText className="w-4 h-4 text-gray-500" />}
                                   </div>
                                   <div>
-                                    <h6 className="font-medium text-base-content text-small">
+                                    <h6 className="font-medium text-gray-900 text-sm">
                                       {material.name}
                                     </h6>
                                     {material.description && (
-                                      <p className="text-extra-small text-base-content/70 line-clamp-1">
+                                      <p className="text-xs text-gray-500 line-clamp-1">
                                         {material.description}
                                       </p>
                                     )}
                                   </div>
                                 </div>
                               </td>
-                              <td>
-                                <span className="text-small text-base-content">
+                              <td className="py-3 px-4">
+                                <span className="text-sm text-gray-700">
                                   {material.material_type || 'Archivo'}
                                 </span>
                               </td>
-                              <td>
+                              <td className="py-3 px-4">
                                 <div className="flex flex-col space-y-1">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-extra-small font-medium w-fit ${
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium w-fit ${
                                     material.is_shared 
-                                      ? 'bg-primary-100 text-primary' 
-                                      : 'bg-warning-100 text-warning'
+                                      ? 'bg-blue-100 text-blue-700' 
+                                      : 'bg-yellow-100 text-yellow-700'
                                   }`}>
                                     {material.is_shared ? 'Clase' : 'Personalizado'}
                                   </span>
                                   {!material.is_shared && material.professor_name && (
-                                    <span className="text-extra-small text-base-content/70">
+                                    <span className="text-xs text-gray-500">
                                       Por: {material.professor_name}
                                     </span>
                                   )}
                                 </div>
                               </td>
-                              <td>
-                                <div className="flex items-center space-x-1 text-small text-base-content/70">
-                                  <FiClock className="w-3 h-3" />
+                              <td className="py-3 px-4">
+                                <div className="flex items-center space-x-1 text-sm text-gray-500">
+                                  <Clock className="w-3 h-3" />
                                   <span>{formatDate(material.created_at)}</span>
                                 </div>
                               </td>
-                              <td>
-                                <div className="flex items-center space-x-2">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center justify-center">
                                   <button 
-                                    className="btn-primary text-extra-small px-3 py-1.5 flex items-center space-x-1"
+                                    className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center space-x-1 text-xs font-medium"
                                     onClick={() => handleMaterialClick(material)}
+                                    title={`Ver contenido: ${material.name}`}
                                   >
-                                    <FiDownload className="w-3 h-3" />
-                                    <span>Ver</span>
-                                  </button>
-                                  <button 
-                                    className="btn-secondary text-extra-small px-3 py-1.5 flex items-center space-x-1"
-                                    onClick={() => {
-                                      // TODO: Implementar funcionalidad de analizar
-                                      console.log('Analizar material:', material.id)
-                                    }}
-                                  >
-                                    <FiEye className="w-3 h-3" />
-                                    <span>Analizar</span>
+                                    <Eye className="w-3 h-3" />
+                                    <span>Ver Contenido</span>
                                   </button>
                                 </div>
                               </td>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Vista móvil - Cards */}
+                      <div className="lg:hidden space-y-3">
+                        {selectedMaterials.map((material) => (
+                          <div key={material.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-start space-x-3 mb-3">
+                              <div className={`p-2 rounded-lg ${
+                                material.material_type === 'DOCUMENT' ? 'bg-red-100' :
+                                material.material_type === 'VIDEO' ? 'bg-blue-100' :
+                                material.material_type === 'AUDIO' ? 'bg-yellow-100' :
+                                material.material_type === 'IMAGE' ? 'bg-green-100' :
+                                material.material_type === 'LINK' ? 'bg-cyan-100' :
+                                material.material_type === 'SCORM' ? 'bg-purple-100' :
+                                'bg-gray-100'
+                              }`}>
+                                {material.material_type === 'DOCUMENT' && <FileText className="w-4 h-4 text-red-600" />}
+                                {material.material_type === 'VIDEO' && <Video className="w-4 h-4 text-blue-600" />}
+                                {material.material_type === 'AUDIO' && <Music className="w-4 h-4 text-yellow-600" />}
+                                {material.material_type === 'IMAGE' && <ImageIcon className="w-4 h-4 text-green-600" />}
+                                {material.material_type === 'LINK' && <Link className="w-4 h-4 text-cyan-600" />}
+                                {material.material_type === 'SCORM' && <Book className="w-4 h-4 text-purple-600" />}
+                                {!['DOCUMENT', 'VIDEO', 'AUDIO', 'IMAGE', 'LINK', 'SCORM'].includes(material.material_type) && <FileText className="w-4 h-4 text-gray-500" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h6 className="font-medium text-gray-900 text-sm mb-1">
+                                  {material.name}
+                                </h6>
+                                {material.description && (
+                                  <p className="text-xs text-gray-500 line-clamp-2 mb-2">
+                                    {material.description}
+                                  </p>
+                                )}
+                                <div className="flex items-center space-x-2 text-xs text-gray-500">
+                                  <span className="bg-gray-100 px-2 py-1 rounded">
+                                    {material.material_type || 'Archivo'}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded ${
+                                    material.is_shared 
+                                      ? 'bg-blue-100 text-blue-700' 
+                                      : 'bg-yellow-100 text-yellow-700'
+                                  }`}>
+                                    {material.is_shared ? 'Clase' : 'Personalizado'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                              <div className="flex items-center space-x-1 text-xs text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDate(material.created_at)}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <button 
+                                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center space-x-1 text-xs font-medium"
+                                  onClick={() => handleMaterialClick(material)}
+                                  title={`Ver contenido: ${material.name}`}
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  <span>Ver Contenido</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                   
                   {!loadingMaterials && selectedMaterials.length === 0 && (
                     <div className="text-center py-8">
                       <div className="p-3 bg-base-200 rounded-full w-fit mx-auto mb-3">
-                        <FiFile className="w-6 h-6 text-base-content/40" />
+                        <FileText className="w-6 h-6 text-base-content/40" />
                       </div>
                       <h6 className="headline-lg text-base-content mb-1">Sin materiales asignados</h6>
                       <p className="text-small text-base-content/70">
@@ -517,23 +625,12 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       </div>
 
       {/* Preview Modal for AI-generated content */}
-      {isPreviewModalOpen && previewDocument && (
-        <PreviewModal
-          isOpen={isPreviewModalOpen}
-          onClose={handleClosePreviewModal}
-          onEdit={() => {
-            // Solo permitir edición si es profesor
-            if (user?.role === 'PROFESOR') {
-              console.log('Edición permitida para profesores')
-            } else {
-              console.log('Edición no permitida para estudiantes')
-            }
-          }}
-          document={previewDocument}
-          title={selectedMaterial?.name || 'Material'}
-          canEdit={user?.role === 'PROFESOR'}
-        />
-      )}
+      <PreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={handleClosePreviewModal}
+        document={previewDocument}
+        title={selectedMaterial?.name || 'Material'}
+      />
     </Modal>
   )
 }

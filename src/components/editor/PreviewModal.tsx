@@ -1,30 +1,27 @@
 import { Document, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { Card } from '../ui/Card'
 import { Eye, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 interface PreviewModalProps {
   isOpen: boolean
   onClose: () => void
-  onEdit: () => void
   document: Document | null
   title: string
-  canEdit?: boolean
 }
 
 export function PreviewModal({ 
   isOpen, 
   onClose, 
-  onEdit, 
   document, 
-  title,
-  canEdit = true
+  title
 }: PreviewModalProps) {
   if (!isOpen || !document) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
-      <div className="relative bg-white rounded-lg shadow-xl w-[95vw] h-[95vh] max-w-6xl flex flex-col">
+      <div className="relative bg-white rounded-lg shadow-xl w-full h-full max-w-6xl max-h-[90vh] flex flex-col z-[10000]" style={{ zIndex: 10000 }}>
         {/* Header del Modal */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-3">
@@ -34,17 +31,6 @@ export function PreviewModal({
             </h2>
           </div>
           <div className="flex items-center space-x-2">
-            <button
-              onClick={onEdit}
-              disabled={!canEdit}
-              className={`px-3 py-1 text-sm rounded ${
-                canEdit 
-                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Editar
-            </button>
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
@@ -367,4 +353,7 @@ export function PreviewModal({
       </div>
     </div>
   )
+
+  // Usar portal para renderizar fuera del stacking context del modal padre
+  return createPortal(modalContent, window.document.body)
 }
