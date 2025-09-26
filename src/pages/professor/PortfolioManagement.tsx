@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { usePortfolios } from '../../hooks/usePortfolios'
-import { Portfolio, academicApi } from '../../api/endpoints'
+import { Portfolio, academicApi, Material } from '../../api/endpoints'
 import { PortfolioDetailModal } from '../../components/modals/PortfolioDetailModal'
 import { 
-  FiUsers, 
-  FiBook, 
-  FiAward, 
-  FiCalendar, 
-  FiFolder,
-  FiEye,
-  FiCheckCircle,
-  FiClock,
-  FiSearch,
-  FiFilter
-} from 'react-icons/fi'
+  Users, 
+  Book, 
+  Award, 
+  Calendar, 
+  Folder,
+  Eye,
+  CheckCircle,
+  Clock,
+  Search,
+  Filter,
+  FileText,
+  Sparkles
+} from 'lucide-react'
 import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 
 export function PortfolioManagement() {
@@ -25,6 +27,7 @@ export function PortfolioManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'public' | 'private'>('all')
   const [materialCounts, setMaterialCounts] = useState<Record<number, number>>({})
+  const [loadingCounts, setLoadingCounts] = useState(false)
 
   // Cargar portafolios cuando se selecciona una sección
   useEffect(() => {
@@ -37,21 +40,42 @@ export function PortfolioManagement() {
   useEffect(() => {
     if (portfolios && portfolios.length > 0) {
       const loadMaterialCounts = async () => {
+        setLoadingCounts(true)
         const counts: Record<number, number> = {}
         
         for (const portfolio of portfolios) {
           try {
             let totalMaterials = 0
             
-            // Obtener materiales de todos los cursos del portafolio
-            for (const course of portfolio.courses) {
-              for (const topic of course.topics) {
-                try {
-                  const response = await academicApi.getMaterialsByTopic(topic.id)
-                  const materials = Array.isArray(response.data) ? response.data : response.data?.results || []
-                  totalMaterials += materials.length
-                } catch (error) {
-                  console.error(`Error loading materials for topic ${topic.id}:`, error)
+            // Verificar que el portafolio tenga cursos
+            if (portfolio.courses && Array.isArray(portfolio.courses)) {
+              // Obtener materiales de todos los cursos del portafolio
+              for (const course of portfolio.courses) {
+                // Verificar que el curso tenga temas
+                if (course.topics && Array.isArray(course.topics)) {
+                  for (const topic of course.topics) {
+                    try {
+                      const response = await academicApi.getMaterialsByTopic(topic.id)
+                      // Asegurar que obtenemos el array correcto de materiales
+                      let materials: Material[] = []
+                      if (response.data) {
+                        materials = Array.isArray(response.data) ? response.data : response.data?.results || []
+                      }
+                      
+                      // Filtrar materiales accesibles para este estudiante:
+                      // 1. Materiales compartidos (is_shared = true)
+                      // 2. Materiales personalizados asignados a este estudiante específico
+                      const accessibleMaterials = materials.filter(material => {
+                        return material.is_shared || 
+                               (material.assigned_students && material.assigned_students.includes(portfolio.student))
+                      })
+                      
+                      totalMaterials += accessibleMaterials.length
+                    } catch (error) {
+                      console.error(`Error loading materials for topic ${topic.id}:`, error)
+                      // No incrementar el contador si hay error
+                    }
+                  }
                 }
               }
             }
@@ -64,9 +88,14 @@ export function PortfolioManagement() {
         }
         
         setMaterialCounts(counts)
+        setLoadingCounts(false)
       }
       
       loadMaterialCounts()
+    } else {
+      // Si no hay portafolios, limpiar los contadores
+      setMaterialCounts({})
+      setLoadingCounts(false)
     }
   }, [portfolios])
 
@@ -100,7 +129,7 @@ export function PortfolioManagement() {
       <EmptyState 
         title="No tienes secciones asignadas"
         description="Contacta al director para que te asigne secciones."
-        icon={<FiUsers className="w-full h-full text-base-content/40" />}
+        icon={<Users className="w-full h-full text-base-content/40" />}
       />
     )
   }
@@ -108,17 +137,22 @@ export function PortfolioManagement() {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-3">
-        <div className="p-1.5 bg-primary-100 rounded-lg">
-          <FiFolder className="w-4 h-4 text-primary" />
-        </div>
-        <div>
-          <h1 className="headline-xl text-base-content">
-            Gestión de Portafolios
-          </h1>
-          <p className="text-small text-base-content/70">
-            Revisa y gestiona los portafolios de tus estudiantes
-          </p>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+        <div className="flex items-center p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <Folder className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                <span>Gestión de Portafolios</span>
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Revisa y gestiona los portafolios de tus estudiantes
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -137,25 +171,25 @@ export function PortfolioManagement() {
               }`}
             >
               <div className="flex items-center space-x-2 mb-2">
-                <FiUsers className="w-4 h-4" />
+                <Users className="w-4 h-4" />
                 <h3 className="headline-small font-medium">Salón {section.name}</h3>
               </div>
               <div className="space-y-1">
                 {section.grade_level && (
                   <div className="flex items-center space-x-1 text-small text-base-content/70">
-                    <FiAward className="w-3 h-3" />
+                    <Award className="w-3 h-3" />
                     <span>{section.grade_level.name}</span>
                   </div>
                 )}
                 {section.term && (
                   <div className="flex items-center space-x-1 text-small text-base-content/70">
-                    <FiCalendar className="w-3 h-3" />
+                    <Calendar className="w-3 h-3" />
                     <span>{section.term.name}</span>
                   </div>
                 )}
                 {section.course && (
                   <div className="flex items-center space-x-1 text-small text-primary">
-                    <FiBook className="w-3 h-3" />
+                    <Book className="w-3 h-3" />
                     <span className="font-medium">{section.course.name}</span>
                   </div>
                 )}
@@ -172,7 +206,7 @@ export function PortfolioManagement() {
             {/* Search Input */}
             <div className="flex-1">
               <div className="relative">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-base-content/40" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-base-content/40" />
                 <input
                   type="text"
                   placeholder="Buscar portafolios por título, estudiante o sección..."
@@ -185,7 +219,7 @@ export function PortfolioManagement() {
             
             {/* Status Filter */}
             <div className="flex items-center space-x-2">
-              <FiFilter className="w-4 h-4 text-base-content/40" />
+              <Filter className="w-4 h-4 text-base-content/40" />
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | 'public' | 'private')}
@@ -227,13 +261,13 @@ export function PortfolioManagement() {
               <EmptyState 
                 title="No hay portafolios"
                 description="Los portafolios se crearán automáticamente cuando asignes actividades a los estudiantes."
-                icon={<FiFolder className="w-full h-full text-base-content/40" />}
+                icon={<Folder className="w-full h-full text-base-content/40" />}
               />
             ) : filteredPortfolios.length === 0 ? (
               <div className="text-center py-8">
                 <div className="flex flex-col items-center space-y-2">
                   <div className="p-2 bg-base-200 rounded-full">
-                    <FiSearch className="w-5 h-5 text-base-content/40" />
+                    <Search className="w-5 h-5 text-base-content/40" />
                   </div>
                   <div>
                     <h3 className="headline-lg text-base-content mb-1">No se encontraron portafolios</h3>
@@ -256,14 +290,14 @@ export function PortfolioManagement() {
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
                           <div className="p-1 bg-primary-100 rounded-lg">
-                            <FiFolder className="w-3 h-3 text-primary" />
+                            <Folder className="w-3 h-3 text-primary" />
                           </div>
                           <h3 className="headline-small text-base-content">
                             {portfolio.title}
                           </h3>
                           {portfolio.is_public && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-extra-small font-medium bg-success-100 text-success">
-                              <FiCheckCircle className="w-2 h-2 mr-1" />
+                              <CheckCircle className="w-2 h-2 mr-1" />
                               Público
                             </span>
                           )}
@@ -280,7 +314,7 @@ export function PortfolioManagement() {
                                   key={course.id}
                                   className="inline-flex items-center px-1.5 py-0.5 rounded-full text-extra-small font-medium bg-primary-100 text-primary"
                                 >
-                                  <FiBook className="w-2 h-2 mr-1" />
+                                  <Book className="w-2 h-2 mr-1" />
                                   {course.course_name}
                                 </span>
                               ))}
@@ -294,11 +328,20 @@ export function PortfolioManagement() {
                         )}
                         <div className="flex items-center space-x-3 text-small text-base-content/70 mb-2">
                           <div className="flex items-center space-x-1">
-                            <FiCheckCircle className="w-3 h-3 text-success" />
-                            <span>{materialCounts[portfolio.id] || 0} materiales</span>
+                            <FileText className="w-3 h-3 text-blue-600" />
+                            {loadingCounts ? (
+                              <div className="flex items-center space-x-1">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-600"></div>
+                                <span className="text-blue-600">Cargando...</span>
+                              </div>
+                            ) : (
+                              <span className="font-medium text-blue-700">
+                                {materialCounts[portfolio.id] !== undefined ? materialCounts[portfolio.id] : 0} materiales
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center space-x-1">
-                            <FiClock className="w-3 h-3" />
+                            <Clock className="w-3 h-3" />
                             <span>{new Date(portfolio.created_at).toLocaleDateString('es-ES')}</span>
                           </div>
                         </div>
@@ -306,9 +349,9 @@ export function PortfolioManagement() {
                       <div className="flex items-center space-x-2 ml-3">
                         <button
                           onClick={() => setSelectedPortfolio(portfolio)}
-                          className="btn-primary text-extra-small px-2 py-1 flex items-center space-x-1"
+                          className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors flex items-center space-x-1 text-sm font-medium"
                         >
-                          <FiEye className="w-3 h-3" />
+                          <Eye className="w-3 h-3" />
                           <span>Ver Detalles</span>
                         </button>
                       </div>

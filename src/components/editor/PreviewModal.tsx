@@ -1,6 +1,7 @@
 import { Document, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { Card } from '../ui/Card'
 import { Eye, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 interface PreviewModalProps {
   isOpen: boolean
@@ -17,10 +18,10 @@ export function PreviewModal({
 }: PreviewModalProps) {
   if (!isOpen || !document) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ zIndex: 9999 }}>
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
-      <div className="relative bg-white rounded-lg shadow-xl w-[95vw] h-[95vh] max-w-6xl flex flex-col">
+      <div className="relative bg-white rounded-lg shadow-xl w-full h-full max-w-6xl max-h-[90vh] flex flex-col z-[10000]" style={{ zIndex: 10000 }}>
         {/* Header del Modal */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-3">
@@ -352,4 +353,7 @@ export function PreviewModal({
       </div>
     </div>
   )
+
+  // Usar portal para renderizar fuera del stacking context del modal padre
+  return createPortal(modalContent, window.document.body)
 }
