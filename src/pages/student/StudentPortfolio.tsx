@@ -6,15 +6,23 @@ import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
 import { Document } from '../../types/block-schema'
 import { 
-  FiBook,
-  FiFileText,
-  FiEye,
-  FiUsers,
-  FiChevronRight,
-  FiCalendar,
-  FiAward
-} from 'react-icons/fi'
-import { EmptyState, PageLoadingState } from '../../components/common'
+  Book,
+  FileText,
+  Eye,
+  Users,
+  ChevronRight,
+  Calendar,
+  Award,
+  FolderOpen,
+  Sparkles,
+  Play,
+  Link,
+  Music,
+  AlertCircle,
+  BookOpen,
+  Target,
+  Filter
+} from 'lucide-react'
 
 // Local Course interface for this component
 interface Course {
@@ -137,325 +145,439 @@ export function StudentPortfolio() {
 
   if (!user?.section) {
     return (
-      <div className="card p-3 sm:p-4">
-        <EmptyState 
-          title="No tienes acceso al portafolio"
-          description="Contacta a tu administrador para obtener acceso."
-          icon={<FiUsers className="w-full h-full text-base-content/40" />}
-        />
+      <div className="space-y-3 sm:space-y-4 min-h-0">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+          <div className="flex items-center p-3 sm:p-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+                <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  <span>Mi Portafolio</span>
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  Explora tus cursos, temas y materiales de estudio
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
+          <div className="text-center py-8 sm:py-12">
+            <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No tienes acceso al portafolio</h3>
+                <p className="text-sm text-gray-600">Contacta a tu administrador para obtener acceso a tu portafolio académico.</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4 min-h-0">
       {/* Header */}
-      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
-        <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-          <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-lg sm:text-2xl font-bold text-base-content truncate">
-            Mi Portafolio
-          </h1>
-          <p className="text-xs sm:text-sm text-base-content/70 mt-1">
-            Explora tus cursos, temas y materiales de estudio
-          </p>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+        <div className="flex items-center p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                <span>Mi Portafolio</span>
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Explora tus cursos, temas y materiales de estudio
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Breadcrumb de navegación */}
-      <div className="card p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 text-xs sm:text-sm">
-          <div className={`px-2 sm:px-3 py-1 rounded-full ${selectedCourse ? 'bg-primary-100 text-primary' : 'bg-base-200 text-base-content/70'}`}>
-            1. Seleccionar Curso
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-xs sm:text-sm">
+          <div className={`px-3 py-2 rounded-full transition-colors ${selectedCourse ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-gray-100 text-gray-600'}`}>
+            <div className="flex items-center space-x-2">
+              <span className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center font-bold">1</span>
+              <span className="font-medium">Seleccionar Curso</span>
+            </div>
           </div>
-          <FiChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-base-content/40 flex-shrink-0" />
-          <div className={`px-2 sm:px-3 py-1 rounded-full ${selectedTopic ? 'bg-success-100 text-success' : 'bg-base-200 text-base-content/70'}`}>
-            2. Seleccionar Tema
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 hidden sm:block" />
+          <div className={`px-3 py-2 rounded-full transition-colors ${selectedTopic ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-gray-100 text-gray-600'}`}>
+            <div className="flex items-center space-x-2">
+              <span className="w-5 h-5 rounded-full bg-green-500 text-white text-xs flex items-center justify-center font-bold">2</span>
+              <span className="font-medium">Seleccionar Tema</span>
+            </div>
           </div>
-          <FiChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-base-content/40 flex-shrink-0" />
-          <div className={`px-2 sm:px-3 py-1 rounded-full ${selectedTopic ? 'bg-secondary-100 text-secondary' : 'bg-base-200 text-base-content/70'}`}>
-            3. Ver Materiales
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 hidden sm:block" />
+          <div className={`px-3 py-2 rounded-full transition-colors ${selectedTopic ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-gray-100 text-gray-600'}`}>
+            <div className="flex items-center space-x-2">
+              <span className="w-5 h-5 rounded-full bg-purple-500 text-white text-xs flex items-center justify-center font-bold">3</span>
+              <span className="font-medium">Ver Materiales</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Lista de Cursos */}
-        <div className="card p-3 sm:p-4">
-          <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-            <h2 className="text-lg sm:text-xl font-bold text-base-content">Mis Cursos</h2>
-          </div>
-          <p className="text-xs sm:text-sm text-base-content/70 mb-3 sm:mb-4">
-            Haz clic en un curso para ver sus temas
-          </p>
-          
-          {loadingCourses ? (
-            <PageLoadingState message="Cargando cursos..." />
-          ) : courses && courses.results && courses.results.length > 0 ? (
-            <div className="space-y-3">
-              {courses.results.map((course) => (
-                <div
-                  key={course.id}
-                  className={`card p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    selectedCourse?.id === course.id
-                      ? 'border-primary bg-primary-50'
-                      : 'hover:bg-base-50'
-                  }`}
-                  onClick={() => handleCourseClick(course)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-base sm:text-lg text-base-content">{course.name}</h3>
-                      {course.description && (
-                        <p className="text-xs sm:text-sm text-base-content/70 mt-1">{course.description}</p>
-                      )}
-                      <div className="flex items-center mt-2">
-                        <span className="badge badge-sm bg-base-200 text-base-content">
-                          {course.grade_level_name}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <FiChevronRight
-                        className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform text-base-content/70 ${
-                          selectedCourse?.id === course.id ? 'rotate-90' : ''
-                        }`}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+          <div className="border-b border-gray-200 p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
+                <Book className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Mis Cursos</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Haz clic en un curso para ver sus temas</p>
+              </div>
             </div>
-          ) : (
-            <EmptyState 
-              title="No hay cursos disponibles"
-              description="No tienes cursos asignados en tu sección."
-              icon={<FiBook className="w-full h-full text-base-content/40" />}
-            />
-          )}
-        </div>
-
-        {/* Lista de Temas */}
-        <div className={`card p-3 sm:p-4 ${!selectedCourse ? 'opacity-50 pointer-events-none' : ''}`}>
-          <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiAward className="w-4 h-4 sm:w-5 sm:h-5 text-success flex-shrink-0" />
-            <h2 className="text-lg sm:text-xl font-bold text-base-content">Temas</h2>
           </div>
-          <p className="text-xs sm:text-sm text-base-content/70 mb-3 sm:mb-4">
-            {selectedCourse ? 'Selecciona un tema para ver sus materiales' : 'Primero selecciona un curso'}
-          </p>
           
-          {!selectedCourse ? (
-            <EmptyState 
-              title="Primero selecciona un curso"
-              description="Selecciona un curso para ver sus temas disponibles."
-              icon={<FiAward className="w-full h-full text-base-content/40" />}
-            />
-          ) : loadingTopics ? (
-            <PageLoadingState message="Cargando temas..." />
-          ) : topics && topics.length > 0 ? (
-            <div className="space-y-3">
-              {topics
-                .sort((a, b) => a.order - b.order)
-                .map((topic) => (
+          <div className="p-3 sm:p-4">
+            {loadingCourses ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <p className="text-sm text-gray-600">Cargando cursos...</p>
+                </div>
+              </div>
+            ) : courses && courses.results && courses.results.length > 0 ? (
+              <div className="space-y-3">
+                {courses.results.map((course) => (
                   <div
-                    key={topic.id}
-                    className={`card p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                      selectedTopic?.id === topic.id
-                        ? 'border-success bg-success-50'
-                        : 'hover:bg-base-50'
+                    key={course.id}
+                    className={`border rounded-lg p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                      selectedCourse?.id === course.id
+                        ? 'border-blue-300 bg-blue-50'
+                        : 'border-gray-200 hover:bg-gray-50'
                     }`}
-                    onClick={() => handleTopicClick(topic)}
+                    onClick={() => handleCourseClick(course)}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base sm:text-lg text-base-content">{topic.name}</h3>
-                        {topic.description && (
-                          <p className="text-xs sm:text-sm text-base-content/70 mt-1">{topic.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{course.name}</h3>
+                        {course.description && (
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{course.description}</p>
                         )}
                         <div className="flex items-center mt-2">
-                          <span className="badge badge-sm bg-base-200 text-base-content">
-                            Orden: {topic.order}
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                            <Award className="w-3 h-3 mr-1" />
+                            {course.grade_level_name}
                           </span>
                         </div>
                       </div>
-                      <div className="ml-4">
-                        <FiChevronRight
-                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform text-base-content/70 ${
-                            selectedTopic?.id === topic.id ? 'rotate-90' : ''
+                      <div className="ml-4 flex-shrink-0">
+                        <ChevronRight
+                          className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform text-gray-400 ${
+                            selectedCourse?.id === course.id ? 'rotate-90 text-blue-600' : ''
                           }`}
                         />
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <Book className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">No hay cursos disponibles</h3>
+                    <p className="text-sm text-gray-600">No tienes cursos asignados en tu sección.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Lista de Temas */}
+        <div className={`bg-white border border-gray-200 rounded-xl shadow-sm ${!selectedCourse ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className="border-b border-gray-200 p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Temas</h2>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  {selectedCourse ? 'Selecciona un tema para ver sus materiales' : 'Primero selecciona un curso'}
+                </p>
+              </div>
             </div>
-          ) : (
-            <EmptyState 
-              title="No hay temas disponibles"
-              description="No hay temas disponibles para este curso."
-              icon={<FiAward className="w-full h-full text-base-content/40" />}
-            />
-          )}
+          </div>
+          
+          <div className="p-3 sm:p-4">
+            {!selectedCourse ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-gray-100 rounded-full">
+                    <BookOpen className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Primero selecciona un curso</h3>
+                    <p className="text-sm text-gray-600">Selecciona un curso para ver sus temas disponibles.</p>
+                  </div>
+                </div>
+              </div>
+            ) : loadingTopics ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                  <p className="text-sm text-gray-600">Cargando temas...</p>
+                </div>
+              </div>
+            ) : topics && topics.length > 0 ? (
+              <div className="space-y-3">
+                {topics
+                  .sort((a, b) => a.order - b.order)
+                  .map((topic) => (
+                    <div
+                      key={topic.id}
+                      className={`border rounded-lg p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        selectedTopic?.id === topic.id
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleTopicClick(topic)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{topic.name}</h3>
+                          {topic.description && (
+                            <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{topic.description}</p>
+                          )}
+                          <div className="flex items-center mt-2">
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                              <Target className="w-3 h-3 mr-1" />
+                              Orden: {topic.order}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4 flex-shrink-0">
+                          <ChevronRight
+                            className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform text-gray-400 ${
+                              selectedTopic?.id === topic.id ? 'rotate-90 text-green-600' : ''
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <BookOpen className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">No hay temas disponibles</h3>
+                    <p className="text-sm text-gray-600">No hay temas disponibles para este curso.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Lista de Materiales */}
-        <div className={`card p-3 sm:p-4 ${!selectedTopic ? 'opacity-50 pointer-events-none' : ''}`}>
-          <div className="flex items-center space-x-2 mb-3 sm:mb-4">
-            <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-secondary flex-shrink-0" />
-            <h2 className="text-lg sm:text-xl font-bold text-base-content">Materiales</h2>
-          </div>
-          <p className="text-xs sm:text-sm text-base-content/70 mb-3 sm:mb-4">
-            {selectedTopic 
-              ? 'Haz clic en un material para verlo'
-              : 'Selecciona un tema para ver sus materiales'
-            }
-          </p>
-          
-          {/* Filtro de Materiales */}
-          {selectedTopic && (
-            <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-              <button
-                onClick={() => setMaterialFilter('personalized')}
-                className={`btn btn-sm ${
-                  materialFilter === 'personalized'
-                    ? 'btn-primary'
-                    : 'btn-outline'
-                }`}
-              >
-                Personalizados
-              </button>
-              <button
-                onClick={() => setMaterialFilter('class')}
-                className={`btn btn-sm ${
-                  materialFilter === 'class'
-                    ? 'btn-success'
-                    : 'btn-outline'
-                }`}
-              >
-                De Clase
-              </button>
-              <button
-                onClick={() => setMaterialFilter('all')}
-                className={`btn btn-sm ${
-                  materialFilter === 'all'
-                    ? 'btn-secondary'
-                    : 'btn-outline'
-                }`}
-              >
-                Todos
-              </button>
+        <div className={`bg-white border border-gray-200 rounded-xl shadow-sm ${!selectedTopic ? 'opacity-50 pointer-events-none' : ''}`}>
+          <div className="border-b border-gray-200 p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Materiales</h2>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  {selectedTopic 
+                    ? 'Haz clic en un material para verlo'
+                    : 'Selecciona un tema para ver sus materiales'
+                  }
+                </p>
+              </div>
             </div>
-          )}
+          </div>
           
-          {!selectedTopic ? (
-            <EmptyState 
-              title="Selecciona un tema"
-              description="Selecciona un tema para ver sus materiales disponibles."
-              icon={<FiFileText className="w-full h-full text-base-content/40" />}
-            />
-          ) : loadingMaterials ? (
-            <PageLoadingState message="Cargando materiales..." />
-          ) : filteredMaterials && filteredMaterials.length > 0 ? (
-            <div className="space-y-3">
-              {filteredMaterials.map((material: Material) => (
-                <div
-                  key={material.id}
-                  className="card p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md"
-                  onClick={() => handleMaterialClick(material)}
+          <div className="p-3 sm:p-4">
+            {/* Filtro de Materiales */}
+            {selectedTopic && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <button
+                  onClick={() => setMaterialFilter('personalized')}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    materialFilter === 'personalized'
+                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
                 >
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0">
-                      {material.material_type === 'VIDEO' && (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-error-100 rounded-lg flex items-center justify-center">
-                          <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-error" />
-                        </div>
-                      )}
-                      {material.material_type === 'DOCUMENT' && (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                          <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                        </div>
-                      )}
-                      {material.material_type === 'AUDIO' && (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-success-100 rounded-lg flex items-center justify-center">
-                          <FiCalendar className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-                        </div>
-                      )}
-                      {material.material_type === 'LINK' && (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary-100 rounded-lg flex items-center justify-center">
-                          <FiBook className="w-4 h-4 sm:w-5 sm:h-5 text-secondary" />
-                        </div>
-                      )}
-                      {!['VIDEO', 'DOCUMENT', 'AUDIO', 'LINK'].includes(material.material_type) && (
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-base-200 rounded-lg flex items-center justify-center">
-                          <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-base-content/70" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base sm:text-lg text-base-content truncate">{material.name}</h3>
-                      {material.description && (
-                        <p className="text-xs sm:text-sm text-base-content/70 mt-1 line-clamp-2">{material.description}</p>
-                      )}
-                      <div className="flex items-center mt-2 space-x-2">
-                        <span className="badge badge-sm bg-base-200 text-base-content">
-                          {material.material_type}
-                        </span>
-                        <span className={`badge badge-sm ${
-                          material.is_shared 
-                            ? 'bg-success-100 text-success' 
-                            : 'bg-primary-100 text-primary'
-                        }`}>
-                          {material.is_shared ? 'De Clase' : 'Personalizado'}
-                        </span>
+                  <Filter className="w-3 h-3 mr-1" />
+                  Personalizados
+                </button>
+                <button
+                  onClick={() => setMaterialFilter('class')}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    materialFilter === 'class'
+                      ? 'bg-green-100 text-green-800 border border-green-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <Users className="w-3 h-3 mr-1" />
+                  De Clase
+                </button>
+                <button
+                  onClick={() => setMaterialFilter('all')}
+                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    materialFilter === 'all'
+                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <BookOpen className="w-3 h-3 mr-1" />
+                  Todos
+                </button>
+              </div>
+            )}
+            
+            {!selectedTopic ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-gray-100 rounded-full">
+                    <FileText className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Selecciona un tema</h3>
+                    <p className="text-sm text-gray-600">Selecciona un tema para ver sus materiales disponibles.</p>
+                  </div>
+                </div>
+              </div>
+            ) : loadingMaterials ? (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                  <p className="text-sm text-gray-600">Cargando materiales...</p>
+                </div>
+              </div>
+            ) : filteredMaterials && filteredMaterials.length > 0 ? (
+              <div className="space-y-3">
+                {filteredMaterials.map((material: Material) => (
+                  <div
+                    key={material.id}
+                    className="border border-gray-200 rounded-lg p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-gray-50"
+                    onClick={() => handleMaterialClick(material)}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="flex-shrink-0">
+                        {material.material_type === 'VIDEO' && (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <Play className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                          </div>
+                        )}
+                        {material.material_type === 'DOCUMENT' && (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                          </div>
+                        )}
+                        {material.material_type === 'AUDIO' && (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <Music className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                          </div>
+                        )}
+                        {material.material_type === 'LINK' && (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <Link className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                          </div>
+                        )}
+                        {!['VIDEO', 'DOCUMENT', 'AUDIO', 'LINK'].includes(material.material_type) && (
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                          </div>
+                        )}
                       </div>
-                      {/* Mostrar analytics si están disponibles */}
-                      {materialsWithAnalytics && materialsWithAnalytics.find(m => m.id === material.id)?.analytics && (
-                        <div className="mt-2 flex items-center space-x-4 text-xs text-base-content/70">
-                          <div className="flex items-center">
-                            <FiEye className="w-3 h-3 mr-1" />
-                            <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.total_views || 0} vistas</span>
-                          </div>
-                          <div className="flex items-center">
-                            <FiCalendar className="w-3 h-3 mr-1" />
-                            <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.average_duration_formatted || '0s'}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <FiAward className="w-3 h-3 mr-1" />
-                            <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.completion_rate?.toFixed(1) || '0'}% completado</span>
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{material.name}</h3>
+                        {material.description && (
+                          <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{material.description}</p>
+                        )}
+                        <div className="flex items-center mt-2 space-x-2">
+                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                            {material.material_type}
+                          </span>
+                          <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                            material.is_shared 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {material.is_shared ? 'De Clase' : 'Personalizado'}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-shrink-0">
-                      <FiChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-base-content/70" />
-                    </div>
+                        {/* Mostrar analytics si están disponibles */}
+                        {materialsWithAnalytics && materialsWithAnalytics.find(m => m.id === material.id)?.analytics && (
+                          <div className="mt-2 flex items-center space-x-4 text-xs text-gray-600">
+                            <div className="flex items-center">
+                              <Eye className="w-3 h-3 mr-1" />
+                              <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.total_views || 0} vistas</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.average_duration_formatted || '0s'}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Award className="w-3 h-3 mr-1" />
+                              <span>{materialsWithAnalytics.find(m => m.id === material.id)?.analytics?.completion_rate?.toFixed(1) || '0'}% completado</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-          ) : (
-            <EmptyState 
-              title={
-                materialFilter === 'personalized' 
-                  ? 'No hay materiales personalizados'
-                  : materialFilter === 'class'
-                  ? 'No hay materiales de clase'
-                  : 'No hay materiales disponibles'
-              }
-              description={
-                materialFilter === 'personalized' 
-                  ? 'No hay materiales personalizados para este tema'
-                  : materialFilter === 'class'
-                  ? 'No hay materiales de clase para este tema'
-                  : 'No hay materiales disponibles para este tema'
-              }
-              icon={<FiFileText className="w-full h-full text-base-content/40" />}
-            />
-          )}
+            ) : (
+              <div className="text-center py-8">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <FileText className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                      {materialFilter === 'personalized' 
+                        ? 'No hay materiales personalizados'
+                        : materialFilter === 'class'
+                        ? 'No hay materiales de clase'
+                        : 'No hay materiales disponibles'
+                      }
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {materialFilter === 'personalized' 
+                        ? 'No hay materiales personalizados para este tema'
+                        : materialFilter === 'class'
+                        ? 'No hay materiales de clase para este tema'
+                        : 'No hay materiales disponibles para este tema'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
