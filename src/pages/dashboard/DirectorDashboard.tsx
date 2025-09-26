@@ -7,8 +7,20 @@ import { EditUserModal } from '../../components/modals/EditUserModal'
 import { ConfirmModal } from '../../components/modals/ConfirmModal'
 import { CreateUserModal } from '../../components/modals/CreateUserModal'
 import { User } from '../../api/endpoints'
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card'
-import { Button } from '../../components/ui/Button'
+import { 
+  BarChart3,
+  Users,
+  GraduationCap,
+  Eye,
+  Edit3,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Crown,
+  UserCheck,
+  School
+} from 'lucide-react'
 
 export function DirectorDashboard() {
   const { user } = useAuthStore()
@@ -61,7 +73,7 @@ export function DirectorDashboard() {
     }
   }
 
-  const handleCreateUser = async (userData: any) => {
+  const handleCreateUser = async (userData: Partial<User>) => {
     try {
       const newUser = await createUser(userData)
       
@@ -85,10 +97,10 @@ export function DirectorDashboard() {
       
       // La lista se actualiza automáticamente gracias al hook useDirectorUsers
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       showError(
         '❌ Error al Registrar Usuario',
-        err.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
+        (err as any)?.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
         { duration: 5000 }
       )
     }
@@ -110,10 +122,10 @@ export function DirectorDashboard() {
         )
         setShowConfirmDelete(false)
         setUserToDelete(null)
-      } catch (err: any) {
+      } catch (err: unknown) {
         showError(
           'Error al Eliminar Usuario',
-          err.response?.data?.detail || 'No se pudo eliminar el usuario.',
+          (err as any)?.response?.data?.detail || 'No se pudo eliminar el usuario.',
           { duration: 5000 }
         )
       }
@@ -151,10 +163,10 @@ export function DirectorDashboard() {
         'Los datos del usuario han sido actualizados correctamente.',
         { duration: 3000 }
       )
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError(
         'Error al Actualizar Usuario',
-        error.response?.data?.detail || 'No se pudo actualizar el usuario.',
+        (error as any)?.response?.data?.detail || 'No se pudo actualizar el usuario.',
         { duration: 5000 }
       )
     }
@@ -170,350 +182,369 @@ export function DirectorDashboard() {
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: 'var(--color-base-200)' }}>
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="headline-2xl text-base-content">Panel del Director</h1>
-          <p className="text-base-content/70 mt-2">Bienvenido, {user?.first_name} {user?.last_name}</p>
+    <div className="space-y-3 sm:space-y-4 min-h-0">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+        <div className="flex items-center p-3 sm:p-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                <span>Panel del Director</span>
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              </h1>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                Gestión integral de la institución educativa - Bienvenido, {user?.first_name} {user?.last_name}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+        {/* Total Usuarios */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg flex-shrink-0">
+              <UserCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Total Usuarios</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{users.length}</p>
+              <p className="text-xs text-blue-600 font-medium">Sistema activo</p>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card variant="elevated">
-            <CardContent>
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-primary-100">
-                  <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-base-content/70">Total Usuarios</p>
-                  <p className="headline-2xl text-base-content">{users.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="elevated">
-            <CardContent>
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-success-100">
-                  <svg className="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-base-content/70">Profesores</p>
-                  <p className="headline-2xl text-base-content">
-                    {users.filter(u => u.role === 'PROFESOR').length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card variant="elevated">
-            <CardContent>
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-secondary-100">
-                  <svg className="w-6 h-6 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-base-content/70">Estudiantes</p>
-                  <p className="headline-2xl text-base-content">
-                    {users.filter(u => u.role === 'ALUMNO').length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Profesores */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg flex-shrink-0">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Profesores</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                {users.filter(u => u.role === 'PROFESOR').length}
+              </p>
+              <p className="text-xs text-green-600 font-medium">Docentes activos</p>
+            </div>
+          </div>
         </div>
 
-        {/* Users Section */}
-        <Card variant="elevated">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base-content">Usuarios</CardTitle>
-              <div className="flex space-x-3">
-                <Button
-                  onClick={() => {
-                    setUserType('PROFESOR')
-                    setShowCreateUser(true)
-                  }}
-                  variant="primary"
-                  leftIcon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  }
-                >
-                  Crear Profesor
-                </Button>
-                <Button
-                  onClick={() => {
-                    setUserType('ALUMNO')
-                    setShowCreateUser(true)
-                  }}
-                  variant="secondary"
-                  leftIcon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.083 12.083 0 01.665-6.479L12 14z" />
-                    </svg>
-                  }
-                >
-                  Crear Estudiante
-                </Button>
+        {/* Estudiantes */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+              <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 uppercase tracking-wide">Estudiantes</p>
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                {users.filter(u => u.role === 'ALUMNO').length}
+              </p>
+              <p className="text-xs text-purple-600 font-medium">Alumnos matriculados</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Users Section */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+        <div className="border-b border-gray-200 p-3 sm:p-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
+                <School className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Gestión de Usuarios</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Administra profesores y estudiantes</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p className="mt-2 text-base-content">Cargando usuarios...</p>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+              <button
+                onClick={() => {
+                  setUserType('PROFESOR')
+                  setShowCreateUser(true)
+                }}
+                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-colors flex items-center justify-center space-x-2 text-sm"
+              >
+                <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>Crear Profesor</span>
+              </button>
+              <button
+                onClick={() => {
+                  setUserType('ALUMNO')
+                  setShowCreateUser(true)
+                }}
+                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-colors flex items-center justify-center space-x-2 text-sm"
+              >
+                <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span>Crear Estudiante</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="p-3 sm:p-4">
+          {loading ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">Cargando usuarios</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Obteniendo información del sistema...</p>
+                </div>
               </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-error mb-4">{error}</p>
-                <Button
-                  onClick={() => window.location.reload()}
-                  variant="outline"
-                >
-                  Reintentar
-                </Button>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 sm:py-12">
+              <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+                <div className="p-3 bg-red-100 rounded-full">
+                  <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Error al cargar</h3>
+                  <p className="text-sm text-red-600 mb-4">{error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors"
+                  >
+                    Reintentar
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-base-300">
-                  <thead className="bg-base-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                        Usuario
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                        Rol
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-base-100 divide-y divide-base-300">
-                    {currentUsers.map((user, index) => {
-                      // Verificar si el usuario es recién creado (último en la lista)
-                      const isNewUser = index === users.length - 1
-                      const createdDate = new Date(user.created_at)
-                      const isRecentlyCreated = (Date.now() - createdDate.getTime()) < 30000 // 30 segundos
-                      
-                      return (
-                        <tr key={user.id} className={`hover:bg-base-200/50 ${isNewUser && isRecentlyCreated ? 'border-l-4 border-success bg-success-100' : ''}`}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full flex items-center justify-center" style={{ 
-                                  backgroundColor: user.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
-                                  color: user.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
-                                }}>
-                                  <span className="text-sm font-medium">
-                                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="flex items-center space-x-2">
-                                  <div className="text-sm font-medium text-base-content">
-                                    {user.first_name} {user.last_name}
-                                  </div>
-                                  {isNewUser && isRecentlyCreated && (
-                                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-success-100 text-success">
-                                      ✨ Nuevo
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-sm text-base-content/70">
-                                  @{user.username}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center space-x-2">
-                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{
-                                backgroundColor: user.role === 'PROFESOR' ? 'var(--color-success-100)' : 'var(--color-primary)',
-                                color: user.role === 'PROFESOR' ? 'var(--color-success)' : 'white'
-                              }}>
-                                {user.role === 'PROFESOR' ? '👨‍🏫 Profesor' : '👨‍🎓 Estudiante'}
-                              </span>
-                              {user.specialty && (
-                                <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-base-200 text-base-content">
-                                  {user.specialty_display || user.specialty}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Usuario
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rol
+                    </th>
+                    <th className="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentUsers.map((user, index) => {
+                    // Verificar si el usuario es recién creado (último en la lista)
+                    const isNewUser = index === users.length - 1
+                    const createdDate = new Date(user.created_at)
+                    const isRecentlyCreated = (Date.now() - createdDate.getTime()) < 30000 // 30 segundos
+                    
+                    return (
+                      <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${isNewUser && isRecentlyCreated ? 'border-l-4 border-green-500 bg-green-50' : ''}`}>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="flex-shrink-0">
+                              <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center ${
+                                user.role === 'PROFESOR' 
+                                  ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' 
+                                  : 'bg-gradient-to-br from-purple-500 to-purple-600 text-white'
+                              }`}>
+                                <span className="text-xs sm:text-sm font-medium">
+                                  {user.first_name.charAt(0)}{user.last_name.charAt(0)}
                                 </span>
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                                <div className="text-sm font-medium text-gray-900 truncate">
+                                  {user.first_name} {user.last_name}
+                                </div>
+                                {isNewUser && isRecentlyCreated && (
+                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 mt-1 sm:mt-0">
+                                    ✨ Nuevo
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs sm:text-sm text-gray-500">
+                                @{user.username}
+                              </div>
+                              <div className="text-xs text-gray-500 sm:hidden mt-1">
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col space-y-1">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
+                              user.role === 'PROFESOR' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {user.role === 'PROFESOR' ? (
+                                <><Users className="w-3 h-3 mr-1" /> Profesor</>
+                              ) : (
+                                <><GraduationCap className="w-3 h-3 mr-1" /> Estudiante</>
                               )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-base-content">
-                            {user.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <Button
-                                onClick={() => handleViewUser(user)}
-                                variant="ghost"
-                                size="sm"
-                                leftIcon={
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                  </svg>
-                                }
-                              >
-                                Ver
-                              </Button>
-                              <Button
-                                onClick={() => handleEditUser(user)}
-                                variant="ghost"
-                                size="sm"
-                                leftIcon={
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                }
-                              >
-                                Editar
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteUser(user.id)}
-                                variant="danger"
-                                size="sm"
-                                leftIcon={
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                }
-                              >
-                                Eliminar
-                              </Button>
-                            </div>
-                          </td>
+                            </span>
+                            {user.specialty && (
+                              <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 w-fit">
+                                {user.specialty_display || user.specialty}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.email}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                            <button
+                              onClick={() => handleViewUser(user)}
+                              className="inline-flex items-center px-2 py-1 border border-gray-300 text-gray-700 bg-white rounded hover:bg-gray-50 transition-colors text-xs"
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Ver</span>
+                            </button>
+                            <button
+                              onClick={() => handleEditUser(user)}
+                              className="inline-flex items-center px-2 py-1 border border-blue-300 text-blue-700 bg-blue-50 rounded hover:bg-blue-100 transition-colors text-xs"
+                            >
+                              <Edit3 className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Editar</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user.id)}
+                              className="inline-flex items-center px-2 py-1 border border-red-300 text-red-700 bg-red-50 rounded hover:bg-red-100 transition-colors text-xs"
+                            >
+                              <Trash2 className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Eliminar</span>
+                            </button>
+                          </div>
+                        </td>
                         </tr>
                       )
                     })}
                   </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-
-          {/* Controles de Paginación */}
-          {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-base-300">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-base-content/70">
-                    Mostrando {startIndex + 1} a {Math.min(endIndex, totalUsers)} de {totalUsers} usuarios
-                  </span>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {/* Botón Anterior */}
-                  <Button
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                    variant="outline"
-                    size="sm"
-                  >
-                    ← Anterior
-                  </Button>
-
-                  {/* Números de página */}
-                  <div className="flex space-x-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      // Mostrar solo algunas páginas alrededor de la actual
-                      const showPage = page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
-                      
-                      if (!showPage) {
-                        if (page === currentPage - 2 || page === currentPage + 2) {
-                          return <span key={page} className="px-2 py-1 text-sm text-base-content/70">...</span>
-                        }
-                        return null
-                      }
-
-                      return (
-                        <Button
-                          key={page}
-                          onClick={() => goToPage(page)}
-                          variant={currentPage === page ? "primary" : "outline"}
-                          size="sm"
-                        >
-                          {page}
-                        </Button>
-                      )
-                    })}
-                  </div>
-
-                  {/* Botón Siguiente */}
-                  <Button
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Siguiente →
-                  </Button>
-                </div>
-              </div>
+              </table>
             </div>
           )}
-        </Card>
+        </div>
 
-        {/* Create User Modal */}
-        <CreateUserModal
-          isOpen={showCreateUser}
-          onClose={() => setShowCreateUser(false)}
-          onSave={handleCreateUser}
-          loading={loading}
-          userType={userType}
-        />
+        {/* Controles de Paginación */}
+        {totalPages > 1 && (
+          <div className="border-t border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+              <div className="text-xs sm:text-sm text-gray-700">
+                Mostrando <span className="font-medium">{startIndex + 1}</span> a <span className="font-medium">{Math.min(endIndex, totalUsers)}</span> de <span className="font-medium">{totalUsers}</span> usuarios
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2">
+                {/* Botón Anterior */}
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-2 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                    currentPage === 1
+                      ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  }`}
+                >
+                  <ChevronLeft className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </button>
 
-        {/* User Detail Modal */}
-        <UserDetailModal
-          isOpen={showUserDetail}
-          onClose={() => setShowUserDetail(false)}
-          user={selectedUser}
-          onEdit={handleEditUser}
-          onDelete={handleDeleteUserFromModal}
-        />
+                {/* Números de página */}
+                <div className="flex space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Mostrar solo algunas páginas alrededor de la actual
+                    const showPage = page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)
+                    
+                    if (!showPage) {
+                      if (page === currentPage - 2 || page === currentPage + 2) {
+                        return <span key={page} className="px-2 py-1 text-sm text-gray-500">...</span>
+                      }
+                      return null
+                    }
 
-        {/* Edit User Modal */}
-        <EditUserModal
-          isOpen={showEditUser}
-          onClose={handleCloseEditUser}
-          user={editingUser}
-          onSave={handleSaveUser}
-          loading={false}
-        />
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={`px-2 sm:px-3 py-1 sm:py-2 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'border-blue-500 bg-blue-500 text-white'
+                            : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+                </div>
 
-        {/* Confirm Delete Modal */}
-        <ConfirmModal
-          isOpen={showConfirmDelete}
-          onClose={cancelDeleteUser}
-          onConfirm={confirmDeleteUser}
-          title="Eliminar Usuario"
-          message="¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer."
-          confirmText="Eliminar"
-          cancelText="Cancelar"
-          loading={loading}
-        />
+                {/* Botón Siguiente */}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-2 border rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                    currentPage === totalPages
+                      ? 'border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed'
+                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="hidden sm:inline">Siguiente</span>
+                  <ChevronRight className="w-3 h-3 ml-1" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Create User Modal */}
+      <CreateUserModal
+        isOpen={showCreateUser}
+        onClose={() => setShowCreateUser(false)}
+        onSave={handleCreateUser}
+        loading={loading}
+        userType={userType}
+      />
+
+      {/* User Detail Modal */}
+      <UserDetailModal
+        isOpen={showUserDetail}
+        onClose={() => setShowUserDetail(false)}
+        user={selectedUser}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUserFromModal}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={showEditUser}
+        onClose={handleCloseEditUser}
+        user={editingUser}
+        onSave={handleSaveUser}
+        loading={false}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmModal
+        isOpen={showConfirmDelete}
+        onClose={cancelDeleteUser}
+        onConfirm={confirmDeleteUser}
+        title="Eliminar Usuario"
+        message="¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={loading}
+      />
     </div>
   )
 }
