@@ -7,7 +7,6 @@ import {
   Award,
   CheckCircle,
   Clock,
-  Activity,
   GraduationCap,
   Sparkles,
   BookOpen,
@@ -223,69 +222,7 @@ export function AlumnoDashboard() {
         </div>
       </div>
 
-      {/* Actividad Reciente */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
-        <div className="border-b border-gray-200 p-3 sm:p-4">
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">Actividad Reciente</h2>
-              <p className="text-xs sm:text-sm text-gray-600">Tus últimas actividades académicas</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-3 sm:p-4">
-          {assignments && assignments.length > 0 ? (
-            <div className="space-y-3">
-              {assignments.slice(0, 5).map((assignment) => (
-                <div key={assignment.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${assignment.is_completed ? 'bg-green-500' : 'bg-orange-500'}`}></div>
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {assignment.activity_title}
-                      </span>
-                    </div>
-                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                      assignment.is_completed 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {assignment.is_completed ? 'Completada' : 'Pendiente'}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-3 h-3 text-gray-500 flex-shrink-0" />
-                    <span className="text-xs text-gray-600">
-                      {assignment.is_completed && assignment.completed_at 
-                        ? `Completada el ${new Date(assignment.completed_at).toLocaleDateString('es-ES')}`
-                        : assignment.days_until_due !== undefined 
-                          ? `${assignment.days_until_due} días restantes`
-                          : 'Sin fecha límite'
-                      }
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 sm:py-12">
-              <div className="flex flex-col items-center space-y-3 sm:space-y-4">
-                <div className="p-3 bg-gray-100 rounded-full">
-                  <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No hay actividades recientes</h3>
-                  <p className="text-sm text-gray-600">No tienes actividades asignadas aún. Revisa con tu profesor para obtener nuevas tareas.</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Actividad Reciente ocultada por solicitud */}
 
       {/* Próximas Asignaciones */}
       {upcomingAssignments.length > 0 && (
