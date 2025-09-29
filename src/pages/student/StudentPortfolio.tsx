@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, portfolioApi, Topic, Material, Portfolio } from '../../api/endpoints'
-import { useAuthStore } from '../../store/auth'
+// import { useAuthStore } from '../../store/auth' // Comentado temporalmente hasta que se use
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
 import { Document } from '../../types/block-schema'
@@ -35,7 +35,7 @@ interface Course {
 }
 
 export function StudentPortfolio() {
-  const { user } = useAuthStore()
+  // const { user } = useAuthStore() // Comentado temporalmente hasta que se use
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
