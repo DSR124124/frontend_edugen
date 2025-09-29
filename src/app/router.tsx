@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { Login } from '../pages/auth/Login'
 import { Logout } from '../pages/auth/Logout'
+import { LandingPage } from '../pages/landing/LandingPage'
+import { ContactPage } from '../pages/landing/ContactPage'
 import { DashboardRouter } from '../pages/dashboard/DashboardRouter'
 import { DirectorDashboard } from '../pages/dashboard/DirectorDashboard'
 import { StudentsPage } from '../pages/director/StudentsPage'
@@ -22,20 +24,19 @@ import { MySectionMaterials } from '../pages/student/MySectionMaterials'
 import { MySection } from '../pages/student/MySection'
 import { StudentPortfolio } from '../pages/student/StudentPortfolio'
 import { AppLayout } from '../layouts/AppLayout'
-import { AuthLayout } from '../layouts/AuthLayout'
 
 export function AppRouter() {
   const { isAuthenticated, user, isTokenExpired } = useAuthStore()
 
-  // Si no está autenticado Y no es por token expirado, redirigir al login
+  // Si no está autenticado Y no es por token expirado, mostrar páginas públicas
   if (!isAuthenticated && !isTokenExpired) {
     return (
-      <AuthLayout>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </AuthLayout>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     )
   }
 
