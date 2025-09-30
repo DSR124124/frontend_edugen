@@ -3,160 +3,142 @@ import { useUIStore } from '../../store/ui'
 import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { User, LogOut, Menu, X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export function Header() {
   const { user, logout } = useAuthStore()
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { showSuccess } = useNotificationContext()
   const location = useLocation()
+  const navigate = useNavigate()
 
-  // Generar breadcrumb basado en la ruta actual
+  // Generar breadcrumb basado en la estructura del sidebar por rol
   const getBreadcrumbItems = (): BreadcrumbItem[] => {
     const path = location.pathname
-    
-    // Rutas del Director
-    if (path === '/director') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', current: true }
-      ]
-    } else if (path === '/director/grades') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Grados', current: true }
-      ]
-    } else if (path === '/director/terms') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Períodos', current: true }
-      ]
-    } else if (path === '/director/sections') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Secciones', current: true }
-      ]
-    } else if (path === '/director/students') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Estudiantes', current: true }
-      ]
-    } else if (path === '/director/professors') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Profesores', current: true }
-      ]
-    } else if (path === '/director/institution') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Director', href: '/director' },
-        { label: 'Institución', current: true }
-      ]
+    const role = user?.role
+
+    const build = (items: { label: string; href?: string }[]): BreadcrumbItem[] =>
+      items.map((it, idx) => idx === items.length - 1
+        ? { label: it.label, current: true }
+        : { label: it.label, href: it.href })
+
+    // DIRECTOR
+    if (role === 'DIRECTOR') {
+      if (path === '/director') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Dashboard' },
+      ])
+      if (path === '/director/grades') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Académico' },
+        { label: 'Grados' },
+      ])
+      if (path === '/director/terms') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Académico' },
+        { label: 'Períodos' },
+      ])
+      if (path === '/director/sections') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Académico' },
+        { label: 'Secciones' },
+      ])
+      if (path === '/director/students') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Personas' },
+        { label: 'Estudiantes' },
+      ])
+      if (path === '/director/professors') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Personas' },
+        { label: 'Profesores' },
+      ])
+      if (path === '/director/institution') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Administración' },
+        { label: 'Institución' },
+      ])
+      if (path === '/profile') return build([
+        { label: 'Inicio', href: '/director' },
+        { label: 'Administración' },
+        { label: 'Configuración' },
+      ])
     }
-    
-    // Rutas del Profesor
-    else if (path === '/professor') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', current: true }
-      ]
-    } else if (path === '/professor/courses') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', href: '/professor' },
-        { label: 'Mis Cursos', current: true }
-      ]
-    } else if (path === '/professor/topics') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', href: '/professor' },
-        { label: 'Temas', current: true }
-      ]
-    } else if (path === '/professor/sections') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', href: '/professor' },
-        { label: 'Mis Secciones', current: true }
-      ]
-    } else if (path === '/professor/students') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', href: '/professor' },
-        { label: 'Mis Estudiantes', current: true }
-      ]
-    } else if (path === '/professor/portfolios') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Panel del Profesor', href: '/professor' },
-        { label: 'Gestión de Portafolios', current: true }
-      ]
+
+    // PROFESOR
+    if (role === 'PROFESOR') {
+      if (path === '/professor') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Panel del Profesor' },
+      ])
+      if (path === '/professor/courses') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Docencia' },
+        { label: 'Mis Cursos' },
+      ])
+      if (path === '/professor/sections') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Docencia' },
+        { label: 'Mis Secciones' },
+      ])
+      if (path === '/professor/students') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Docencia' },
+        { label: 'Mis Estudiantes' },
+      ])
+      if (path === '/professor/portfolios') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Docencia' },
+        { label: 'Portafolios' },
+      ])
+      if (path === '/professor/topics') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Docencia' },
+        { label: 'Temas' },
+      ])
+      if (path === '/ai-content') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Contenido & IA' },
+        { label: 'IA Generador' },
+      ])
+      if (path === '/generated-content') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Contenido & IA' },
+        { label: 'Contenido Generado' },
+      ])
+      if (path === '/material-analytics') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Gestión' },
+        { label: 'Analytics' },
+      ])
+      if (path === '/profile') return build([
+        { label: 'Inicio', href: '/professor' },
+        { label: 'Gestión' },
+        { label: 'Configuración' },
+      ])
     }
-    
-    // Rutas de IA y Contenido
-    else if (path === '/ai-content') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Generador de Contenido IA', current: true }
-      ]
-    } else if (path === '/generated-content') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Contenido Generado', current: true }
-      ]
-    } else if (path === '/material-analytics') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Análisis de Materiales', current: true }
-      ]
-    }
-    
-    // Otras rutas
-    else if (path === '/courses') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Cursos', current: true }
-      ]
-    } else if (path === '/sections') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Secciones', current: true }
-      ]
-    } else if (path === '/my-section') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Mi Sección', current: true }
-      ]
-    } else if (path === '/portfolio') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Mi Portafolio', current: true }
-      ]
-    } else if (path === '/student-portfolio') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Portafolio del Estudiante', current: true }
-      ]
-    } else if (path === '/my-materials') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Mis Materiales', current: true }
-      ]
-    } else if (path === '/profile') {
-      return [
-        { label: 'Dashboard', href: '/dashboard' },
-        { label: 'Perfil', current: true }
-      ]
-    } else if (path === '/dashboard') {
-      return [
-        { label: 'Dashboard', current: true }
-      ]
-    }
-    
+
+    // ALUMNO / por defecto
+    if (path === '/dashboard') return build([
+      { label: 'Inicio' },
+    ])
+    if (path === '/my-section') return build([
+      { label: 'Inicio', href: '/dashboard' },
+      { label: 'Mi Sección' },
+    ])
+    if (path === '/student-portfolio') return build([
+      { label: 'Inicio', href: '/dashboard' },
+      { label: 'Mi Portafolio' },
+    ])
+    if (path === '/my-materials') return build([
+      { label: 'Inicio', href: '/dashboard' },
+      { label: 'Mis Materiales' },
+    ])
+    if (path === '/profile') return build([
+      { label: 'Inicio', href: '/dashboard' },
+      { label: 'Configuración' },
+    ])
+
     return []
   }
 
@@ -173,6 +155,7 @@ export function Header() {
     // Esperar un momento para que se vea la notificación antes de cerrar sesión
     setTimeout(() => {
       logout()
+      navigate('/login', { replace: true })
     }, 500) // 0.5 segundos de delay
   }
 

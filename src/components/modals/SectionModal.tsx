@@ -24,11 +24,12 @@ export function SectionModal({
   terms,
   gradeLevels
 }: SectionModalProps) {
-  const [formData, setFormData] = useState<Partial<Section>>({
+  type FormState = Omit<Partial<Section>, 'term' | 'grade_level'> & { term?: number | ''; grade_level?: number | '' }
+  const [formData, setFormData] = useState<FormState>({
     name: '',
     capacity: 30,
-    term: { id: 0, name: '', is_active: true },
-    grade_level: { id: 0, name: '', level: 0 },
+    term: '',
+    grade_level: '',
   })
 
   useEffect(() => {
@@ -36,15 +37,15 @@ export function SectionModal({
       setFormData({
         name: section.name,
         capacity: section.capacity,
-        term: section.term,
-        grade_level: section.grade_level,
+        term: (section.term as unknown as { id?: number })?.id ?? '',
+        grade_level: (section.grade_level as unknown as { id?: number })?.id ?? '',
       })
     } else {
       setFormData({
         name: '',
         capacity: 30,
-        term: { id: 0, name: '', is_active: true },
-        grade_level: { id: 0, name: '', level: 0 },
+        term: '',
+        grade_level: '',
       })
     }
   }, [section])
@@ -59,7 +60,14 @@ export function SectionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await onSave(formData)
+    // Adaptar a tipos de API: enviamos IDs numéricos
+    const payload: Partial<Section> = {
+      name: formData.name,
+      capacity: formData.capacity,
+      term: Number(formData.term) as unknown as Section['term'],
+      grade_level: Number(formData.grade_level) as unknown as Section['grade_level'],
+    }
+    await onSave(payload)
   }
 
   return (
@@ -93,7 +101,7 @@ export function SectionModal({
         <Select
           label="Grado"
           name="grade_level"
-          value={typeof formData.grade_level === 'object' ? formData.grade_level.id : formData.grade_level || 0}
+          value={(formData.grade_level as number | '') ?? ''}
           onChange={handleChange}
           placeholder="Seleccionar grado"
           options={gradeLevels.map((grade) => ({
@@ -106,7 +114,7 @@ export function SectionModal({
         <Select
           label="Período Académico"
           name="term"
-          value={typeof formData.term === 'object' ? formData.term.id : formData.term || 0}
+          value={(formData.term as number | '') ?? ''}
           onChange={handleChange}
           placeholder="Seleccionar período"
           options={terms.map((term) => ({

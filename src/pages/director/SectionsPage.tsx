@@ -57,11 +57,29 @@ export function SectionsPage() {
 
   const handleCreateSection = async (data: Partial<Section>) => {
     try {
-      await createSection.mutateAsync(data)
+      const termId = typeof data.term === 'object' ? (data.term as { id?: number } | null)?.id : Number(data.term as unknown)
+      const gradeId = typeof data.grade_level === 'object' ? (data.grade_level as { id?: number } | null)?.id : Number(data.grade_level as unknown)
+      const payload: {
+        name: string
+        capacity: number
+        term: number | undefined
+        grade_level: number | undefined
+        professors: number[]
+      } = {
+        name: data.name || '',
+        capacity: Number(data.capacity ?? 30),
+        term: termId && termId > 0 ? termId : undefined,
+        grade_level: gradeId && gradeId > 0 ? gradeId : undefined,
+        professors: [],
+      }
+      await createSection.mutateAsync(payload as unknown as Partial<Section>)
       setShowCreateModal(false)
       showSuccess('Éxito', 'Sección creada correctamente')
-    } catch {
-      showError('Error', 'Error al crear la sección')
+    } catch (err) {
+      const e = err as { response?: { data?: { error?: string; detail?: string } } }
+      const raw = e?.response?.data as unknown
+      const msg = e?.response?.data?.error || e?.response?.data?.detail || (raw ? JSON.stringify(raw) : '') || 'Error al crear la sección'
+      showError('Error', msg)
     }
   }
 
@@ -74,12 +92,28 @@ export function SectionsPage() {
     if (!editingSection) return
 
     try {
-      await updateSection.mutateAsync({ id: editingSection.id, data })
+      const termId = typeof data.term === 'object' ? (data.term as { id?: number } | null)?.id : Number(data.term as unknown)
+      const gradeId = typeof data.grade_level === 'object' ? (data.grade_level as { id?: number } | null)?.id : Number(data.grade_level as unknown)
+      const payload: {
+        name?: string
+        capacity?: number
+        term?: number
+        grade_level?: number
+      } = {
+        name: data.name,
+        capacity: data.capacity != null ? Number(data.capacity) : undefined,
+        term: termId && termId > 0 ? termId : undefined,
+        grade_level: gradeId && gradeId > 0 ? gradeId : undefined,
+      }
+      await updateSection.mutateAsync({ id: editingSection.id, data: payload as unknown as Partial<Section> })
       setShowEditModal(false)
       setEditingSection(null)
       showSuccess('Éxito', 'Sección actualizada correctamente')
-    } catch {
-      showError('Error', 'Error al actualizar la sección')
+    } catch (err) {
+      const e = err as { response?: { data?: { error?: string; detail?: string } } }
+      const raw = e?.response?.data as unknown
+      const msg = e?.response?.data?.error || e?.response?.data?.detail || (raw ? JSON.stringify(raw) : '') || 'Error al actualizar la sección'
+      showError('Error', msg)
     }
   }
 

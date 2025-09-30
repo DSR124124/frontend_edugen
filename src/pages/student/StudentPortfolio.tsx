@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { academicApi, Topic, Material } from '../../api/endpoints'
-import { useAuthStore } from '../../store/auth'
+import { academicApi, portfolioApi, Topic, Material, Portfolio } from '../../api/endpoints'
+// import { useAuthStore } from '../../store/auth' // Comentado temporalmente hasta que se use
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
 import { Document } from '../../types/block-schema'
@@ -35,7 +35,7 @@ interface Course {
 }
 
 export function StudentPortfolio() {
-  const { user } = useAuthStore()
+  // const { user } = useAuthStore() // Comentado temporalmente hasta que se use
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
@@ -46,34 +46,51 @@ export function StudentPortfolio() {
   // Obtener materiales con analytics
   const { data: materialsWithAnalytics } = useMyMaterialsWithAnalytics()
 
-  // Crear curso basado en la sección del usuario (ya que no podemos acceder a my-sections)
-  const courses = user?.section ? {
-    results: [{
-      id: user.section.id, // Usar el ID de la sección como ID del curso
-      name: user.section.course_name || user.section.name,
-      description: `Curso de ${user.section.name}`,
-      grade_level_name: user.section.grade_level_name,
-      code: `SEC-${user.section.id}`,
-      section_id: user.section.id
-    }]
-  } : null
+  // Cargar portafolios del estudiante y derivar cursos desde ellos
+  const { data: myPortfolios = [], isLoading: loadingPortfolios } = useQuery({
+    queryKey: ['my-portfolios'],
+    queryFn: () => portfolioApi.getPortfolios().then(res => res.data as Portfolio[]),
+  })
 
-  const loadingCourses = false
+  const courses = useMemo(() => {
+    const result: { results: Course[] } = { results: [] }
+    for (const p of myPortfolios) {
+      for (const pc of (p.courses || [])) {
+        // Evitar duplicados por course id
+        if (!result.results.some(c => c.id === pc.course)) {
+          result.results.push({
+            id: pc.course,
+            name: pc.course_name,
+            code: pc.course_code,
+            description: undefined,
+            grade_level_name: undefined,
+            section_id: p.section,
+          })
+        }
+      }
+    }
+    return result
+  }, [myPortfolios])
 
-  // Obtener todos los temas disponibles directamente
+  const loadingCourses = loadingPortfolios
+
+  // Obtener temas del curso seleccionado: usar los del portafolio si vienen; si no, pedir por curso
   const { data: topics, isLoading: loadingTopics } = useQuery({
-    queryKey: ['all-topics', user?.section?.id],
+    queryKey: ['course-topics', selectedCourse?.id],
     queryFn: async () => {
-      if (!user?.section?.id) return []
-      
+      if (!selectedCourse) return []
+      const pc = myPortfolios.flatMap(p => p.courses || []).find(c => c.course === selectedCourse.id)
+      if (pc && Array.isArray(pc.topics) && pc.topics.length) {
+        return pc.topics
+      }
       try {
-        const response = await academicApi.getTopics()
+        const response = await academicApi.getTopicsByCourse(selectedCourse.id)
         return response.data || []
       } catch {
         return []
       }
     },
-    enabled: !!user?.section?.id
+    enabled: !!selectedCourse,
   })
 
   // Obtener materiales del tema seleccionado
@@ -143,7 +160,7 @@ export function StudentPortfolio() {
     setSelectedMaterial(null)
   }
 
-  if (!user?.section) {
+  if (!myPortfolios || myPortfolios.length === 0) {
     return (
       <div className="space-y-3 sm:space-y-4 min-h-0">
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
@@ -171,8 +188,8 @@ export function StudentPortfolio() {
                 <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No tienes acceso al portafolio</h3>
-                <p className="text-sm text-gray-600">Contacta a tu administrador para obtener acceso a tu portafolio académico.</p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No tienes portafolios disponibles</h3>
+                <p className="text-sm text-gray-600">Aún no se han creado portafolios para tus cursos o secciones.</p>
               </div>
             </div>
           </div>

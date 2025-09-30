@@ -1,23 +1,21 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth";
 import { useNotificationContext } from "../../hooks/useNotificationContext";
 import { authApi } from "../../api/endpoints";
-import fondoImage from "../../assets/images/backgrounds/fondo.png?url";
-import estudiantesImage from "../../assets/images/backgrounds/estudiantes.jpg?url";
-import logoImage from "../../assets/images/logos/logo.png?url";
 import { 
-  FiUser, 
-  FiLock, 
-  FiEye, 
-  FiEyeOff, 
-  FiLogIn, 
-  FiLoader,
-  FiBookOpen,
-  FiCpu,
-  FiDownload,
-  FiShield
-} from "react-icons/fi";
+  GraduationCap, 
+  User, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  LogIn, 
+  Loader2,
+  ArrowLeft,
+  Menu,
+  X
+} from "lucide-react";
+import logoImage from "../../assets/images/logos/logo.png";
 
 export function Login() {
   const [formData, setFormData] = useState({
@@ -26,6 +24,7 @@ export function Login() {
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { login } = useAuthStore();
   const { showSuccess, showError } = useNotificationContext();
@@ -75,222 +74,207 @@ export function Login() {
   };
 
   return (
-    <div
-      className="h-screen flex flex-col lg:flex-row relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
-      }}
-    >
-      {/* Mobile Background Image - Only visible on mobile, shows complete image */}
-      <div className="lg:hidden absolute inset-0 overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${fondoImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        {/* Gradient overlay for better text readability - with increased opacity */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30" />
-      </div>
-
-      {/* Mobile Header - Only visible on mobile */}
-      <div className="lg:hidden w-full pt-8 pb-2 px-4 relative z-10">
-        <div className="flex items-center justify-center">
-          {/* Logo a la izquierda */}
-          <div className="w-16 h-16 flex items-center justify-center mr-2">
-            <img
-              src={logoImage}
-              alt="EduGen Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
-          
-          {/* EduGen y Sistema Educativo Integral al lado derecho */}
-          <div className="text-left">
-            <h1 className="text-2xl font-bold text-white drop-shadow-lg mb-1">EduGen</h1>
-            <p className="text-white/80 text-sm">Sistema Educativo Integral</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Left Section - Background and Info - Hidden on mobile, visible on tablet+ */}
-      <div className="hidden md:flex md:w-1/2 lg:w-2/3 relative overflow-hidden">
-        {/* Background Image */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${estudiantesImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        />
-
-        <div className="relative z-10 p-6 lg:p-12 flex flex-col justify-center text-white">
-          <h2 className="text-3xl lg:text-6xl font-bold mb-6 lg:mb-8 leading-tight text-white drop-shadow-2xl" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
-            Sistema Educativo EduGen
-          </h2>
-          <div className="mb-8 lg:mb-12 max-w-2xl">
-            <div className="bg-secondary/20 backdrop-blur-sm rounded-xl p-4 lg:p-8 border border-secondary/30">
-              <p className="text-lg lg:text-2xl leading-relaxed font-medium text-white drop-shadow-lg" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
-                Plataforma integral para la gestión educativa que conecta
-                directores, profesores y estudiantes en un entorno digital moderno y
-                eficiente.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-8">
-            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-3 lg:mb-4">
-                <FiShield className="w-5 h-5 lg:w-7 lg:h-7 text-secondary" />
-              </div>
-              <h3 className="text-lg lg:text-xl font-bold mb-2 text-white">Administración</h3>
-              <p className="text-sm lg:text-base text-white/80">Gestión académica completa</p>
-            </div>
-
-            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-3 lg:mb-4">
-                <FiBookOpen className="w-5 h-5 lg:w-7 lg:h-7 text-secondary" />
-              </div>
-              <h3 className="text-lg lg:text-xl font-bold mb-2 text-white">Portafolios</h3>
-              <p className="text-sm lg:text-base text-white/80">Seguimiento digital</p>
-            </div>
-
-            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-3 lg:mb-4">
-                <FiCpu className="w-5 h-5 lg:w-7 lg:h-7 text-secondary" />
-              </div>
-              <h3 className="text-lg lg:text-xl font-bold mb-2 text-white">IA Educativa</h3>
-              <p className="text-sm lg:text-base text-white/80">Contenido automatizado</p>
-            </div>
-
-            <div className="bg-secondary/15 backdrop-blur-sm rounded-xl p-4 lg:p-6 border border-secondary/25 hover:bg-secondary/20 transition-all duration-300">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-secondary/30 rounded-xl flex items-center justify-center mb-3 lg:mb-4">
-                <FiDownload className="w-5 h-5 lg:w-7 lg:h-7 text-secondary" />
-              </div>
-              <h3 className="text-lg lg:text-xl font-bold mb-2 text-white">SCORM</h3>
-              <p className="text-sm lg:text-base text-white/80">Exportación estándar</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Section - Login Form */}
-      <div className="w-full md:w-1/2 lg:w-1/3 flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 flex-1 lg:flex-none h-full md:h-auto">
-        <div className="w-full max-w-sm sm:max-w-md mx-auto">
-          <div
-            className="rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-sm"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            {/* Logo - Hidden on mobile, shown on tablet+ */}
-            <div className="hidden md:block text-center mb-6 lg:mb-8">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 p-2 border-2 border-white/30 hover:bg-white/20 transition-all duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Navigation */}
+      <nav className="bg-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center mr-2 sm:mr-3">
                 <img
                   src={logoImage}
-                  alt="EduGen Logo"
+                  alt="EDUGEN Logo"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2 drop-shadow-lg">¡Bienvenido!</h2>
-              <p className="text-white/80 text-base lg:text-lg">Accede a tu plataforma educativa</p>
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                EDUGEN
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link to="/" className="text-gray-700 hover:text-primary transition-colors flex items-center">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Volver al inicio
+              </Link>
+              <Link to="/contact" className="text-gray-700 hover:text-primary transition-colors">
+                Contacto
+              </Link>
             </div>
 
-            {/* Mobile Welcome Text */}
-            <div className="md:hidden text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">¡Bienvenido!</h2>
-              <p className="text-white/80 text-sm">Accede a tu plataforma educativa</p>
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-gray-700 hover:text-primary"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-              <div>
-                <label
-                  htmlFor="username"
-                  className="flex items-center text-white/90 text-sm font-medium mb-2"
-                >
-                  <FiUser className="w-4 h-4 mr-2" />
-                  Usuario o Email
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white rounded-lg border-0 focus:ring-2 focus:ring-white/50 focus:outline-none text-gray-900 placeholder-gray-500 transition-all duration-200 hover:shadow-lg focus:shadow-xl text-sm sm:text-base"
-                  placeholder="246810diegosr@gmail.com"
-                />
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden bg-white border-t">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                <Link to="/" className="block px-3 py-2 text-gray-700 hover:text-primary flex items-center">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver al inicio
+                </Link>
+                <Link to="/contact" className="block px-3 py-2 text-gray-700 hover:text-primary">
+                  Contacto
+                </Link>
               </div>
+            </div>
+          )}
+        </div>
+      </nav>
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="flex items-center text-white/90 text-sm font-medium mb-2"
-                >
-                  <FiLock className="w-4 h-4 mr-2" />
-                  Contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white rounded-lg border-0 focus:ring-2 focus:ring-white/50 focus:outline-none text-gray-900 placeholder-gray-500 pr-10 sm:pr-12 transition-all duration-200 hover:shadow-lg focus:shadow-xl text-sm sm:text-base"
-                    placeholder="••••••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors p-1"
-                  >
-                    {showPassword ? (
-                      <FiEyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
-                    ) : (
-                      <FiEye className="w-4 h-4 sm:w-5 sm:h-5" />
-                    )}
-                  </button>
+      {/* Login Section */}
+      <section className="py-8 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Section - Information - Hidden on mobile */}
+            <div className="hidden lg:block lg:order-1">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Bienvenido a
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  {' '}EDUGEN
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-8">
+                Plataforma educativa integral con Inteligencia Artificial para instituciones modernas.
+                Accede a tu cuenta para comenzar.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                  <div className="bg-gradient-to-r from-primary to-secondary p-3 rounded-lg text-white mb-4 w-fit">
+                    <GraduationCap className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Gestión Académica</h3>
+                  <p className="text-gray-600">Sistema completo para administrar cursos, estudiantes y profesores</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                  <div className="bg-gradient-to-r from-primary to-secondary p-3 rounded-lg text-white mb-4 w-fit">
+                    <User className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Roles Específicos</h3>
+                  <p className="text-gray-600">Funcionalidades adaptadas para directores, profesores y estudiantes</p>
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:scale-105 active:scale-95 text-sm sm:text-base"
-                style={{
-                  background:
-                    "linear-gradient(90deg, var(--color-base-100) 0%, rgba(255,255,255,0.9) 100%)",
-                  color: "var(--color-primary)",
-                }}
-              >
-                {loading ? (
-                  <FiLoader className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
-                ) : (
-                  <FiLogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                )}
-                {loading ? "Iniciando sesión..." : "Ingresar"}
-              </button>
-            </form>
+              <div className="mt-8 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl border border-primary/20">
+                <h4 className="font-semibold text-gray-800 mb-2">¿Primera vez en EDUGEN?</h4>
+                <p className="text-gray-600 text-sm mb-4">
+                  Contáctanos para obtener acceso a nuestra plataforma educativa y descubrir cómo puede transformar tu institución.
+                </p>
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center text-primary hover:text-primary-focus font-medium"
+                >
+                  Solicitar acceso
+                  <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                </Link>
+              </div>
+            </div>
 
-            <div className="text-center mt-6 sm:mt-8">
-              <p className="text-white/60 text-xs">
-                © 2025 Sistema Educativo EduGen
-              </p>
+            {/* Login Form - Full width on mobile, half width on desktop */}
+            <div className="w-full lg:max-w-md lg:mx-auto lg:order-2">
+              <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border border-gray-100">
+                <div className="text-center mb-6 sm:mb-8">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4">
+                    <img
+                      src={logoImage}
+                      alt="EDUGEN Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Iniciar Sesión</h2>
+                  <p className="text-sm sm:text-base text-gray-600">Accede a tu plataforma educativa</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+                  <div>
+                    <label
+                      htmlFor="username"
+                      className="flex items-center text-gray-700 text-sm font-medium mb-2"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Usuario o Email
+                    </label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 sm:py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-base"
+                      placeholder="tu@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="flex items-center text-gray-700 text-sm font-medium mb-2"
+                    >
+                      <Lock className="w-4 h-4 mr-2" />
+                      Contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 sm:py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-12 transition-all duration-200 text-base"
+                        placeholder="••••••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-primary to-secondary text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:shadow-lg transform hover:-translate-y-1 text-base"
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <LogIn className="w-5 h-5 mr-2" />
+                    )}
+                    {loading ? "Iniciando sesión..." : "Ingresar"}
+                  </button>
+                </form>
+
+                <div className="text-center mt-6 sm:mt-8">
+                  <p className="text-gray-500 text-sm">
+                    © 2024 EDUGEN. Todos los derechos reservados.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -136,22 +136,26 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
       // Verificar si hay suficiente información para extraer requisitos
       const messages = conversationMessages.data || []
       if (messages.length >= 2) {
-        // Buscar indicadores de que el contenido está listo
+        // Buscar indicadores de que el contenido está listo (más flexibles)
         const readyIndicators = [
           '¿estás conforme con esta información o quieres agregar algo más?',
+          'ya tienes suficiente información',
+          'usa "extraer requisitos"',
+          "usa 'extraer requisitos'",
+          'usa extraer requisitos'
         ]
         
-        // Verificar si el último mensaje del asistente indica que está listo
-        const lastMessage = messages[messages.length - 1]
-        if (lastMessage?.role === 'assistant') {
-          const content = lastMessage.content.toLowerCase()
-          if (readyIndicators.some(indicator => content.includes(indicator))) {
-            setIsContentReady(true)
-            return
-          }
+        // Verificar si algún mensaje reciente del asistente indica que está listo
+        const assistantRecent = messages.filter(msg => msg.role === 'assistant').slice(-3)
+        const assistantRecentlyReady = assistantRecent.some(m =>
+          readyIndicators.some(ind => m.content.toLowerCase().includes(ind))
+        )
+        if (assistantRecentlyReady) {
+          setIsContentReady(true)
+          return
         }
         
-        // Verificar si el usuario confirmó explícitamente Y el asistente confirmó que está listo
+        // Verificar si el usuario confirmó explícitamente Y el asistente confirmó que está listo (en mensajes recientes)
         const userConfirmations = [
           'sí, estoy conforme',
           'perfecto, estoy conforme', 
@@ -179,15 +183,15 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
         ]
         
         const lastUserMessage = messages.filter(msg => msg.role === 'user').pop()
-        const lastAssistantMessage = messages.filter(msg => msg.role === 'assistant').pop()
+        const assistantMessages = messages.filter(msg => msg.role === 'assistant')
         
-        if (lastUserMessage && lastAssistantMessage) {
+        if (lastUserMessage && assistantMessages.length) {
           const userContent = lastUserMessage.content.toLowerCase()
-          const assistantContent = lastAssistantMessage.content.toLowerCase()
+          const assistantContentRecent = assistantMessages.slice(-3).map(m => m.content.toLowerCase())
           
           // Solo activar si el usuario confirmó Y el asistente confirmó que está listo
           const userConfirmed = userConfirmations.some(confirmation => userContent.includes(confirmation))
-          const assistantConfirmed = readyIndicators.some(indicator => assistantContent.includes(indicator))
+          const assistantConfirmed = assistantContentRecent.some(ac => readyIndicators.some(indicator => ac.includes(indicator)))
           
           if (userConfirmed && assistantConfirmed) {
             setIsContentReady(true)

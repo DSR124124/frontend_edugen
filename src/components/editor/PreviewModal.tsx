@@ -206,8 +206,8 @@ export function PreviewModal({
                               <p className="text-gray-600">{formBlock.description}</p>
                             )}
                             <div className="space-y-3">
-                              {formBlock.fields?.map((field) => (
-                                <div key={field.id}>
+                              {formBlock.fields?.map((field, fIndex) => (
+                                <div key={field.id ?? `${fIndex}-${(field as any).label ?? (field as any).name ?? 'field'}` }>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
                                     {field.label}
                                     {field.required && <span className="text-red-500 ml-1">*</span>}

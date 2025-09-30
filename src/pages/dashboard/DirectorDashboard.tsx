@@ -319,9 +319,9 @@ export function DirectorDashboard() {
               </div>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
                     <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Usuario
@@ -382,11 +382,15 @@ export function DirectorDashboard() {
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col space-y-1">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full w-fit ${
-                              user.role === 'PROFESOR' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-purple-100 text-purple-800'
+                              user.role === 'DIRECTOR'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : user.role === 'PROFESOR'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-purple-100 text-purple-800'
                             }`}>
-                              {user.role === 'PROFESOR' ? (
+                              {user.role === 'DIRECTOR' ? (
+                                <><Crown className="w-3 h-3 mr-1" /> Director</>
+                              ) : user.role === 'PROFESOR' ? (
                                 <><Users className="w-3 h-3 mr-1" /> Profesor</>
                               ) : (
                                 <><GraduationCap className="w-3 h-3 mr-1" /> Estudiante</>
