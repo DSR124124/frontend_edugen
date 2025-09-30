@@ -434,6 +434,11 @@ export function Sidebar() {
             </div>
           </div>
 
+          {/* Overlay de degradado para mejorar el contraste sobre los íconos de fondo */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.30) 100%)'
+          }} />
+
           {/* Logo del sistema - Parte superior */}
           <div className="flex items-center justify-center px-4 py-4 relative z-10">
             <div className="flex items-center space-x-3">
@@ -470,7 +475,7 @@ export function Sidebar() {
                   {hasSubItems ? (
                     <button
                       onClick={() => toggleItemExpansion(item.name)}
-                      className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors text-white hover:bg-white hover:bg-opacity-10"
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors text-white hover:bg-white/15"
                     >
                       <div className="flex items-center">
                         <Icon className="mr-3 h-5 w-5" />
@@ -491,8 +496,8 @@ export function Sidebar() {
                       className={({ isActive }) => 
                         `flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                           isActive 
-                            ? 'bg-white bg-opacity-20 text-white font-semibold' 
-                            : 'text-white hover:bg-white hover:bg-opacity-10'
+                            ? 'bg-white/15 text-white font-semibold ring-1 ring-white/10' 
+                            : 'text-white hover:bg-white/15'
                         }`
                       }
                       onClick={closeSidebarOnMobile}
@@ -514,10 +519,10 @@ export function Sidebar() {
                             key={subItem.name}
                             to={subItem.href}
                             className={({ isActive }) => 
-                              `flex items-center px-3 py-2 text-xs font-medium rounded-md transition-colors ${
+                              `flex items-center px-3 py-2 text-xs font-medium rounded-md transition-colors border-l-2 ${
                                 isActive 
-                                  ? 'bg-white bg-opacity-25 text-white font-semibold' 
-                                  : 'text-white text-opacity-80 hover:bg-white hover:bg-opacity-15 hover:text-opacity-100'
+                                  ? 'bg-white/10 text-white font-semibold border-[rgba(255,255,255,0.35)]' 
+                                  : 'text-white/80 hover:bg-white/10 hover:text-white border-transparent'
                               }`
                             }
                             onClick={closeSidebarOnMobile}
