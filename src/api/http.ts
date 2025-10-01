@@ -1,10 +1,8 @@
 import axios from 'axios'
-
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-const API_URL = import.meta.env.VITE_API_URL || (isDevelopment ? '/api/v1/' : 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/') 
+import { getApiUrl } from '../config/environment'
 
 export const http = axios.create({
-  baseURL: API_URL,
+  baseURL: getApiUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -45,7 +43,7 @@ http.interceptors.response.use(
       if (refreshToken) {
         try {
           // Intentar renovar el token
-          const response = await axios.post(`${API_URL}accounts/token/refresh/`, {
+          const response = await axios.post(`${getApiUrl()}accounts/token/refresh/`, {
             refresh: refreshToken
           })
           
@@ -55,7 +53,7 @@ http.interceptors.response.use(
           // Reintentar la petición original con el nuevo token
           originalRequest.headers.Authorization = `Bearer ${access}`
           return http(originalRequest)
-        } catch (refreshError) {
+        } catch {
           // Si el refresh falla, NO limpiar tokens inmediatamente
           // Solo disparar el evento para mostrar el modal
           window.dispatchEvent(new CustomEvent('tokenExpired'))

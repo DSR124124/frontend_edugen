@@ -1,8 +1,8 @@
-// API Configuration
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+import { getApiUrl } from '../config/environment'
 
+// API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || (isDevelopment ? '/api/v1/' : 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/'),
+  BASE_URL: getApiUrl(),
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 } as const
