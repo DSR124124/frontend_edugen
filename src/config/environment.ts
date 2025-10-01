@@ -13,8 +13,8 @@ export const getApiUrl = (): string => {
     return '/api/v1/'
   }
   
-  // Production URL - using HTTP to avoid SSL issues
-  return 'http://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/'
+  // Production URL - using HTTPS to match frontend protocol
+  return 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/'
 }
 
 export const isDevelopment = (): boolean => {

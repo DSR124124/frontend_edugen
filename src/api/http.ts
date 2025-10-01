@@ -6,6 +6,8 @@ export const http = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Configure timeout and other options
+  timeout: 10000,
 })
 
 // Request interceptor para agregar el token JWT
