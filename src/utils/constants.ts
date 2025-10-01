@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/',
+  BASE_URL: import.meta.env.VITE_API_URL || 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 } as const
