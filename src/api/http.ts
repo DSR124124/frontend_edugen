@@ -8,6 +8,8 @@ export const http = axios.create({
   },
   // Configure timeout and other options
   timeout: 10000,
+  // Ignore SSL certificate errors in development/staging
+  httpsAgent: typeof window === 'undefined' ? undefined : undefined, // Solo para Node.js
 })
 
 // Request interceptor para agregar el token JWT
