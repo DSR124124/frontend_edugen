@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api/v1/' : 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/') 
+const API_URL = import.meta.env.VITE_API_URL || 'http://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/' 
 
 export const http = axios.create({
   baseURL: API_URL,
