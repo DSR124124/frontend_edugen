@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me',
         changeOrigin: true,
         secure: false,
       }
