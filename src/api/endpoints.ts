@@ -670,26 +670,31 @@ export const aiContentApi = {
   sendMessage: (conversationId: number, data: { content: string }) =>
     http.post<{ user_message: ConversationMessage; assistant_message: ConversationMessage }>(
       `ai/conversations/${conversationId}/send-message/`,
-      data
+      data,
+      { timeout: 120000 } // 2 minutes timeout for AI operations
     ),
 
   // Requirements
   extractRequirements: (conversationId: number) =>
     http.post<{ requirements: Record<string, unknown>; message: string }>(
-      `ai/conversations/${conversationId}/extract-requirements/`
+      `ai/conversations/${conversationId}/extract-requirements/`,
+      {},
+      { timeout: 120000 } // 2 minutes timeout for AI operations
     ),
 
   // Content Generation
   generateContent: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content/`,
-      data
+      data,
+      { timeout: 120000 } // 2 minutes timeout for AI operations
     ),
 
   generateContentStreaming: (conversationId: number, data: { requirements: Record<string, unknown>; title: string }) =>
     http.post<{ content: GeneratedContent; message: string }>(
       `ai/conversations/${conversationId}/generate-content-streaming/`,
-      data
+      data,
+      { timeout: 120000 } // 2 minutes timeout for AI operations
     ),
 
   // Templates

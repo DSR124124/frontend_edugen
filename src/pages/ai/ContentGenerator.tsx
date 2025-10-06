@@ -213,16 +213,44 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       console.error('Error generando contenido:', error)
       setIsGenerating(false)
       
-      // Mostrar notificación de error mejorada
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido al generar contenido'
+      // Handle different types of errors
+      let errorMessage = 'Error desconocido al generar contenido'
+      let errorType = 'Error al generar contenido'
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
+        
+        // Handle timeout errors specifically
+        if (error.message.includes('timeout') || error.message.includes('ECONNABORTED')) {
+          errorMessage = 'La operación tardó demasiado tiempo. El servicio de IA puede estar sobrecargado. Por favor, intenta de nuevo en unos minutos.'
+          errorType = 'Tiempo de espera agotado'
+        }
+      }
+      
+      // Check if it's an axios error with more details
+      const axiosError = error as { 
+        code?: string;
+        message?: string;
+        response?: { 
+          data?: { error?: string };
+          status?: number;
+        };
+      }
+      if (axiosError?.code === 'ECONNABORTED' || axiosError?.message?.includes('timeout')) {
+        errorMessage = 'La operación tardó demasiado tiempo. El servicio de IA puede estar sobrecargado. Por favor, intenta de nuevo en unos minutos.'
+        errorType = 'Tiempo de espera agotado'
+      } else if (axiosError?.response?.data?.error) {
+        errorMessage = axiosError.response.data.error
+      }
       
       const notification = document.createElement('div')
-      notification.className = 'fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md bg-red-100 border border-red-400 text-red-700'
+      const isTimeout = errorType === 'Tiempo de espera agotado'
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-md ${isTimeout ? 'bg-yellow-100 border border-yellow-400 text-yellow-700' : 'bg-red-100 border border-red-400 text-red-700'}`
       
       notification.innerHTML = `
         <div class="flex items-start">
           <div class="flex-1">
-            <p class="font-medium">Error al generar contenido</p>
+            <p class="font-medium">${errorType}</p>
             <p class="text-sm mt-1">${errorMessage}</p>
           </div>
           <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-lg leading-none">&times;</button>
