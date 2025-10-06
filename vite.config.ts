@@ -5,13 +5,23 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true,
     proxy: {
       '/api': {
-        target: 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me',
+        target: 'https://edugen-backend.brianuceda.xyz',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       }
     }
+  },
+  preview: {
+    host: true,
+    allowedHosts: [
+      'edugen.brianuceda.xyz',
+      'www.edugen.brianuceda.xyz',
+      'localhost',
+      '127.0.0.1'
+    ]
   },
   build: {
     rollupOptions: {

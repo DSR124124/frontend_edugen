@@ -5,6 +5,7 @@ import { aiContentApi } from '../../api/endpoints'
 import { DeepSeekChat } from '../../components/ai/DeepSeekChat'
 // import { useNotifications } from '../../hooks/useNotifications' // No se usa actualmente
 import { LoadingOverlay, LoadingCard } from '../../components/ui/LoadingSpinner'
+import { getApiUrl } from '../../config/environment'
 import { 
   MessageCircle,
   Users,
@@ -184,7 +185,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       if (!currentConversation) throw new Error('No conversation selected')
       
       // Usar el nuevo endpoint de confirmación y generación
-      const API_URL = import.meta.env.VITE_API_URL || 'https://edugen-backend-zailce-3c26d2-154-38-186-149.traefik.me/api/v1/'
+      const API_URL = getApiUrl()
       const response = await fetch(`${API_URL}ai/gamma/confirm-and-generate/`, {
         method: 'POST',
         headers: {
