@@ -4,6 +4,7 @@ import { getApiUrl } from '../config/environment'
 export const API_CONFIG = {
   BASE_URL: getApiUrl(),
   TIMEOUT: 10000,
+  AI_TIMEOUT: 120000, // 2 minutes for AI operations
   RETRY_ATTEMPTS: 3,
 } as const
 

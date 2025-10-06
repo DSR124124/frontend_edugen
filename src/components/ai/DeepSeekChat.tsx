@@ -69,10 +69,18 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
           data?: { error?: string },
           status?: number
         },
-        message?: string
+        message?: string,
+        code?: string
       }
       
-      const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al enviar mensaje'
+      let errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al enviar mensaje'
+      
+      // Handle timeout errors specifically
+      if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
+        errorMessage = 'La operación tardó demasiado tiempo. El servicio de IA puede estar sobrecargado. Por favor, intenta de nuevo en unos minutos.'
+        showWarning(errorMessage, 'Tiempo de espera agotado')
+        return
+      }
       
       // Mostrar notificación basada en el tipo de error
       if (axiosError.response?.status === 500) {
@@ -108,10 +116,18 @@ export function DeepSeekChat({ conversationId, onRequirementsExtracted, showGene
           data?: { error?: string },
           status?: number
         },
-        message?: string
+        message?: string,
+        code?: string
       }
       
-      const errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al extraer requisitos'
+      let errorMessage = axiosError.response?.data?.error || axiosError.message || 'Error al extraer requisitos'
+      
+      // Handle timeout errors specifically
+      if (axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')) {
+        errorMessage = 'La operación tardó demasiado tiempo. El servicio de IA puede estar sobrecargado. Por favor, intenta de nuevo en unos minutos.'
+        showWarning(errorMessage, 'Tiempo de espera agotado')
+        return
+      }
       
       // Mostrar notificación basada en el tipo de error
       if (axiosError.response?.status === 503) {
