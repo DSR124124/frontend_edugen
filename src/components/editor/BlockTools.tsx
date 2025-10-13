@@ -1,5 +1,5 @@
 import { createBlock, Block, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, VideoBlock, TableBlock, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
-import { 
+import {
   Type,
   Image,
   List,
@@ -8,13 +8,7 @@ import {
   Table,
   Video,
   FileText,
-  Calculator,
   BookOpen,
-  Target,
-  Users,
-  BarChart3,
-  Star,
-  AlertTriangle,
   HelpCircle
 } from 'lucide-react'
 
@@ -40,27 +34,9 @@ export type BlockType =
   | 'pricing'
   | 'faq'
   | 'contact'
-  | 'gallery'
-  | 'carousel'
-  | 'chart'
-  | 'map'
-  | 'embed'
-  | 'spacer'
-  | 'button'
   | 'form'
   | 'quiz'
   | 'flashcard'
-  | 'audio'
-  | 'slideshow'
-  | 'columns'
-  | 'highlight'
-  | 'stats'
-  | 'testimonial'
-  | 'pricing'
-  | 'faq'
-  | 'contact'
-  | 'alert'
-  | 'progress'
 
 // Configuración de cada tipo de bloque
 export interface BlockConfig {
@@ -68,7 +44,7 @@ export interface BlockConfig {
   name: string
   description: string
   icon: React.ComponentType<{ className?: string }>
-  category: 'basic' | 'content' | 'interactive' | 'media' | 'layout' | 'advanced'
+  category: 'basic' | 'content' | 'interactive'
   isPremium?: boolean
   isComingSoon?: boolean
 }
@@ -134,13 +110,6 @@ export const BLOCK_CONFIGS: BlockConfig[] = [
     icon: Table,
     category: 'content'
   },
-  {
-    type: 'gallery',
-    name: 'Galería',
-    description: 'Galería de imágenes',
-    icon: Image,
-    category: 'media'
-  },
 
   // Interactivos
   {
@@ -155,13 +124,6 @@ export const BLOCK_CONFIGS: BlockConfig[] = [
     name: 'Acordeón',
     description: 'Contenido expandible',
     icon: BookOpen,
-    category: 'interactive'
-  },
-  {
-    type: 'button',
-    name: 'Botón',
-    description: 'Botones de acción',
-    icon: Target,
     category: 'interactive'
   },
   {
@@ -186,144 +148,7 @@ export const BLOCK_CONFIGS: BlockConfig[] = [
     category: 'interactive'
   },
 
-  // Media
-  {
-    type: 'carousel',
-    name: 'Carrusel',
-    description: 'Carrusel de contenido',
-    icon: Image,
-    category: 'media'
-  },
-  {
-    type: 'embed',
-    name: 'Embed',
-    description: 'Contenido embebido',
-    icon: FileText,
-    category: 'media'
-  },
-  {
-    type: 'audio',
-    name: 'Audio',
-    description: 'Archivos de audio',
-    icon: FileText,
-    category: 'media'
-  },
-  {
-    type: 'slideshow',
-    name: 'Presentación',
-    description: 'Presentación de diapositivas',
-    icon: FileText,
-    category: 'media'
-  },
 
-  // Layout
-  {
-    type: 'card',
-    name: 'Tarjeta',
-    description: 'Tarjetas de contenido',
-    icon: FileText,
-    category: 'layout'
-  },
-  {
-    type: 'spacer',
-    name: 'Espaciador',
-    description: 'Espacio en blanco',
-    icon: FileText,
-    category: 'layout'
-  },
-  {
-    type: 'columns',
-    name: 'Columnas',
-    description: 'Contenido en columnas',
-    icon: FileText,
-    category: 'layout'
-  },
-  {
-    type: 'highlight',
-    name: 'Resaltado',
-    description: 'Texto resaltado',
-    icon: Star,
-    category: 'layout'
-  },
-
-  // Avanzados
-  {
-    type: 'math',
-    name: 'Matemáticas',
-    description: 'Fórmulas matemáticas',
-    icon: Calculator,
-    category: 'advanced'
-  },
-  {
-    type: 'timeline',
-    name: 'Línea de tiempo',
-    description: 'Cronología de eventos',
-    icon: BarChart3,
-    category: 'advanced'
-  },
-  {
-    type: 'chart',
-    name: 'Gráfico',
-    description: 'Gráficos y visualizaciones',
-    icon: BarChart3,
-    category: 'advanced'
-  },
-  {
-    type: 'map',
-    name: 'Mapa',
-    description: 'Mapas interactivos',
-    icon: Target,
-    category: 'advanced'
-  },
-  {
-    type: 'stats',
-    name: 'Estadísticas',
-    description: 'Métricas y estadísticas',
-    icon: BarChart3,
-    category: 'advanced'
-  },
-  {
-    type: 'testimonial',
-    name: 'Testimonio',
-    description: 'Testimonios de usuarios',
-    icon: Users,
-    category: 'advanced'
-  },
-  {
-    type: 'pricing',
-    name: 'Precios',
-    description: 'Tablas de precios',
-    icon: Star,
-    category: 'advanced'
-  },
-  {
-    type: 'faq',
-    name: 'FAQ',
-    description: 'Preguntas frecuentes',
-    icon: HelpCircle,
-    category: 'advanced'
-  },
-  {
-    type: 'contact',
-    name: 'Contacto',
-    description: 'Información de contacto',
-    icon: Users,
-    category: 'advanced'
-  },
-  {
-    type: 'alert',
-    name: 'Alerta',
-    description: 'Alertas y notificaciones',
-    icon: AlertTriangle,
-    category: 'advanced'
-  },
-  {
-    type: 'progress',
-    name: 'Progreso',
-    description: 'Barras de progreso',
-    icon: BarChart3,
-    category: 'advanced'
-  }
 ]
 
 // Categorías de bloques
@@ -331,9 +156,7 @@ export const BLOCK_CATEGORIES = {
   basic: 'Básicos',
   content: 'Contenido',
   interactive: 'Interactivos',
-  media: 'Media',
-  layout: 'Layout',
-  advanced: 'Avanzados'
+  pexels: 'Imágenes Pexels'
 }
 
 // Función para crear un bloque según su tipo
@@ -496,194 +319,7 @@ export const createBlockByType = (type: BlockType): Block => {
         }
       })
 
-    case 'carousel':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Carrusel de imágenes:\n\nImagen 1: Descripción\nImagen 2: Descripción\nImagen 3: Descripción',
-        props: { 
-          padding: 'medium',
-          style: 'carousel'
-        }
-      })
 
-    case 'gallery':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Galería de imágenes:\n\n• Imagen 1: Descripción\n• Imagen 2: Descripción\n• Imagen 3: Descripción',
-        props: { 
-          padding: 'medium',
-          style: 'gallery'
-        }
-      })
-
-    case 'embed':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Contenido embebido:\n\nURL: https://ejemplo.com\nTítulo: Contenido embebido\nDescripción: Descripción del contenido',
-        props: { 
-          padding: 'medium',
-          style: 'embed'
-        }
-      })
-
-    case 'audio':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Archivo de audio:\n\nTítulo: Nombre del audio\nDuración: 00:00\nDescripción: Descripción del contenido de audio',
-        props: { 
-          padding: 'medium',
-          style: 'audio'
-        }
-      })
-
-    case 'slideshow':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Presentación:\n\nDiapositiva 1: Título y contenido\nDiapositiva 2: Título y contenido\nDiapositiva 3: Título y contenido',
-        props: { 
-          padding: 'medium',
-          style: 'slideshow'
-        }
-      })
-
-    case 'card':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Tarjeta de contenido:\n\nTítulo: Título de la tarjeta\nContenido: Descripción o información importante\nAcción: Botón o enlace opcional',
-        props: { 
-          padding: 'medium',
-          style: 'card'
-        }
-      })
-
-    case 'spacer':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: '',
-        props: { 
-          padding: 'large',
-          style: 'spacer'
-        }
-      })
-
-    case 'columns':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Contenido en columnas:\n\nColumna 1: Contenido de la primera columna\nColumna 2: Contenido de la segunda columna\nColumna 3: Contenido de la tercera columna',
-        props: { 
-          padding: 'medium',
-          style: 'columns'
-        }
-      })
-
-    case 'highlight':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Texto resaltado importante que llama la atención del estudiante',
-        props: { 
-          padding: 'medium',
-          style: 'highlight'
-        }
-      })
-
-    case 'math':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Fórmula matemática:\n\nEjemplo: E = mc²\n\nOtra fórmula: a² + b² = c²',
-        props: { 
-          padding: 'medium',
-          style: 'math'
-        }
-      })
-
-    case 'timeline':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Línea de tiempo:\n\n1900: Evento importante\n1950: Otro evento\n2000: Evento reciente\n2024: Evento actual',
-        props: { 
-          padding: 'medium',
-          style: 'timeline'
-        }
-      })
-
-    case 'chart':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Gráfico:\n\nTítulo: Nombre del gráfico\nTipo: Barras, líneas, circular\nDatos: Información a mostrar',
-        props: { 
-          padding: 'medium',
-          style: 'chart'
-        }
-      })
-
-    case 'map':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Mapa interactivo:\n\nUbicación: Ciudad, país\nTipo: Físico, político, temático\nDescripción: Información del mapa',
-        props: { 
-          padding: 'medium',
-          style: 'map'
-        }
-      })
-
-    case 'button':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Botón de acción:\n\nTexto: Hacer clic aquí\nAcción: Enlace o función\nEstilo: Primario, secundario, outline',
-        props: { 
-          padding: 'medium',
-          style: 'button'
-        }
-      })
-
-    case 'stats':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Estadísticas:\n\nMétrica 1: Valor con descripción\nMétrica 2: Valor con descripción\nMétrica 3: Valor con descripción',
-        props: { 
-          padding: 'medium',
-          style: 'stats'
-        }
-      })
-
-    case 'testimonial':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Testimonio:\n\n"Esta es una cita de testimonio que destaca la experiencia del usuario."\n\n- Nombre del usuario, Cargo',
-        props: { 
-          padding: 'medium',
-          style: 'testimonial'
-        }
-      })
-
-    case 'pricing':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Tabla de precios:\n\nPlan Básico: $10/mes - Características incluidas\nPlan Pro: $25/mes - Más características\nPlan Premium: $50/mes - Todas las características',
-        props: { 
-          padding: 'medium',
-          style: 'pricing'
-        }
-      })
-
-    case 'faq':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Preguntas frecuentes:\n\nP: ¿Pregunta frecuente 1?\nR: Respuesta detallada aquí.\n\nP: ¿Pregunta frecuente 2?\nR: Otra respuesta detallada.',
-        props: { 
-          padding: 'medium',
-          style: 'faq'
-        }
-      })
-
-    case 'contact':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Información de contacto:\n\nTeléfono: +1 (555) 123-4567\nEmail: contacto@ejemplo.com\nDirección: 123 Calle Principal, Ciudad',
-        props: { 
-          padding: 'medium',
-          style: 'contact'
-        }
-      })
-
-    case 'alert':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Alerta importante:\n\nEste es un mensaje de alerta que requiere atención inmediata del usuario.',
-        props: { 
-          padding: 'medium',
-          style: 'alert'
-        }
-      })
-
-    case 'progress':
-      return createBlock<ParagraphBlock>('paragraph', {
-        content: 'Barra de progreso:\n\nTarea 1: 75% completado\nTarea 2: 50% completado\nTarea 3: 25% completado',
-        props: { 
-          padding: 'medium',
-          style: 'progress'
-        }
-      })
 
     // Bloques que están en desarrollo
     default:

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, memo } from 'react'
 import { Document, Block, createBlock, HeroBlock, HeadingBlock, ImageBlock, ListBlock, CalloutBlock, ParagraphBlock, BlockMedia, BlockProps, FormBlock, QuizBlock, FlashcardBlock } from '../../types/block-schema'
 import { ContextualToolbar } from './ContextualToolbar'
 import { BlockSelector } from './BlockSelector'
+import { PexelsImageSearch } from './PexelsImageSearch'
 import { useDocumentHistory } from '../../hooks/useDocumentHistory'
 import { createBlockByType, BlockType } from './BlockTools'
 import { 
@@ -177,7 +178,7 @@ const BlockComponent = memo<BlockComponentProps>(({
                       </label>
                       <div className="space-y-3">
                         {formBlock.fields?.map((field, index) => (
-                          <div key={field.id} className="p-3 border border-orange-200 rounded-lg bg-white">
+                          <div key={`field-${field.id}-${index}`} className="p-3 border border-orange-200 rounded-lg bg-white">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-sm font-medium text-gray-700">
                                 Campo {index + 1}: {field.label}
@@ -244,8 +245,8 @@ const BlockComponent = memo<BlockComponentProps>(({
                           <p className="text-gray-600">{formBlock.description}</p>
                         )}
                         <div className="space-y-3">
-                          {formBlock.fields?.map((field) => (
-                            <div key={field.id}>
+                          {formBlock.fields?.map((field, index) => (
+                            <div key={`form-field-${field.id}-${index}`}>
                               <label className="block text-sm font-medium text-gray-700 mb-1">
                                 {field.label}
                                 {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -314,7 +315,7 @@ const BlockComponent = memo<BlockComponentProps>(({
                     </label>
                     <div className="space-y-2">
                       {quizBlock.options.map((option, index) => (
-                        <div key={index} className="flex items-center space-x-2">
+                        <div key={`quiz-option-${index}-${option.slice(0, 10)}`} className="flex items-center space-x-2">
                           <input
                             type="radio"
                             name={`correct-${block.id}`}
@@ -438,7 +439,7 @@ const BlockComponent = memo<BlockComponentProps>(({
                       <h3 className="text-lg font-semibold text-gray-800">{quizBlock.question}</h3>
                       <div className="space-y-2">
                         {quizBlock.options.map((option, index) => (
-                          <label key={index} className="flex items-center space-x-2 cursor-pointer">
+                          <label key={`quiz-preview-option-${index}-${option.slice(0, 10)}`} className="flex items-center space-x-2 cursor-pointer">
                             <input
                               type="radio"
                               name={`preview-${block.id}`}
@@ -1303,7 +1304,7 @@ const BlockComponent = memo<BlockComponentProps>(({
         <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
           <div className="space-y-2">
             {block.items.map((item, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={`list-item-${index}-${item.slice(0, 10)}`} className="flex items-center space-x-2">
                 <span className="text-gray-400">•</span>
                 <input
                   type="text"
@@ -1375,7 +1376,7 @@ const BlockComponent = memo<BlockComponentProps>(({
               <thead>
                 <tr className="bg-gray-50">
                   {block.tableData.headers.map((header, index) => (
-                    <th key={index} className="px-4 py-2 text-left font-semibold text-gray-700 border-b">
+                    <th key={`table-header-${index}-${header.slice(0, 10)}`} className="px-4 py-2 text-left font-semibold text-gray-700 border-b">
                       <input
                         type="text"
                         value={header}
@@ -1396,9 +1397,9 @@ const BlockComponent = memo<BlockComponentProps>(({
               </thead>
               <tbody>
                 {block.tableData.rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="hover:bg-gray-50">
+                  <tr key={`table-row-${rowIndex}`} className="hover:bg-gray-50">
                     {row.map((cell, cellIndex) => (
-                      <td key={cellIndex} className="px-4 py-2 border-b">
+                      <td key={`table-cell-${rowIndex}-${cellIndex}-${cell.slice(0, 5)}`} className="px-4 py-2 border-b">
                         <input
                           type="text"
                           value={cell}
@@ -1609,6 +1610,7 @@ export function GammaEditor({
   const [showSidebar, setShowSidebar] = useState(true)
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set())
   const [flippedCards, setFlippedCards] = useState<Set<string>>(new Set())
+  const [showPexelsSearch, setShowPexelsSearch] = useState(false)
 
   // Manual save functionality (auto-save disabled to prevent conflicts)
   const [isSaving, setIsSaving] = useState(false)
@@ -2132,6 +2134,35 @@ export function GammaEditor({
     })
   }, [])
 
+  // Pexels search handlers
+  const handleOpenPexelsSearch = useCallback(() => {
+    setShowPexelsSearch(true)
+  }, [])
+
+  const handleClosePexelsSearch = useCallback(() => {
+    setShowPexelsSearch(false)
+  }, [])
+
+  const handleSelectPexelsImage = useCallback((media: BlockMedia) => {
+    const imageBlock = createBlock<ImageBlock>('image', {
+      media,
+      aspectRatio: 'auto'
+    })
+    
+    // Agregar el bloque de imagen directamente al documento
+    const updatedDocument = {
+      ...document,
+      blocks: [...document.blocks, imageBlock],
+      updatedAt: new Date().toISOString(),
+      version: document.version + 1
+    }
+    
+    setDocument(updatedDocument)
+    addToHistory(updatedDocument)
+    onUpdate?.(updatedDocument)
+    setShowPexelsSearch(false)
+  }, [document, addToHistory, onUpdate])
+
   return (
     <div className={`gamma-editor flex h-full ${className}`}>
       {/* Sidebar de Herramientas */}
@@ -2152,7 +2183,10 @@ export function GammaEditor({
           
           {/* Contenido del Sidebar */}
           <div className="flex-1 overflow-auto p-4">
-            <BlockSelector onAddBlock={addBlock} />
+            <BlockSelector 
+              onAddBlock={addBlock} 
+              onOpenPexelsSearch={handleOpenPexelsSearch}
+            />
           </div>
         </div>
       )}
@@ -2245,6 +2279,13 @@ export function GammaEditor({
           )}
         </div>
       </div>
+
+      {/* Pexels Image Search Modal */}
+      <PexelsImageSearch
+        isOpen={showPexelsSearch}
+        onClose={handleClosePexelsSearch}
+        onSelectImage={handleSelectPexelsImage}
+      />
     </div>
   )
 }
