@@ -1,6 +1,13 @@
 // Block Schema for Gamma-style Editor
 // Based on the JSON schema provided in the requirements
 
+export interface PexelsData {
+  id: number
+  photographer: string
+  photographer_url: string
+  url: string
+}
+
 export interface BlockMedia {
   type: 'image' | 'video' | 'embed' | 'file'
   src: string
@@ -8,6 +15,7 @@ export interface BlockMedia {
   caption?: string
   width?: number
   height?: number
+  pexelsData?: PexelsData
 }
 
 export interface BlockProps {

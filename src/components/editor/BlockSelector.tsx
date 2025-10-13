@@ -5,13 +5,15 @@ import {
   BlockType,
   BlockConfig
 } from './BlockTools'
+import { FiImage } from 'react-icons/fi'
 
 interface BlockSelectorProps {
   onAddBlock: (type: BlockType) => void
+  onOpenPexelsSearch?: () => void
   className?: string
 }
 
-export function BlockSelector({ onAddBlock, className = '' }: BlockSelectorProps) {
+export function BlockSelector({ onAddBlock, onOpenPexelsSearch, className = '' }: BlockSelectorProps) {
   const [selectedCategory, setSelectedCategory] = useState<keyof typeof BLOCK_CATEGORIES | 'all'>('basic')
 
   // Filtrar bloques según la categoría
@@ -38,19 +40,34 @@ export function BlockSelector({ onAddBlock, className = '' }: BlockSelectorProps
           <option value="basic">Básicos</option>
           <option value="content">Contenido</option>
           <option value="interactive">Interactivos</option>
-          <option value="media">Media</option>
-          <option value="layout">Layout</option>
-          <option value="advanced">Avanzados</option>
+          <option value="pexels">Imágenes Pexels</option>
         </select>
       </div>
 
       {/* Lista de bloques - Ocupa todo el espacio restante */}
       <div className="flex-1 overflow-y-auto space-y-2">
-        {filteredBlocks.length === 0 ? (
+        {/* Botón especial para Pexels */}
+        {selectedCategory === 'pexels' && onOpenPexelsSearch && (
+          <button
+            onClick={onOpenPexelsSearch}
+            className="w-full flex items-center space-x-3 p-3 rounded-lg border-2 border-dashed border-blue-300 hover:border-blue-400 hover:bg-blue-50 text-blue-700 transition-all"
+          >
+            <div className="p-2 rounded-lg bg-blue-100">
+              <FiImage className="w-4 h-4" />
+            </div>
+            
+            <div className="flex-1 text-left">
+              <h4 className="font-medium">Buscar en Pexels</h4>
+              <p className="text-sm text-blue-600">Miles de imágenes gratuitas de alta calidad</p>
+            </div>
+          </button>
+        )}
+
+        {selectedCategory !== 'pexels' && filteredBlocks.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>No hay bloques en esta categoría</p>
           </div>
-        ) : (
+        ) : selectedCategory !== 'pexels' ? (
           filteredBlocks.map((block) => {
             const Icon = block.icon
             return (
@@ -70,7 +87,7 @@ export function BlockSelector({ onAddBlock, className = '' }: BlockSelectorProps
               </button>
             )
           })
-        )}
+        ) : null}
       </div>
     </div>
   )
