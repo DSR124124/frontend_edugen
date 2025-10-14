@@ -103,7 +103,7 @@ export function TopicsPage() {
       setIsDeleteModalOpen(false)
       setDeletingTopic(null)
       showSuccess('Tema Eliminado', 'El tema se ha eliminado exitosamente')
-    } catch (error) {
+    } catch {
       showError('Error al Eliminar Tema', 'No se pudo eliminar el tema. Por favor, intenta de nuevo.')
     }
   }
@@ -401,7 +401,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
                 </div>
               ) : (
                 <div className="space-y-3 sm:space-y-4">
-                  {topics
+                  {(Array.isArray(topics) ? topics : [])
                     .sort((a, b) => a.order - b.order)
                     .map((topic) => (
                       <div key={topic.id} className="rounded-lg border-2 transition-all duration-200 hover:shadow-md p-4 sm:p-6" style={{ borderColor: 'var(--color-base-300)' }}>
