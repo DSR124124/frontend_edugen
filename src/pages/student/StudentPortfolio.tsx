@@ -199,9 +199,9 @@ export function StudentPortfolio() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="my-portfolio-page">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6" data-tour="my-portfolio-header">
         <div className="flex items-center p-3 sm:p-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
@@ -246,7 +246,7 @@ export function StudentPortfolio() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4" data-tour="my-portfolio-content">
         {/* Lista de Cursos */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
           <div className="border-b border-gray-200 p-3 sm:p-4">

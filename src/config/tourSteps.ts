@@ -357,9 +357,45 @@ const getProfessorTourSteps = (tourType: string, commonSteps: Step[]): Step[] =>
           disableBeacon: true,
         },
         {
+          target: '[data-tour="courses-page"]',
+          content: 'Página de Mis Cursos: Aquí puedes ver y gestionar todos los cursos que tienes asignados.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="courses-header"]',
+          content: 'Header de Cursos: Información general sobre la gestión de tus cursos.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="courses-content"]',
+          content: 'Contenido Principal: Lista de todos tus cursos con opciones para gestionar cada uno.',
+          placement: 'top',
+          disableBeacon: true,
+        },
+        {
           target: '[data-tour="sections-link"]',
           content: 'Mis Secciones: Administra las secciones que tienes asignadas. El tour navegará automáticamente a esta página.',
           placement: 'right',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="sections-page"]',
+          content: 'Página de Mis Secciones: Aquí puedes ver y gestionar todas las secciones que tienes asignadas.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="sections-header"]',
+          content: 'Header de Secciones: Información general sobre la gestión de tus secciones.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="sections-content"]',
+          content: 'Contenido Principal: Lista de todas tus secciones con opciones para gestionar cada una.',
+          placement: 'top',
           disableBeacon: true,
         },
         {
@@ -369,15 +405,69 @@ const getProfessorTourSteps = (tourType: string, commonSteps: Step[]): Step[] =>
           disableBeacon: true,
         },
         {
+          target: '[data-tour="students-page"]',
+          content: 'Página de Mis Estudiantes: Aquí puedes ver y gestionar a todos tus estudiantes.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="students-header"]',
+          content: 'Header de Estudiantes: Información general sobre la gestión de tus estudiantes.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="students-content"]',
+          content: 'Contenido Principal: Lista de todos tus estudiantes con opciones para gestionar cada uno.',
+          placement: 'top',
+          disableBeacon: true,
+        },
+        {
           target: '[data-tour="portfolios-link"]',
           content: 'Portafolios: Gestiona los portafolios de tus estudiantes. El tour navegará automáticamente a esta página.',
           placement: 'right',
           disableBeacon: true,
         },
         {
+          target: '[data-tour="portfolios-page"]',
+          content: 'Página de Portafolios: Aquí puedes ver y gestionar los portafolios de tus estudiantes.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="portfolios-header"]',
+          content: 'Header de Portafolios: Información general sobre la gestión de portafolios.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="portfolios-content"]',
+          content: 'Contenido Principal: Lista de todos los portafolios con opciones para gestionar cada uno.',
+          placement: 'top',
+          disableBeacon: true,
+        },
+        {
           target: '[data-tour="topics-link"]',
           content: 'Temas: Organiza y gestiona los temas de tus cursos. El tour navegará automáticamente a esta página.',
           placement: 'right',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="topics-page"]',
+          content: 'Página de Temas: Aquí puedes ver y gestionar todos los temas de tus cursos.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="topics-header"]',
+          content: 'Header de Temas: Información general sobre la gestión de temas.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="topics-content"]',
+          content: 'Contenido Principal: Lista de todos los temas con opciones para gestionar cada uno.',
+          placement: 'top',
           disableBeacon: true,
         },
       ]
@@ -396,9 +486,45 @@ const getProfessorTourSteps = (tourType: string, commonSteps: Step[]): Step[] =>
           disableBeacon: true,
         },
         {
+          target: '[data-tour="ai-generator-page"]',
+          content: 'Página de IA Generador: Aquí puedes crear contenido educativo usando inteligencia artificial.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="ai-generator-header"]',
+          content: 'Header de IA Generador: Información general sobre la generación de contenido con IA.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="ai-generator-content"]',
+          content: 'Contenido Principal: Herramientas y formularios para generar contenido educativo con IA.',
+          placement: 'top',
+          disableBeacon: true,
+        },
+        {
           target: '[data-tour="generated-content-link"]',
           content: 'Contenidos Generados: Revisa y gestiona todo el contenido que has generado con IA. El tour navegará automáticamente a esta página.',
           placement: 'right',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="generated-content-page"]',
+          content: 'Página de Contenidos Generados: Aquí puedes ver y gestionar todo el contenido que has generado con IA.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="generated-content-header"]',
+          content: 'Header de Contenidos Generados: Información general sobre tus contenidos generados.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="generated-content-content"]',
+          content: 'Contenido Principal: Lista de todos tus contenidos generados con opciones para gestionar cada uno.',
+          placement: 'top',
           disableBeacon: true,
         },
       ]
@@ -417,15 +543,128 @@ const getProfessorTourSteps = (tourType: string, commonSteps: Step[]): Step[] =>
           disableBeacon: true,
         },
         {
+          target: '[data-tour="analytics-page"]',
+          content: 'Página de Analytics: Aquí puedes ver estadísticas y métricas detalladas de tus materiales.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="analytics-header"]',
+          content: 'Header de Analytics: Información general sobre las métricas y estadísticas.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="analytics-content"]',
+          content: 'Contenido Principal: Gráficos y métricas detalladas de rendimiento de tus materiales.',
+          placement: 'top',
+          disableBeacon: true,
+        },
+        {
           target: '[data-tour="settings-link"]',
           content: 'Configuración: Ajusta tus preferencias personales. El tour navegará automáticamente a esta página.',
           placement: 'right',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="settings-page"]',
+          content: 'Página de Configuración: Aquí puedes ajustar tus preferencias personales y configuración.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="settings-header"]',
+          content: 'Header de Configuración: Información general sobre la configuración personal.',
+          placement: 'bottom',
+          disableBeacon: true,
+        },
+        {
+          target: '[data-tour="settings-content"]',
+          content: 'Contenido Principal: Formularios y opciones para configurar tus preferencias personales.',
+          placement: 'top',
           disableBeacon: true,
         },
       ]
 
     default:
       return getProfessorTourSteps('general', commonSteps)
+  }
+}
+
+// Tours específicos para Estudiante
+const getStudentTourSteps = (tourType: string, commonSteps: Step[]): Step[] => {
+  switch (tourType) {
+    case 'general':
+      return [
+        ...commonSteps,
+        {
+          target: '[data-tour="student-dashboard"]',
+          content: 'Bienvenido a tu panel de estudiante. Aquí puedes acceder a todos tus recursos.',
+          placement: 'bottom',
+        },
+        {
+          target: '[data-tour="my-section"]',
+          content: 'Módulo Mi Sección: Aquí puedes ver información sobre tu sección y compañeros de clase.',
+          placement: 'right',
+        },
+        {
+          target: '[data-tour="my-portfolio"]',
+          content: 'Módulo Mi Portafolio: Aquí puedes ver y gestionar todos tus trabajos y proyectos.',
+          placement: 'right',
+        },
+      ]
+
+    case 'my-section':
+      return [
+        {
+          target: '[data-tour="my-section"]',
+          content: 'Módulo Mi Sección: Aquí puedes ver información sobre tu sección y compañeros de clase. El tour navegará automáticamente a esta página.',
+          placement: 'right',
+        },
+        {
+          target: '[data-tour="my-section-page"]',
+          content: 'Página de Mi Sección: Aquí puedes ver información detallada sobre tu sección.',
+          placement: 'bottom',
+        },
+        {
+          target: '[data-tour="my-section-header"]',
+          content: 'Header de Mi Sección: Información general sobre tu sección.',
+          placement: 'bottom',
+        },
+        {
+          target: '[data-tour="my-section-content"]',
+          content: 'Contenido Principal: Información detallada sobre tu sección y compañeros.',
+          placement: 'top',
+        },
+      ]
+
+    case 'my-portfolio':
+      return [
+        {
+          target: '[data-tour="my-portfolio"]',
+          content: 'Módulo Mi Portafolio: Aquí puedes ver y gestionar todos tus trabajos y proyectos. El tour navegará automáticamente a esta página.',
+          placement: 'right',
+        },
+        {
+          target: '[data-tour="my-portfolio-page"]',
+          content: 'Página de Mi Portafolio: Aquí puedes ver y gestionar todos tus trabajos y proyectos.',
+          placement: 'bottom',
+        },
+        {
+          target: '[data-tour="my-portfolio-header"]',
+          content: 'Header de Mi Portafolio: Información general sobre tu portafolio.',
+          placement: 'bottom',
+        },
+        {
+          target: '[data-tour="my-portfolio-content"]',
+          content: 'Contenido Principal: Lista de todos tus trabajos y proyectos con opciones para gestionar cada uno.',
+          placement: 'top',
+        },
+      ]
+
+
+    default:
+      return getStudentTourSteps('general', commonSteps)
   }
 }
 
@@ -458,29 +697,9 @@ export const getTourSteps = (role: string, tourType: string = 'general'): Step[]
       return getProfessorTourSteps(tourType, commonSteps)
 
     case 'ALUMNO':
+      return getStudentTourSteps(tourType, commonSteps)
+
     default:
-      return [
-        ...commonSteps,
-        {
-          target: '[data-tour="student-dashboard"]',
-          content: 'Bienvenido a tu panel de estudiante. Aquí puedes acceder a todos tus recursos.',
-          placement: 'bottom',
-        },
-        {
-          target: '[data-tour="my-section"]',
-          content: 'Aquí puedes ver información sobre tu sección y compañeros de clase.',
-          placement: 'right',
-        },
-        {
-          target: '[data-tour="my-portfolio"]',
-          content: 'En Mi Portafolio puedes ver y gestionar todos tus trabajos y proyectos.',
-          placement: 'right',
-        },
-        {
-          target: '[data-tour="my-materials"]',
-          content: 'Aquí puedes acceder a todos los materiales de estudio disponibles.',
-          placement: 'right',
-        },
-      ]
+      return getStudentTourSteps('general', commonSteps)
   }
 }

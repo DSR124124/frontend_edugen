@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useTour } from '../../hooks/useTour'
 import { useAuthStore } from '../../store/auth'
-import { HelpCircle, ChevronDown, BookOpen, Users, Settings, LayoutDashboard, GraduationCap, Bot, BarChart3 } from 'lucide-react'
+import { HelpCircle, ChevronDown, BookOpen, Users, Settings, LayoutDashboard, GraduationCap, Bot, BarChart3, FolderOpen } from 'lucide-react'
 
 interface TourOption {
   id: string
@@ -64,6 +64,27 @@ const professorTourOptions: TourOption[] = [
   },
 ]
 
+const studentTourOptions: TourOption[] = [
+  {
+    id: 'general',
+    name: 'Tour General',
+    description: 'Recorrido completo del sistema',
+    icon: LayoutDashboard,
+  },
+  {
+    id: 'my-section',
+    name: 'Mi Sección',
+    description: 'Información de tu sección y compañeros',
+    icon: Users,
+  },
+  {
+    id: 'my-portfolio',
+    name: 'Mi Portafolio',
+    description: 'Trabajos y proyectos personales',
+    icon: FolderOpen,
+  },
+]
+
 export function TourMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const { startTour, currentTourType } = useTour()
@@ -82,8 +103,10 @@ export function TourMenu() {
         return directorTourOptions
       case 'PROFESOR':
         return professorTourOptions
+      case 'ALUMNO':
+        return studentTourOptions
       default:
-        return directorTourOptions
+        return studentTourOptions
     }
   }
 
@@ -106,8 +129,8 @@ export function TourMenu() {
     }
   }, [isOpen])
 
-  // Mostrar menú desplegable para directores y profesores, botón simple para otros roles
-  if (user?.role !== 'DIRECTOR' && user?.role !== 'PROFESOR') {
+  // Mostrar menú desplegable para directores, profesores y estudiantes, botón simple para otros roles
+  if (user?.role !== 'DIRECTOR' && user?.role !== 'PROFESOR' && user?.role !== 'ALUMNO') {
     return (
       <button
         onClick={() => startTour()}

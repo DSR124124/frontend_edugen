@@ -90,7 +90,7 @@ const studentNavigation: NavigationItem[] = [
   { name: 'Inicio', href: '/dashboard', icon: Home, 'data-tour': 'student-dashboard' },
   { name: 'Mi Sección', href: '/my-section', icon: Users, 'data-tour': 'my-section' },
   { name: 'Mi Portafolio', href: '/student-portfolio', icon: FolderOpen, 'data-tour': 'my-portfolio' },
-  { name: 'Configuración', href: '/profile', icon: Settings },
+  { name: 'Configuración', href: '/profile', icon: Settings, 'data-tour': 'settings-link' },
 ]
 
 const directorNavigation: NavigationItem[] = [

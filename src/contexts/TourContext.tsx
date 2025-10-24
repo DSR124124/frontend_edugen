@@ -31,60 +31,60 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
   }, [])
 
   const handleJoyrideCallback = useCallback((data: CallBackProps) => {
-    const { status, action, index } = data
+    const { status, index } = data
 
     // Navegación automática para tours del director
     if (user?.role === 'DIRECTOR') {
       const steps = getTourSteps(user.role, currentTourType)
       const currentStep = steps[index]
 
-      // Tour académico
+      // Tour académico - Navegación automática
       if (currentTourType === 'academic') {
-        if (currentStep?.target === '[data-tour="grades-link"]' && action === 'next') {
-          // Navegar a la página de grados
+        if (currentStep?.target === '[data-tour="grades-link"]') {
+          // Navegar automáticamente a la página de grados
           setTimeout(() => {
             navigate('/director/grades')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="periods-link"]' && action === 'next') {
-          // Navegar a la página de períodos
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="periods-link"]') {
+          // Navegar automáticamente a la página de períodos
           setTimeout(() => {
             navigate('/director/terms')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="sections-link"]' && action === 'next') {
-          // Navegar a la página de secciones
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="sections-link"]') {
+          // Navegar automáticamente a la página de secciones
           setTimeout(() => {
             navigate('/director/sections')
-          }, 500)
+          }, 1000)
         }
       }
       
-      // Tour de personas
+      // Tour de personas - Navegación automática
       if (currentTourType === 'people') {
-        if (currentStep?.target === '[data-tour="students-link"]' && action === 'next') {
-          // Navegar a la página de estudiantes
+        if (currentStep?.target === '[data-tour="students-link"]') {
+          // Navegar automáticamente a la página de estudiantes
           setTimeout(() => {
             navigate('/director/students')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="professors-link"]' && action === 'next') {
-          // Navegar a la página de profesores
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="professors-link"]') {
+          // Navegar automáticamente a la página de profesores
           setTimeout(() => {
             navigate('/director/professors')
-          }, 500)
+          }, 1000)
         }
       }
       
-      // Tour de administración
+      // Tour de administración - Navegación automática
       if (currentTourType === 'administration') {
-        if (currentStep?.target === '[data-tour="institution-link"]' && action === 'next') {
-          // Navegar a la página de institución
+        if (currentStep?.target === '[data-tour="institution-link"]') {
+          // Navegar automáticamente a la página de institución
           setTimeout(() => {
             navigate('/director/institution')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="settings-link"]' && action === 'next') {
-          // Navegar a la página de configuración
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="settings-link"]') {
+          // Navegar automáticamente a la página de configuración
           setTimeout(() => {
             navigate('/profile')
-          }, 500)
+          }, 1000)
         }
       }
     }
@@ -94,65 +94,93 @@ export const TourProvider: React.FC<TourProviderProps> = ({ children }) => {
       const steps = getTourSteps(user.role, currentTourType)
       const currentStep = steps[index]
 
-      // Tour de docencia
+      // Tour de docencia - Navegación automática
       if (currentTourType === 'teaching') {
-        if (currentStep?.target === '[data-tour="courses-link"]' && action === 'next') {
-          // Navegar a la página de cursos
+        if (currentStep?.target === '[data-tour="courses-link"]') {
+          // Navegar automáticamente a la página de cursos
           setTimeout(() => {
             navigate('/professor/courses')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="sections-link"]' && action === 'next') {
-          // Navegar a la página de secciones
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="sections-link"]') {
+          // Navegar automáticamente a la página de secciones
           setTimeout(() => {
             navigate('/professor/sections')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="students-link"]' && action === 'next') {
-          // Navegar a la página de estudiantes
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="students-link"]') {
+          // Navegar automáticamente a la página de estudiantes
           setTimeout(() => {
             navigate('/professor/students')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="portfolios-link"]' && action === 'next') {
-          // Navegar a la página de portafolios
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="portfolios-link"]') {
+          // Navegar automáticamente a la página de portafolios
           setTimeout(() => {
             navigate('/professor/portfolios')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="topics-link"]' && action === 'next') {
-          // Navegar a la página de temas
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="topics-link"]') {
+          // Navegar automáticamente a la página de temas
           setTimeout(() => {
             navigate('/professor/topics')
-          }, 500)
+          }, 1000)
         }
       }
       
-      // Tour de contenido & IA
+      // Tour de contenido & IA - Navegación automática
       if (currentTourType === 'ai-content') {
-        if (currentStep?.target === '[data-tour="ai-generator-link"]' && action === 'next') {
-          // Navegar a la página de IA generador
+        if (currentStep?.target === '[data-tour="ai-generator-link"]') {
+          // Navegar automáticamente a la página de IA generador
           setTimeout(() => {
             navigate('/ai-content')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="generated-content-link"]' && action === 'next') {
-          // Navegar a la página de contenidos generados
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="generated-content-link"]') {
+          // Navegar automáticamente a la página de contenidos generados
           setTimeout(() => {
             navigate('/generated-content')
-          }, 500)
+          }, 1000)
         }
       }
       
-      // Tour de gestión
+      // Tour de gestión - Navegación automática
       if (currentTourType === 'management') {
-        if (currentStep?.target === '[data-tour="analytics-link"]' && action === 'next') {
-          // Navegar a la página de analytics
+        if (currentStep?.target === '[data-tour="analytics-link"]') {
+          // Navegar automáticamente a la página de analytics
           setTimeout(() => {
             navigate('/material-analytics')
-          }, 500)
-        } else if (currentStep?.target === '[data-tour="settings-link"]' && action === 'next') {
-          // Navegar a la página de configuración
+          }, 1000)
+        } else if (currentStep?.target === '[data-tour="settings-link"]') {
+          // Navegar automáticamente a la página de configuración
           setTimeout(() => {
             navigate('/profile')
-          }, 500)
+          }, 1000)
         }
       }
+    }
+    
+    // Navegación automática para tours del estudiante
+    if (user?.role === 'ALUMNO') {
+      const steps = getTourSteps(user.role, currentTourType)
+      const currentStep = steps[index]
+
+
+      // Tour de mi sección - Navegación automática
+      if (currentTourType === 'my-section') {
+        if (currentStep?.target === '[data-tour="my-section"]') {
+          // Navegar automáticamente a la página de mi sección
+          setTimeout(() => {
+            navigate('/my-section')
+          }, 1000) // Aumentar el tiempo para que el usuario vea el mensaje
+        }
+      }
+      
+      // Tour de mi portafolio - Navegación automática
+      if (currentTourType === 'my-portfolio') {
+        if (currentStep?.target === '[data-tour="my-portfolio"]') {
+          // Navegar automáticamente a la página de mi portafolio
+          setTimeout(() => {
+            navigate('/student-portfolio')
+          }, 1000) // Aumentar el tiempo para que el usuario vea el mensaje
+        }
+      }
+      
     }
 
     if (([STATUS.FINISHED, STATUS.SKIPPED] as string[]).includes(status)) {

@@ -103,10 +103,10 @@ export function MySectionMaterials() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="my-materials-page">
 
       {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6" data-tour="my-materials-header">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mis Materiales</h1>
           <p className="text-gray-600 mt-1">
@@ -115,7 +115,7 @@ export function MySectionMaterials() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-tour="my-materials-content">
         {/* Lista de Temas */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 border-b border-gray-200">
