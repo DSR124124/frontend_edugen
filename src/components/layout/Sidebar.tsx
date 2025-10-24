@@ -75,6 +75,7 @@ interface SubNavigationItem {
   name: string
   href: string
   icon: React.ComponentType<{ className?: string }>
+  'data-tour'?: string
 }
 
 interface NavigationItem {
@@ -82,12 +83,13 @@ interface NavigationItem {
   href?: string
   icon: React.ComponentType<{ className?: string }>
   subItems?: SubNavigationItem[]
+  'data-tour'?: string
 }
 
 const studentNavigation: NavigationItem[] = [
-  { name: 'Inicio', href: '/dashboard', icon: Home },
-  { name: 'Mi Sección', href: '/my-section', icon: Users },
-  { name: 'Mi Portafolio', href: '/student-portfolio', icon: FolderOpen },
+  { name: 'Inicio', href: '/dashboard', icon: Home, 'data-tour': 'student-dashboard' },
+  { name: 'Mi Sección', href: '/my-section', icon: Users, 'data-tour': 'my-section' },
+  { name: 'Mi Portafolio', href: '/student-portfolio', icon: FolderOpen, 'data-tour': 'my-portfolio' },
   { name: 'Configuración', href: '/profile', icon: Settings },
 ]
 
@@ -97,7 +99,7 @@ const directorNavigation: NavigationItem[] = [
     name: 'Inicio', 
     icon: Home,
     subItems: [
-      { name: 'Dashboard', href: '/director', icon: LayoutDashboard },
+      { name: 'Dashboard', href: '/director', icon: LayoutDashboard, 'data-tour': 'director-dashboard' },
     ]
   },
   
@@ -105,10 +107,11 @@ const directorNavigation: NavigationItem[] = [
   { 
     name: 'Académico', 
     icon: BookOpen,
+    'data-tour': 'academic-section',
     subItems: [
-      { name: 'Grados', href: '/director/grades', icon: Layers },
-      { name: 'Períodos', href: '/director/terms', icon: Calendar },
-      { name: 'Secciones', href: '/director/sections', icon: School },
+      { name: 'Grados', href: '/director/grades', icon: Layers, 'data-tour': 'grades-link' },
+      { name: 'Períodos', href: '/director/terms', icon: Calendar, 'data-tour': 'periods-link' },
+      { name: 'Secciones', href: '/director/sections', icon: School, 'data-tour': 'sections-link' },
     ]
   },
   
@@ -116,9 +119,10 @@ const directorNavigation: NavigationItem[] = [
   { 
     name: 'Personas', 
     icon: Users,
+    'data-tour': 'people-section',
     subItems: [
-      { name: 'Estudiantes', href: '/director/students', icon: GraduationCap },
-      { name: 'Profesores', href: '/director/professors', icon: UserCheck },
+      { name: 'Estudiantes', href: '/director/students', icon: GraduationCap, 'data-tour': 'students-link' },
+      { name: 'Profesores', href: '/director/professors', icon: UserCheck, 'data-tour': 'professors-link' },
     ]
   },
   
@@ -126,27 +130,29 @@ const directorNavigation: NavigationItem[] = [
   { 
     name: 'Administración', 
     icon: Settings,
+    'data-tour': 'administration-section',
     subItems: [
-      { name: 'Institución', href: '/director/institution', icon: Building2 },
-      { name: 'Configuración', href: '/profile', icon: Wrench },
+      { name: 'Institución', href: '/director/institution', icon: Building2, 'data-tour': 'institution-link' },
+      { name: 'Configuración', href: '/profile', icon: Wrench, 'data-tour': 'settings-link' },
     ]
   },
 ]
 
 const professorNavigation: NavigationItem[] = [
   // Inicio
-  { name: 'Inicio', href: '/professor', icon: Home },
+  { name: 'Inicio', href: '/professor', icon: Home, 'data-tour': 'professor-dashboard' },
   
   // Docencia
   { 
     name: 'Docencia', 
     icon: GraduationCap,
+    'data-tour': 'teaching-section',
     subItems: [
-      { name: 'Mis Cursos', href: '/professor/courses', icon: BookOpen },
-      { name: 'Mis Secciones', href: '/professor/sections', icon: Users },
-      { name: 'Mis Estudiantes', href: '/professor/students', icon: UserCheck },
-      { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen },
-      { name: 'Temas', href: '/professor/topics', icon: Layers },
+      { name: 'Mis Cursos', href: '/professor/courses', icon: BookOpen, 'data-tour': 'courses-link' },
+      { name: 'Mis Secciones', href: '/professor/sections', icon: Users, 'data-tour': 'sections-link' },
+      { name: 'Mis Estudiantes', href: '/professor/students', icon: UserCheck, 'data-tour': 'students-link' },
+      { name: 'Portafolios', href: '/professor/portfolios', icon: FolderOpen, 'data-tour': 'portfolios-link' },
+      { name: 'Temas', href: '/professor/topics', icon: Layers, 'data-tour': 'topics-link' },
     ]
   },
   
@@ -154,9 +160,10 @@ const professorNavigation: NavigationItem[] = [
   { 
     name: 'Contenido & IA', 
     icon: Bot,
+    'data-tour': 'ai-content-section',
     subItems: [
-      { name: 'IA Generador', href: '/ai-content', icon: Brain },
-      { name: 'Contenidos Generados', href: '/generated-content', icon: FileText },
+      { name: 'IA Generador', href: '/ai-content', icon: Brain, 'data-tour': 'ai-generator-link' },
+      { name: 'Contenidos Generados', href: '/generated-content', icon: FileText, 'data-tour': 'generated-content-link' },
     ]
   },
   
@@ -164,9 +171,10 @@ const professorNavigation: NavigationItem[] = [
   { 
     name: 'Gestión', 
     icon: Settings,
+    'data-tour': 'management-section',
     subItems: [
-      { name: 'Analytics', href: '/material-analytics', icon: BarChart3 },
-      { name: 'Configuración', href: '/profile', icon: Wrench },
+      { name: 'Analytics', href: '/material-analytics', icon: BarChart3, 'data-tour': 'analytics-link' },
+      { name: 'Configuración', href: '/profile', icon: Wrench, 'data-tour': 'settings-link' },
     ]
   },
 ]
@@ -476,6 +484,7 @@ export function Sidebar() {
                     <button
                       onClick={() => toggleItemExpansion(item.name)}
                       className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors text-white hover:bg-white/15"
+                      {...(item['data-tour'] && { 'data-tour': item['data-tour'] })}
                     >
                       <div className="flex items-center">
                         <Icon className="mr-3 h-5 w-5" />
@@ -501,6 +510,7 @@ export function Sidebar() {
                         }`
                       }
                       onClick={closeSidebarOnMobile}
+                      {...(item['data-tour'] && { 'data-tour': item['data-tour'] })}
                     >
                       <Icon className="mr-3 h-5 w-5" />
                       {item.name}
@@ -526,6 +536,7 @@ export function Sidebar() {
                               }`
                             }
                             onClick={closeSidebarOnMobile}
+                            {...(subItem['data-tour'] && { 'data-tour': subItem['data-tour'] })}
                           >
                             <SubIcon className="mr-2 h-4 w-4" />
                             {subItem.name}

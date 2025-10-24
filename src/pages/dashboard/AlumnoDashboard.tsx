@@ -87,7 +87,7 @@ export function AlumnoDashboard() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="student-dashboard">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
         <div className="flex items-center p-3 sm:p-4">

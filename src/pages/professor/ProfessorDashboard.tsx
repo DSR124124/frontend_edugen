@@ -35,7 +35,7 @@ export function ProfessorDashboard() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4" data-tour="professor-dashboard">
       {/* Header */}
       <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
         <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">

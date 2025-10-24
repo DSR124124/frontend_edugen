@@ -127,9 +127,9 @@ export function TermsPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="terms-page">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6" data-tour="terms-header">
         <div className="flex items-center justify-between p-3 sm:p-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
@@ -147,6 +147,7 @@ export function TermsPage() {
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
+            data-tour="create-term-button"
             className="inline-flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-colors text-sm font-medium space-x-2"
           >
             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -157,7 +158,7 @@ export function TermsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6" data-tour="terms-stats">
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg flex-shrink-0">
@@ -212,7 +213,7 @@ export function TermsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm" data-tour="terms-content">
         <div className="border-b border-gray-200 p-3 sm:p-4">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">

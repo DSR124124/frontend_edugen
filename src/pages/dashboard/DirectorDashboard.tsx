@@ -100,7 +100,7 @@ export function DirectorDashboard() {
     } catch (err: unknown) {
       showError(
         '❌ Error al Registrar Usuario',
-        (err as any)?.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
+        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'No se pudo registrar el usuario. Inténtalo de nuevo.',
         { duration: 5000 }
       )
     }
@@ -125,7 +125,7 @@ export function DirectorDashboard() {
       } catch (err: unknown) {
         showError(
           'Error al Eliminar Usuario',
-          (err as any)?.response?.data?.detail || 'No se pudo eliminar el usuario.',
+          (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'No se pudo eliminar el usuario.',
           { duration: 5000 }
         )
       }
@@ -166,7 +166,7 @@ export function DirectorDashboard() {
     } catch (error: unknown) {
       showError(
         'Error al Actualizar Usuario',
-        (error as any)?.response?.data?.detail || 'No se pudo actualizar el usuario.',
+        (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || 'No se pudo actualizar el usuario.',
         { duration: 5000 }
       )
     }
@@ -182,7 +182,7 @@ export function DirectorDashboard() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="director-dashboard">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
         <div className="flex items-center p-3 sm:p-4">
@@ -204,7 +204,7 @@ export function DirectorDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6" data-tour="dashboard-stats">
         {/* Total Usuarios */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-3 sm:p-4 lg:p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center space-x-3 sm:space-x-4">
@@ -253,7 +253,7 @@ export function DirectorDashboard() {
       </div>
 
       {/* Users Section */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm" data-tour="dashboard-content">
         <div className="border-b border-gray-200 p-3 sm:p-4">
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-2 sm:space-x-3">
@@ -265,7 +265,7 @@ export function DirectorDashboard() {
                 <p className="text-xs sm:text-sm text-gray-600">Administra profesores y estudiantes</p>
               </div>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3" data-tour="dashboard-actions">
               <button
                 onClick={() => {
                   setUserType('PROFESOR')
