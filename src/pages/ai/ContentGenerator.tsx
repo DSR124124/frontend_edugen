@@ -350,7 +350,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4" data-tour="ai-generator-page">
       {/* Loading overlay para creación automática */}
       <LoadingOverlay 
         isVisible={isAutoCreating}
@@ -358,7 +358,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
       />
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-6">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-6" data-tour="ai-generator-header">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
@@ -451,7 +451,7 @@ Por favor, ayúdame a refinar estos requisitos y generar el material educativo p
               <span>Conversaciones</span>
             </h2>
             
-            <div className="flex-1 overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-3" data-tour="ai-generator-content">
               {conversationsError && (
                 <div className="p-3 lg:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
                   <AlertTriangle className="w-4 h-4 lg:w-5 lg:h-5 text-red-500 flex-shrink-0 mt-0.5" />

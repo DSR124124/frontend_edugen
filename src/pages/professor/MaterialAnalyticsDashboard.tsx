@@ -269,9 +269,9 @@ export function MaterialAnalyticsDashboard() {
 
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="analytics-page">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6" data-tour="analytics-header">
         <div className="flex items-center p-3 sm:p-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
@@ -488,7 +488,9 @@ export function MaterialAnalyticsDashboard() {
           </div>
 
           {/* Gráficos Analíticos */}
-          <AnalyticsCharts data={materialAnalytics} loading={loadingAnalytics} />
+          <div data-tour="analytics-content">
+            <AnalyticsCharts data={materialAnalytics} loading={loadingAnalytics} />
+          </div>
         </>
       )}
 

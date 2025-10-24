@@ -135,9 +135,9 @@ export function PortfolioManagement() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-tour="portfolios-page">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6" data-tour="portfolios-header">
         <div className="flex items-center p-3 sm:p-4">
           <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
@@ -248,7 +248,7 @@ export function PortfolioManagement() {
             </div>
           </div>
 
-          <div className="p-3">
+          <div className="p-3" data-tour="portfolios-content">
             {portfoliosLoading ? (
               <LoadingState message="Cargando portafolios..." />
             ) : portfoliosError ? (

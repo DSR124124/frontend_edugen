@@ -60,9 +60,9 @@ export function MySections() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour="sections-page">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-4">
+      <div className="flex items-center space-x-3 mb-4" data-tour="sections-header">
         <div className="p-2 bg-primary-100 rounded-lg">
           <FiUsers className="w-5 h-5 text-primary" />
         </div>
@@ -90,7 +90,7 @@ export function MySections() {
       </div>
 
       {/* Secciones */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-tour="sections-content">
         {sections && sections.length > 0 ? sections.map((section: Section) => (
           <div key={section.id} className="card hover:shadow-lg transition-all duration-300 hover:scale-105">
             <div className="flex items-start justify-between mb-3">

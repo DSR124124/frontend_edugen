@@ -3,6 +3,7 @@ import { useUIStore } from '../../store/ui'
 import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { User, LogOut, Menu, X } from 'lucide-react'
 import { Breadcrumb, BreadcrumbItem } from '../ui/Breadcrumb'
+import { TourMenu } from '../ui/TourMenu'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export function Header() {
@@ -172,6 +173,7 @@ export function Header() {
           {/* Botón único para mostrar/ocultar sidebar */}
           <button
             onClick={toggleSidebar}
+            data-tour="sidebar-toggle"
             className="p-2 rounded-md transition-colors hover:bg-gray-200 active:bg-gray-300 relative group flex-shrink-0"
             title={sidebarOpen ? "Cerrar barra de navegación" : "Abrir barra de navegación"}
           >
@@ -200,7 +202,10 @@ export function Header() {
         </div>
 
         <div className="flex items-center space-x-1 sm:space-x-4">
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Menú de Tours */}
+          <TourMenu />
+
+          <div className="flex items-center space-x-2 sm:space-x-3" data-tour="user-profile">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-primary-100)' }}>
               <User className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'var(--color-primary)' }} />
             </div>
@@ -212,6 +217,7 @@ export function Header() {
           
           <button
             onClick={handleLogout}
+            data-tour="logout-button"
             className="flex items-center justify-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95"
             style={{
               color: 'var(--color-base-content)',

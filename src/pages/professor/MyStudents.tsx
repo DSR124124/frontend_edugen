@@ -89,9 +89,9 @@ export function MyStudents() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-3 sm:space-y-4" data-tour="students-page">
       {/* Header */}
-      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
+      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4" data-tour="students-header">
         <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
           <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
         </div>
@@ -186,7 +186,7 @@ export function MyStudents() {
       )}
 
       {/* Students List */}
-      <div className="card">
+      <div className="card" data-tour="students-content">
         <div className="p-3 sm:p-4 border-b border-base-300">
           <h2 className="text-lg sm:text-xl font-bold text-base-content">Lista de Estudiantes</h2>
         </div>

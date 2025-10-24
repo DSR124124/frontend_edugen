@@ -289,9 +289,9 @@ export function GeneratedContentPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0">
+    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="generated-content-page">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0" data-tour="generated-content-header">
         <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
           <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
             <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -362,7 +362,7 @@ export function GeneratedContentPage() {
       </div>
 
       {/* Content Table */}
-      <div className="card p-3 sm:p-4">
+      <div className="card p-3 sm:p-4" data-tour="generated-content-content">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
           <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
             <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
