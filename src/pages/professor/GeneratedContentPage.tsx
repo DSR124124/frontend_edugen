@@ -181,6 +181,12 @@ export function GeneratedContentPage() {
         if (assignResponse.data) {
           const assignResult = assignResponse.data
           showSuccess(`Material asignado exitosamente a ${assignResult.assigned_count} estudiante(s)`, 'success')
+          
+          // Invalidar queries relacionadas con materiales para refrescar la UI
+          await queryClient.invalidateQueries({ queryKey: ['topic-materials'] })
+          await queryClient.invalidateQueries({ queryKey: ['materials'] })
+          await queryClient.invalidateQueries({ queryKey: ['section-materials'] })
+          
           handleCloseAssignModal()
         } else {
           throw new Error('Error al asignar el material a los estudiantes')

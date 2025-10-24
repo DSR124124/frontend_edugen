@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { academicApi, Material } from '../api/endpoints'
 
 export const useMaterials = () => {
+  const queryClient = useQueryClient()
   const [materials, setMaterials] = useState<Material[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -80,6 +82,12 @@ export const useMaterials = () => {
       // Usar el endpoint original con autenticación
       const response = await academicApi.createMaterial(formData)
       setMaterials(prev => [...prev, response.data])
+      
+      // Invalidar queries relacionadas con materiales para refrescar la UI
+      await queryClient.invalidateQueries({ queryKey: ['topic-materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['section-materials'] })
+      
       return response.data
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
@@ -90,7 +98,7 @@ export const useMaterials = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [queryClient])
 
   const updateMaterial = useCallback(async (id: number, data: {
     name?: string
@@ -130,6 +138,12 @@ export const useMaterials = () => {
       setMaterials(prev => prev.map(material => 
         material.id === id ? response.data : material
       ))
+      
+      // Invalidar queries relacionadas con materiales para refrescar la UI
+      await queryClient.invalidateQueries({ queryKey: ['topic-materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['section-materials'] })
+      
       return response.data
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
@@ -140,7 +154,7 @@ export const useMaterials = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [queryClient])
 
   const deleteMaterial = useCallback(async (id: number) => {
     try {
@@ -148,6 +162,11 @@ export const useMaterials = () => {
       setError(null)
       await academicApi.deleteMaterial(id)
       setMaterials(prev => prev.filter(material => material.id !== id))
+      
+      // Invalidar queries relacionadas con materiales para refrescar la UI
+      await queryClient.invalidateQueries({ queryKey: ['topic-materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['materials'] })
+      await queryClient.invalidateQueries({ queryKey: ['section-materials'] })
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Error al eliminar material'
@@ -157,7 +176,7 @@ export const useMaterials = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [queryClient])
 
   return {
     materials,

@@ -11,7 +11,9 @@ export const useTopics = () => {
       setLoading(true)
       setError(null)
       const response = await academicApi.getTopics()
-      setTopics(response.data)
+      // Ensure response.data is an array before setting
+      const topicsData = Array.isArray(response.data) ? response.data : []
+      setTopics(topicsData)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Error al cargar temas'
@@ -28,7 +30,9 @@ export const useTopics = () => {
       setLoading(true)
       setError(null)
       const response = await academicApi.getTopicsByCourse(courseId)
-      setTopics(response.data)
+      // Ensure response.data is an array before setting
+      const topicsData = Array.isArray(response.data) ? response.data : []
+      setTopics(topicsData)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error && 'response' in err 
         ? (err as { response?: { data?: { detail?: string } } }).response?.data?.detail || 'Error al cargar temas'
