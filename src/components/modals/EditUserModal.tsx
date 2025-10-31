@@ -24,7 +24,16 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
     assigned_sections_ids: [] as number[],
   })
   
-  const [sections, setSections] = useState<Array<{id: number, name: string, grade_level_name?: string, term_name?: string}>>([])
+  const [sections, setSections] = useState<Array<{
+    id: number
+    name: string
+    grade_level?: { id: number; name: string }
+    grade_level_name?: string
+    grade_level_id?: number
+    term_name?: string
+  }>>([])
+  const [gradeLevels, setGradeLevels] = useState<Array<{id: number, name: string}>>([])
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState<string>('')
 
   useEffect(() => {
     if (user) {
@@ -37,23 +46,62 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
         specialty: user.specialty || '',
         assigned_sections_ids: user.assigned_sections?.map(s => s.id) || [],
       })
+      
+      // Si el usuario tiene secciones asignadas, pre-seleccionar el grado
+      // Esto se hará después de cargar los grados en el useEffect siguiente
     }
   }, [user])
 
-  // Cargar secciones cuando se abre el modal
+  // Cargar grados y secciones cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
-      const loadSections = async () => {
+      const loadData = async () => {
         try {
-          const response = await directorApi.getSections()
-          setSections(response.data)
+          const [sectionsResponse, gradeLevelsResponse] = await Promise.all([
+            directorApi.getSections(),
+            directorApi.getGradeLevels()
+          ])
+          setSections(sectionsResponse.data)
+          setGradeLevels(gradeLevelsResponse.data)
+          
+          // Después de cargar los grados, si el usuario tiene secciones, seleccionar el grado
+          if (user && user.assigned_sections && user.assigned_sections.length > 0) {
+            const firstSection = user.assigned_sections[0]
+            if (firstSection.grade_level_name) {
+              // Buscar el grado por nombre
+              const gradeLevel = gradeLevelsResponse.data.find(gl => gl.name === firstSection.grade_level_name)
+              if (gradeLevel) {
+                setSelectedGradeLevel(gradeLevel.id.toString())
+              }
+            }
+          }
         } catch {
           // Handle error silently
         }
       }
-      loadSections()
+      loadData()
+    } else {
+      // Resetear el grado seleccionado cuando se cierra el modal
+      setSelectedGradeLevel('')
     }
-  }, [isOpen])
+  }, [isOpen, user])
+
+  // Filtrar secciones por grado seleccionado
+  const filteredSections = selectedGradeLevel 
+    ? sections.filter(section => {
+        // Primero intentar usar grade_level.id (estructura completa)
+        if (section.grade_level?.id) {
+          return section.grade_level.id.toString() === selectedGradeLevel
+        }
+        // Si no, usar grade_level_id (estructura plana)
+        if (section.grade_level_id) {
+          return section.grade_level_id.toString() === selectedGradeLevel
+        }
+        // Como último recurso, usar grade_level_name
+        const gradeLevel = gradeLevels.find(gl => gl.id.toString() === selectedGradeLevel)
+        return section.grade_level_name === gradeLevel?.name
+      })
+    : sections
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -95,11 +143,21 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
     { value: 'OTRO', label: 'Otro' },
   ]
 
+  // Determinar el título del modal según el rol del usuario
+  const getModalTitle = () => {
+    if (user) {
+      if (user.role === 'ALUMNO') return 'Editar Estudiante'
+      if (user.role === 'PROFESOR') return 'Editar Profesor'
+      if (user.role === 'DIRECTOR') return 'Editar Director'
+    }
+    return 'Editar Usuario'
+  }
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Editar Usuario"
+      title={getModalTitle()}
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,17 +193,20 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
             required
           />
 
-          <Select
-            label="Rol"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            options={[
-              { value: 'ALUMNO', label: 'Alumno' },
-              { value: 'PROFESOR', label: 'Profesor' },
-              { value: 'DIRECTOR', label: 'Director' }
-            ]}
-          />
+          {/* Solo mostrar el campo de rol si es un director (para permitir cambios de rol) */}
+          {formData.role === 'DIRECTOR' && (
+            <Select
+              label="Rol"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              options={[
+                { value: 'ALUMNO', label: 'Alumno' },
+                { value: 'PROFESOR', label: 'Profesor' },
+                { value: 'DIRECTOR', label: 'Director' }
+              ]}
+            />
+          )}
 
           {formData.role === 'PROFESOR' && (
             <>
@@ -160,30 +221,46 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
                 ]}
               />
 
+              <Select
+                label="Grado"
+                name="grade_level"
+                value={selectedGradeLevel}
+                onChange={(e) => setSelectedGradeLevel(e.target.value)}
+                options={[
+                  { value: '', label: 'Seleccionar grado' },
+                  ...gradeLevels.map(gl => ({ value: gl.id.toString(), label: gl.name }))
+                ]}
+              />
+
               <div>
                 <label className="block text-sm font-medium text-base-content mb-2">
                   Secciones Asignadas
                 </label>
                 <div className="max-h-32 overflow-y-auto border border-base-300 rounded-md p-2 bg-base-100">
-                  {sections.map((section) => (
-                    <div key={section.id} className="flex items-center space-x-2 py-1">
-                      <input
-                        type="checkbox"
-                        id={`section-${section.id}`}
-                        checked={formData.assigned_sections_ids.includes(section.id)}
-                        onChange={() => handleSectionToggle(section.id)}
-                        className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded"
-                      />
-                      <label 
-                        htmlFor={`section-${section.id}`}
-                        className="text-sm text-base-content cursor-pointer"
-                      >
-                        {section.name} ({section.grade_level_name || 'Sin grado'})
-                      </label>
-                    </div>
-                  ))}
-                  {sections.length === 0 && (
-                    <p className="text-sm text-base-content/70">No hay secciones disponibles</p>
+                  {selectedGradeLevel ? (
+                    filteredSections.length > 0 ? (
+                      filteredSections.map((section) => (
+                        <div key={section.id} className="flex items-start space-x-2 py-2 border-b border-base-300 last:border-b-0">
+                          <input
+                            type="checkbox"
+                            id={`section-${section.id}`}
+                            checked={formData.assigned_sections_ids.includes(section.id)}
+                            onChange={() => handleSectionToggle(section.id)}
+                            className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded mt-0.5"
+                          />
+                          <label 
+                            htmlFor={`section-${section.id}`}
+                            className="flex-1 text-sm text-base-content cursor-pointer"
+                          >
+                            <div className="font-medium">Sección: {section.name}</div>
+                          </label>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-base-content/70">No hay secciones disponibles para este grado</p>
+                    )
+                  ) : (
+                    <p className="text-sm text-base-content/70">Por favor, selecciona un grado primero</p>
                   )}
                 </div>
               </div>
@@ -191,36 +268,54 @@ export function EditUserModal({ user, isOpen, onClose, onSave, loading = false }
           )}
 
           {formData.role === 'ALUMNO' && (
-            <div>
-              <label className="block text-sm font-medium text-base-content mb-2">
-                Sección Asignada
-              </label>
-              <div className="max-h-32 overflow-y-auto border border-base-300 rounded-md p-2 bg-base-100">
-                {sections.map((section) => (
-                  <div key={section.id} className="flex items-center space-x-2 py-1">
-                    <input
-                      type="checkbox"
-                      id={`student-section-${section.id}`}
-                      checked={formData.assigned_sections_ids.includes(section.id)}
-                      onChange={() => handleSectionToggle(section.id)}
-                      className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded"
-                    />
-                    <label 
-                      htmlFor={`student-section-${section.id}`}
-                      className="text-sm text-base-content cursor-pointer"
-                    >
-                      {section.name} ({section.grade_level_name || 'Sin grado'})
-                    </label>
-                  </div>
-                ))}
-                {sections.length === 0 && (
-                  <p className="text-sm text-base-content/70">No hay secciones disponibles</p>
-                )}
+            <>
+              <Select
+                label="Grado"
+                name="grade_level"
+                value={selectedGradeLevel}
+                onChange={(e) => setSelectedGradeLevel(e.target.value)}
+                options={[
+                  { value: '', label: 'Seleccionar grado' },
+                  ...gradeLevels.map(gl => ({ value: gl.id.toString(), label: gl.name }))
+                ]}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-base-content mb-2">
+                  Sección
+                </label>
+                <div className="max-h-32 overflow-y-auto border border-base-300 rounded-md p-2 bg-base-100">
+                  {selectedGradeLevel ? (
+                    filteredSections.length > 0 ? (
+                      filteredSections.map((section) => (
+                        <div key={section.id} className="flex items-start space-x-2 py-2 border-b border-base-300 last:border-b-0">
+                          <input
+                            type="checkbox"
+                            id={`student-section-${section.id}`}
+                            checked={formData.assigned_sections_ids.includes(section.id)}
+                            onChange={() => handleSectionToggle(section.id)}
+                            className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded mt-0.5"
+                          />
+                          <label 
+                            htmlFor={`student-section-${section.id}`}
+                            className="flex-1 text-sm text-base-content cursor-pointer"
+                          >
+                            <div className="font-medium">Sección: {section.name}</div>
+                          </label>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-base-content/70">No hay secciones disponibles para este grado</p>
+                    )
+                  ) : (
+                    <p className="text-sm text-base-content/70">Por favor, selecciona un grado primero</p>
+                  )}
+                </div>
+                <p className="text-xs text-base-content/70 mt-1">
+                  Selecciona la sección donde estará matriculado el estudiante
+                </p>
               </div>
-              <p className="text-xs text-base-content/70 mt-1">
-                Selecciona la sección donde estará matriculado el estudiante
-              </p>
-            </div>
+            </>
           )}
 
           <div className="flex justify-end space-x-3 pt-4">

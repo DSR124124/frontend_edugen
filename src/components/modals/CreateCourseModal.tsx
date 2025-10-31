@@ -66,14 +66,22 @@ export function CreateCourseModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Nombre del Curso"
+          label={
+            <>
+              Nombre del Curso <span className="text-error">*</span>
+            </>
+          }
           value={formData.name}
           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           required
         />
         
         <Input
-          label="Código del Curso"
+          label={
+            <>
+              Código del Curso <span className="text-error">*</span>
+            </>
+          }
           value={formData.code}
           onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value }))}
           required
@@ -87,11 +95,16 @@ export function CreateCourseModal({
         />
         
         <Input
-          label="Créditos"
+          label={
+            <>
+              Créditos <span className="text-error">*</span>
+            </>
+          }
           type="number"
           min="0"
           value={formData.credits.toString()}
           onChange={(e) => setFormData(prev => ({ ...prev, credits: parseInt(e.target.value) || 0 }))}
+          required
         />
         
         <div className="flex justify-end space-x-3 pt-4">

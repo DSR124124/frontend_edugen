@@ -64,25 +64,53 @@ export function CreateUserModal({
   const [sections, setSections] = useState<Array<{
     id: number
     name: string
+    grade_level?: { id: number; name: string }
     grade_level_name?: string
+    grade_level_id?: number
     professor_name?: string
     term_name?: string
   }>>([])
+  const [gradeLevels, setGradeLevels] = useState<Array<{id: number, name: string}>>([])
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState<string>('')
 
-  // Cargar secciones disponibles
+  // Cargar grados y secciones disponibles
   useEffect(() => {
     if (isOpen) {
-      const loadSections = async () => {
+      const loadData = async () => {
         try {
-          const response = await directorApi.getSections()
-          setSections(response.data)
+          const [sectionsResponse, gradeLevelsResponse] = await Promise.all([
+            directorApi.getSections(),
+            directorApi.getGradeLevels()
+          ])
+          setSections(sectionsResponse.data)
+          setGradeLevels(gradeLevelsResponse.data)
         } catch {
-          // Error loading sections
+          // Error loading data
         }
       }
-      loadSections()
+      loadData()
+    } else {
+      // Resetear el grado seleccionado cuando se cierra el modal
+      setSelectedGradeLevel('')
     }
   }, [isOpen])
+
+  // Filtrar secciones por grado seleccionado
+  const filteredSections = selectedGradeLevel 
+    ? sections.filter(section => {
+        // Primero intentar usar grade_level.id (estructura completa)
+        if (section.grade_level?.id) {
+          return section.grade_level.id.toString() === selectedGradeLevel
+        }
+        // Si no, usar grade_level_id (estructura plana)
+        if (section.grade_level_id) {
+          return section.grade_level_id.toString() === selectedGradeLevel
+        }
+        // Como último recurso, usar grade_level_name
+        const gradeLevel = gradeLevels.find(gl => gl.id.toString() === selectedGradeLevel)
+        return section.grade_level_name === gradeLevel?.name
+      })
+    : sections
 
   // Reset form when userType changes
   useEffect(() => {
@@ -94,6 +122,7 @@ export function CreateUserModal({
     }))
     setErrors({})
     setTouched({})
+    setSelectedGradeLevel('') // Resetear grado al cambiar tipo de usuario
   }, [userType])
 
   // Función para verificar duplicados
@@ -613,6 +642,17 @@ export function CreateUserModal({
             />
           )}
 
+          <Select
+            label="Grado"
+            name="grade_level"
+            value={selectedGradeLevel}
+            onChange={(e) => setSelectedGradeLevel(e.target.value)}
+            options={[
+              { value: '', label: 'Seleccionar grado' },
+              ...gradeLevels.map(gl => ({ value: gl.id.toString(), label: gl.name }))
+            ]}
+          />
+
           <div>
             <label className="block text-sm font-medium text-base-content mb-2">
               {isProfessor ? 'Secciones Asignadas' : 'Secciones de Matrícula'} <span className="text-error">*</span>
@@ -622,25 +662,30 @@ export function CreateUserModal({
                 ? 'border-error' 
                 : 'border-base-300'
             }`}>
-              {sections.map((section) => (
-                <div key={section.id} className="flex items-center space-x-2 py-1">
-                  <input
-                    type="checkbox"
-                    id={`create-section-${section.id}`}
-                    checked={formData.assigned_sections_ids.includes(section.id)}
-                    onChange={() => handleSectionToggle(section.id)}
-                    className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded"
-                  />
-                  <label 
-                    htmlFor={`create-section-${section.id}`}
-                    className="text-sm text-base-content cursor-pointer"
-                  >
-                    {section.name} ({section.grade_level_name || 'Sin grado'})
-                  </label>
-                </div>
-              ))}
-              {sections.length === 0 && (
-                <p className="text-sm text-base-content/70">No hay secciones disponibles</p>
+              {selectedGradeLevel ? (
+                filteredSections.length > 0 ? (
+                  filteredSections.map((section) => (
+                    <div key={section.id} className="flex items-start space-x-2 py-2 border-b border-base-300 last:border-b-0">
+                      <input
+                        type="checkbox"
+                        id={`create-section-${section.id}`}
+                        checked={formData.assigned_sections_ids.includes(section.id)}
+                        onChange={() => handleSectionToggle(section.id)}
+                        className="h-4 w-4 text-primary focus:ring-primary border-base-300 rounded mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`create-section-${section.id}`}
+                        className="flex-1 text-sm text-base-content cursor-pointer"
+                      >
+                        <div className="font-medium">Sección: {section.name}</div>
+                      </label>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-base-content/70">No hay secciones disponibles para este grado</p>
+                )
+              ) : (
+                <p className="text-sm text-base-content/70">Por favor, selecciona un grado primero</p>
               )}
             </div>
             {errors.assigned_sections_ids && (
