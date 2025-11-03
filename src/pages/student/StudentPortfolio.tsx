@@ -1,17 +1,18 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { academicApi, portfolioApi, Topic, Material, Portfolio } from '../../api/endpoints'
 import { getApiUrl } from '../../config/environment'
-// import { useAuthStore } from '../../store/auth' // Comentado temporalmente hasta que se use
+import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
 import { FileViewModal } from '../../components/modals/FileViewModal'
 import { Document } from '../../types/block-schema'
+import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { 
   Book,
   FileText,
   Eye,
-  Users,
   ChevronRight,
   Calendar,
   Award,
@@ -23,8 +24,10 @@ import {
   AlertCircle,
   BookOpen,
   Target,
-  Filter
+  Filter,
+  ArrowLeft
 } from 'lucide-react'
+import { Button } from '../../components/ui/Button'
 
 // Local Course interface for this component
 interface Course {
@@ -37,7 +40,9 @@ interface Course {
 }
 
 export function StudentPortfolio() {
-  // const { user } = useAuthStore() // Comentado temporalmente hasta que se use
+  const { user } = useAuthStore()
+  const navigate = useNavigate()
+  const { showError } = useNotificationContext()
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
@@ -45,15 +50,39 @@ export function StudentPortfolio() {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false)
   const [fileModalUrl, setFileModalUrl] = useState<string>('')
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
-  const [materialFilter, setMaterialFilter] = useState<'all' | 'personalized' | 'class'>('personalized')
+  // Filtros avanzados
+  const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'personalized' | 'class'>('all')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'in-progress' | 'not-started'>('all')
+  const [dateFilter, setDateFilter] = useState<'all' | 'recent' | 'old'>('all')
 
-  // Obtener materiales con analytics
+  // Verificar si el estudiante tiene sección asignada
+  const hasSection = user?.role === 'ALUMNO' && user?.section
+
+  // Mostrar mensaje de error y redirigir si no tiene sección
+  useEffect(() => {
+    if (user?.role === 'ALUMNO' && !user?.section) {
+      showError(
+        'Acceso denegado',
+        'No tienes sección asignada. Contacta a tu profesor o director para que te asigne una sección.',
+        { duration: 6000 }
+      )
+      // Redirigir al dashboard después de un breve delay
+      const timer = setTimeout(() => {
+        navigate('/dashboard')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [user, navigate, showError])
+
+  // Obtener materiales con analytics (solo si tiene sección)
   const { data: materialsWithAnalytics } = useMyMaterialsWithAnalytics()
 
-  // Cargar portafolios del estudiante y derivar cursos desde ellos
+  // Cargar portafolios del estudiante y derivar cursos desde ellos (solo si tiene sección)
   const { data: myPortfolios = [], isLoading: loadingPortfolios } = useQuery({
     queryKey: ['my-portfolios'],
     queryFn: () => portfolioApi.getPortfolios().then(res => res.data as Portfolio[]),
+    enabled: !!hasSection, // Solo cargar si tiene sección
   })
 
   const courses = useMemo(() => {
@@ -126,6 +155,11 @@ export function StudentPortfolio() {
   const handleTopicClick = (topic: Topic) => {
     setSelectedTopic(topic)
     setSelectedMaterial(null)
+    // Resetear filtros al cambiar de tema
+    setAssignmentFilter('all')
+    setTypeFilter('all')
+    setStatusFilter('all')
+    setDateFilter('all')
   }
 
   const handleMaterialClick = async (material: Material) => {
@@ -167,13 +201,85 @@ export function StudentPortfolio() {
     alert('Este tipo de material no se puede visualizar en este momento.')
   }
 
-  // Filtrar materiales según el filtro seleccionado
-  const filteredMaterials = materials?.data?.results?.filter(material => {
-    if (materialFilter === 'all') return true
-    if (materialFilter === 'personalized') return !material.is_shared
-    if (materialFilter === 'class') return material.is_shared
-    return true
-  }) || []
+  // Función para obtener el tipo de material en español
+  const getMaterialTypeLabel = (type: string): string => {
+    const labels: Record<string, string> = {
+      'DOCUMENT': 'Documento',
+      'VIDEO': 'Video',
+      'AUDIO': 'Audio',
+      'IMAGE': 'Imagen',
+      'LINK': 'Enlace',
+      'SCORM': 'SCORM',
+      'OTHER': 'Otro'
+    }
+    return labels[type] || type
+  }
+
+  // Filtrar materiales según los filtros avanzados aplicados
+  const filteredMaterials = useMemo(() => {
+    if (!materials?.data?.results) return []
+    
+    return materials.data.results.filter((material: Material) => {
+      // Filtro por tipo de asignación
+      const assignmentMatch = assignmentFilter === 'all' || 
+        (assignmentFilter === 'class' && material.is_shared) ||
+        (assignmentFilter === 'personalized' && !material.is_shared)
+      
+      // Filtro por tipo de material
+      const typeMatch = typeFilter === 'all' || material.material_type === typeFilter
+      
+      // Filtro por estado (completado/in-progress/no iniciado)
+      let statusMatch = true
+      if (statusFilter !== 'all') {
+        const materialAnalytics = materialsWithAnalytics?.find(m => m.id === material.id)?.analytics
+        const completionRate = materialAnalytics?.completion_rate || 0
+        
+        if (statusFilter === 'completed') {
+          statusMatch = completionRate >= 100
+        } else if (statusFilter === 'in-progress') {
+          statusMatch = completionRate > 0 && completionRate < 100
+        } else if (statusFilter === 'not-started') {
+          statusMatch = completionRate === 0
+        }
+      }
+      
+      // Filtro por fecha
+      let dateMatch = true
+      if (dateFilter !== 'all') {
+        const materialDate = new Date(material.created_at)
+        const now = new Date()
+        const daysDiff = Math.floor((now.getTime() - materialDate.getTime()) / (1000 * 60 * 60 * 24))
+        
+        if (dateFilter === 'recent') {
+          dateMatch = daysDiff <= 30 // Últimos 30 días
+        } else if (dateFilter === 'old') {
+          dateMatch = daysDiff > 30 // Más de 30 días
+        }
+      }
+      
+      // Todos los filtros deben cumplirse
+      return assignmentMatch && typeMatch && statusMatch && dateMatch
+    })
+  }, [materials?.data?.results, assignmentFilter, typeFilter, statusFilter, dateFilter, materialsWithAnalytics])
+  
+  // Obtener estadísticas para los filtros
+  const filterStats = useMemo(() => {
+    if (!materials?.data?.results) return { total: 0, byType: {}, byAssignment: { class: 0, personalized: 0 } }
+    
+    const stats = {
+      total: materials.data.results.length,
+      byType: materials.data.results.reduce((acc: Record<string, number>, material: Material) => {
+        acc[material.material_type] = (acc[material.material_type] || 0) + 1
+        return acc
+      }, {}),
+      byAssignment: {
+        class: materials.data.results.filter((m: Material) => m.is_shared).length,
+        personalized: materials.data.results.filter((m: Material) => !m.is_shared).length
+      }
+    }
+    
+    return stats
+  }, [materials?.data?.results])
 
   const handleClosePreviewModal = () => {
     setIsPreviewModalOpen(false)
@@ -185,6 +291,66 @@ export function StudentPortfolio() {
     setIsFileModalOpen(false)
     setFileModalUrl('')
     setSelectedMaterial(null)
+  }
+
+  // Si el estudiante no tiene sección asignada, mostrar mensaje de error
+  if (user?.role === 'ALUMNO' && !user?.section) {
+    return (
+      <div className="space-y-3 sm:space-y-4 min-h-0">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6">
+          <div className="flex items-center p-3 sm:p-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+                <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  <span>Mi Portafolio</span>
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  Acceso restringido
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8">
+          <div className="text-center py-8 sm:py-12">
+            <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">No tienes sección asignada</h3>
+                <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
+                  Para acceder a tu portafolio, necesitas tener una sección asignada. 
+                  Contacta a tu profesor o director para que te asigne una sección.
+                </p>
+                <div className="mt-6 space-y-3">
+                  <Button
+                    onClick={() => navigate('/dashboard')}
+                    variant="primary"
+                    className="w-full sm:w-auto"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Volver al Dashboard
+                  </Button>
+                  <div className="text-xs text-gray-500 mt-4">
+                    <p className="font-medium mb-1">¿Cómo resolver esto?</p>
+                    <ul className="list-disc list-inside space-y-1 text-left max-w-md mx-auto">
+                      <li>Contacta a tu profesor para que te asigne a una sección</li>
+                      <li>Si eres nuevo estudiante, el director debe asignarte una sección</li>
+                      <li>Tu sesión permanecerá activa para usar otras funcionalidades del sistema</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!myPortfolios || myPortfolios.length === 0) {
@@ -458,42 +624,112 @@ export function StudentPortfolio() {
           </div>
           
           <div className="p-3 sm:p-4">
-            {/* Filtro de Materiales */}
+            {/* Filtros Avanzados de Materiales */}
             {selectedTopic && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                <button
-                  onClick={() => setMaterialFilter('personalized')}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                    materialFilter === 'personalized'
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Filter className="w-3 h-3 mr-1" />
-                  Personalizados
-                </button>
-                <button
-                  onClick={() => setMaterialFilter('class')}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                    materialFilter === 'class'
-                      ? 'bg-green-100 text-green-800 border border-green-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Users className="w-3 h-3 mr-1" />
-                  De Clase
-                </button>
-                <button
-                  onClick={() => setMaterialFilter('all')}
-                  className={`inline-flex items-center px-3 py-1 text-xs font-medium rounded-full transition-colors ${
-                    materialFilter === 'all'
-                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <BookOpen className="w-3 h-3 mr-1" />
-                  Todos
-                </button>
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Filter className="w-4 h-4 text-gray-600" />
+                    <h3 className="text-sm font-semibold text-gray-900">Filtros de Materiales</h3>
+                  </div>
+                  {(assignmentFilter !== 'all' || typeFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all') && (
+                    <button
+                      onClick={() => {
+                        setAssignmentFilter('all')
+                        setTypeFilter('all')
+                        setStatusFilter('all')
+                        setDateFilter('all')
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Limpiar filtros
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* Filtro por Tipo de Asignación */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Tipo de Asignación
+                    </label>
+                    <select
+                      value={assignmentFilter}
+                      onChange={(e) => setAssignmentFilter(e.target.value as 'all' | 'personalized' | 'class')}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">Todos ({filterStats.total})</option>
+                      <option value="class">De Clase ({filterStats.byAssignment.class})</option>
+                      <option value="personalized">Personalizados ({filterStats.byAssignment.personalized})</option>
+                    </select>
+                  </div>
+
+                  {/* Filtro por Tipo de Material */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Tipo de Material
+                    </label>
+                    <select
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value as 'all' | 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER')}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">Todos</option>
+                      {Object.entries(filterStats.byType).map(([type, count]) => (
+                        <option key={type} value={type}>
+                          {getMaterialTypeLabel(type)} ({count as number})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Filtro por Estado */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Estado
+                    </label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as 'all' | 'completed' | 'in-progress' | 'not-started')}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">Todos</option>
+                      <option value="completed">Completado (100%)</option>
+                      <option value="in-progress">En Progreso (1-99%)</option>
+                      <option value="not-started">No Iniciado (0%)</option>
+                    </select>
+                  </div>
+
+                  {/* Filtro por Fecha */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Fecha
+                    </label>
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value as 'all' | 'recent' | 'old')}
+                      className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">Todas las fechas</option>
+                      <option value="recent">Recientes (últimos 30 días)</option>
+                      <option value="old">Antiguos (más de 30 días)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Contador de resultados filtrados */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">
+                      Mostrando <span className="font-semibold text-gray-900">{filteredMaterials.length}</span> de <span className="font-semibold text-gray-900">{filterStats.total}</span> materiales
+                    </span>
+                    {(assignmentFilter !== 'all' || typeFilter !== 'all' || statusFilter !== 'all' || dateFilter !== 'all') && (
+                      <span className="text-blue-600 font-medium">
+                        {filterStats.total - filteredMaterials.length} ocultos por filtros
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
             
@@ -602,21 +838,34 @@ export function StudentPortfolio() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      {materialFilter === 'personalized' 
-                        ? 'No hay materiales personalizados'
-                        : materialFilter === 'class'
-                        ? 'No hay materiales de clase'
+                      {filterStats.total === 0
+                        ? 'No hay materiales disponibles'
+                        : filteredMaterials.length === 0
+                        ? 'No hay materiales que coincidan con los filtros'
                         : 'No hay materiales disponibles'
                       }
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {materialFilter === 'personalized' 
-                        ? 'No hay materiales personalizados para este tema'
-                        : materialFilter === 'class'
-                        ? 'No hay materiales de clase para este tema'
-                        : 'No hay materiales disponibles para este tema'
+                      {filterStats.total === 0
+                        ? 'Este tema no tiene materiales asignados aún.'
+                        : filteredMaterials.length === 0
+                        ? 'Intenta ajustar los filtros aplicados para ver más materiales.'
+                        : 'Este tema no tiene materiales disponibles.'
                       }
                     </p>
+                    {filteredMaterials.length === 0 && filterStats.total > 0 && (
+                      <button
+                        onClick={() => {
+                          setAssignmentFilter('all')
+                          setTypeFilter('all')
+                          setStatusFilter('all')
+                          setDateFilter('all')
+                        }}
+                        className="mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Limpiar todos los filtros
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
