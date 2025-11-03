@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { Download, FileText, Image, Video, Music } from 'lucide-react'
-import { getApiUrl } from '../../config/environment'
+import { buildFileUrl } from '../../config/environment'
 
 interface FileViewModalProps {
   isOpen: boolean
@@ -19,9 +19,8 @@ export function FileViewModal({
   fileName,
   materialType 
 }: FileViewModalProps) {
-  const apiUrl = getApiUrl()
-  const apiRoot = apiUrl.replace(/\/?api\/v1\/?$/, '')
-  const fullUrl = fileUrl.startsWith('http') ? fileUrl : `${apiRoot}${fileUrl}`
+  // Construir la URL completa usando la función centralizada que asegura HTTPS
+  const fullUrl = buildFileUrl(fileUrl)
 
   const getFileExtension = (url: string): string => {
     const match = url.match(/\.([^.]+)(\?|$)/)

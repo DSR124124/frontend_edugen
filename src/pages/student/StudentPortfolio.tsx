@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { academicApi, portfolioApi, Topic, Material, Portfolio } from '../../api/endpoints'
-import { getApiUrl } from '../../config/environment'
+import { buildFileUrl } from '../../config/environment'
 import { useAuthStore } from '../../store/auth'
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
@@ -181,18 +181,16 @@ export function StudentPortfolio() {
     }
     
     // Para materiales con archivo o enlace, abrir en modal o nueva pestaña
-    const apiRoot = getApiUrl().replace(/\/?api\/v1\/?$/, '')
-    
     // Enlaces externos - abrir en nueva pestaña
     if (material.material_type === 'LINK' && material.url) {
-      const url = material.url.startsWith('http') ? material.url : `${apiRoot}${material.url}`
+      const url = buildFileUrl(material.url)
       window.open(url, '_blank')
       return
     }
     
     // Archivos subidos (PDF, DOCX, imágenes, audio, video) - abrir en modal
     if (material.file) {
-      const fileUrl = material.file.startsWith('http') ? material.file : `${apiRoot}${material.file}`
+      const fileUrl = buildFileUrl(material.file)
       setFileModalUrl(fileUrl)
       setIsFileModalOpen(true)
       return
