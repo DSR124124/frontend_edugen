@@ -26,3 +26,37 @@ export const isDevelopment = (): boolean => {
 export const isProduction = (): boolean => {
   return !isDevelopment()
 }
+
+/**
+ * Asegura que una URL use HTTPS si la página actual está en HTTPS
+ * Esto previene errores de "Mixed Content" en producción
+ */
+export const ensureHttps = (url: string): string => {
+  // Si la página está en HTTPS, forzar HTTPS en todas las URLs
+  if (window.location.protocol === 'https:') {
+    return url.replace(/^http:/, 'https:')
+  }
+  return url
+}
+
+/**
+ * Construye una URL completa para un archivo, asegurando HTTPS si es necesario
+ */
+export const buildFileUrl = (filePath: string): string => {
+  const apiUrl = getApiUrl()
+  let apiRoot = apiUrl.replace(/\/?api\/v1\/?$/, '')
+  apiRoot = ensureHttps(apiRoot)
+  
+  // Si ya es una URL completa, asegurar HTTPS
+  if (filePath.startsWith('http')) {
+    return ensureHttps(filePath)
+  }
+  
+  // Si la URL relativa comienza con /, usar el origen completo
+  if (filePath.startsWith('/')) {
+    return `${window.location.protocol}//${window.location.host}${filePath}`
+  }
+  
+  // Construir URL relativa usando apiRoot
+  return `${apiRoot}${filePath}`
+}

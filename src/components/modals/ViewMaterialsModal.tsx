@@ -7,7 +7,7 @@ import { Document } from '../../types/block-schema'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { Select } from '../ui/Select'
-import { getApiUrl } from '../../config/environment'
+import { buildFileUrl } from '../../config/environment'
 
 interface ViewMaterialsModalProps {
   isOpen: boolean
@@ -53,19 +53,16 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
     }
     
     // Para materiales con archivo o enlace, abrir en modal
-    const apiUrl = getApiUrl()
-    const apiRoot = apiUrl.replace(/\/?api\/v1\/?$/, '') // http://host:port
-
     // Enlaces externos - abrir en nueva pestaña
     if (material.material_type === 'LINK' && material.url) {
-      const url = material.url.startsWith('http') ? material.url : `${apiRoot}${material.url}`
+      const url = buildFileUrl(material.url)
       window.open(url, '_blank')
       return
     }
 
     // Archivos subidos (PDF, DOCX, imágenes, audio, video) - abrir en modal
     if (material.file) {
-      const fileUrl = material.file.startsWith('http') ? material.file : `${apiRoot}${material.file}`
+      const fileUrl = buildFileUrl(material.file)
       setFileModalUrl(fileUrl)
       setIsFileModalOpen(true)
       return
