@@ -72,9 +72,11 @@ export function TopicsPage() {
   const handleCreateTopic = async (data: { name: string; description?: string; course: number }) => {
     try {
       await createTopic(data)
+      showSuccess('Tema creado exitosamente', 'El tema se ha creado correctamente.')
       setIsModalOpen(false)
     } catch {
       // Error creating topic
+      showError('Error al crear tema', 'No se pudo crear el tema. Intenta nuevamente.')
     }
   }
 
@@ -85,8 +87,10 @@ export function TopicsPage() {
       await updateTopic(editingTopic.id, data)
       setEditingTopic(null)
       setIsModalOpen(false)
+      showSuccess('Tema actualizado exitosamente', 'Los cambios del tema han sido guardados.')
     } catch {
       // Error updating topic
+      showError('Error al actualizar tema', 'No se pudo actualizar el tema. Intenta nuevamente.')
     }
   }
 

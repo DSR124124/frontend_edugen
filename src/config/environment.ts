@@ -10,7 +10,9 @@ export const getApiUrl = (): string => {
   
   // Default URLs based on environment
   if (isDevelopment) {
-    return '/api/v1/'
+    // En desarrollo, apuntar explícitamente al backend local de Django
+    // para evitar que axios use la URL del frontend (5173)
+    return 'http://127.0.0.1:8000/api/v1/'
   }
   
   // Production URL

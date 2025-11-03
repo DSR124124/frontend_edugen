@@ -268,7 +268,8 @@ export function AddMaterialModal({
         is_shared: formData.is_shared,
         assigned_students: formData.is_shared ? undefined : formData.assigned_students
       })
-      onClose()
+      // No cerramos el modal aquí. El componente padre decidirá cerrarlo
+      // solo cuando la creación haya sido exitosa, manteniéndolo abierto en caso de error.
     } catch (error) {
       console.error('Error saving material:', error)
     } finally {
@@ -468,7 +469,11 @@ export function AddMaterialModal({
 
         {/* Nombre del Material */}
         <Input
-          label="Nombre del Material"
+          label={
+            <>
+              Nombre del Material <span className="text-error">*</span>
+            </>
+          }
           value={formData.name}
           onChange={handleChange}
           name="name"
@@ -621,7 +626,7 @@ export function AddMaterialModal({
         {!formData.is_shared && (
           <div>
             <label className="label mb-2">
-              Estudiantes con este curso en su portafolio <span className="text-error">*</span>
+              Estudiantes específicos <span className="text-error">*</span>
             </label>
             
             {/* Campo de búsqueda */}
