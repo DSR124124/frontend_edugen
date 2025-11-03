@@ -74,7 +74,8 @@ export const Modal: React.FC<ModalProps> = ({
             width: '100vw', 
             height: '100vh',
             minHeight: '100vh',
-            minWidth: '100vw'
+            minWidth: '100vw',
+            zIndex: 49
           }}
           onClick={closeOnOverlayClick ? onClose : undefined}
         />
@@ -82,9 +83,10 @@ export const Modal: React.FC<ModalProps> = ({
         {/* Modal */}
         <div
           className={cn(
-            'relative w-full transform overflow-hidden rounded-lg bg-base-100 shadow-xl transition-all border border-base-300',
+            'relative w-full transform overflow-hidden rounded-lg bg-base-100 shadow-xl transition-all border border-base-300 mx-auto',
             modalSizes[size]
           )}
+          style={{ zIndex: 50 }}
         >
           {/* Header */}
           {(title || showCloseButton) && (

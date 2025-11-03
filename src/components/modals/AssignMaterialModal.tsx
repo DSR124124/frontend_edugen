@@ -161,7 +161,7 @@ export function AssignMaterialModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Asignar Material"
+      title="Crear Material"
       size="lg"
     >
       <div className="space-y-6">

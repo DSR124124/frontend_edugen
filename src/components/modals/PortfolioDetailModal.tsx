@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Portfolio, PortfolioCourse, Material, academicApi } from '../../api/endpoints'
 import { formatDate } from '../../utils/helpers'
+import { getApiUrl } from '../../config/environment'
 import { Modal } from '../ui/Modal'
 import { PreviewModal } from '../editor/PreviewModal'
+import { FileViewModal } from './FileViewModal'
 import { Document } from '../../types/block-schema'
 import { 
   CheckCircle,
@@ -35,6 +37,8 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
   const [loadingMaterials, setLoadingMaterials] = useState(false)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
+  const [fileModalUrl, setFileModalUrl] = useState<string>('')
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
 
   // Limpiar estado cuando cambie el portafolio
@@ -46,6 +50,8 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       setSelectedMaterials([])
       setSelectedMaterial(null)
       setIsPreviewModalOpen(false)
+      setIsFileModalOpen(false)
+      setFileModalUrl('')
       setPreviewDocument(null)
     }
   }, [portfolio])
@@ -59,6 +65,8 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       setSelectedMaterials([])
       setSelectedMaterial(null)
       setIsPreviewModalOpen(false)
+      setIsFileModalOpen(false)
+      setFileModalUrl('')
       setPreviewDocument(null)
       setLoadingMaterials(false)
     }
@@ -122,6 +130,8 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
     setSelectedTopic(null)
     setSelectedMaterials([])
     setIsPreviewModalOpen(false)
+    setIsFileModalOpen(false)
+    setFileModalUrl('')
     setPreviewDocument(null)
     setSelectedMaterial(null)
     onClose()
@@ -151,21 +161,27 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
       }
     }
     
-    // Para materiales con archivos o URLs, manejar la descarga/visualización
+    // Para materiales con archivo o enlace, abrir en modal o nueva pestaña
+    const apiUrl = getApiUrl()
+    const apiRoot = apiUrl.replace(/\/?api\/v1\/?$/, '') // http://host:port
+    
+    // Enlaces externos - abrir en nueva pestaña
+    if (material.material_type === 'LINK' && material.url) {
+      const url = material.url.startsWith('http') ? material.url : `${apiRoot}${material.url}`
+      window.open(url, '_blank')
+      return
+    }
+    
+    // Archivos subidos (PDF, DOCX, imágenes, audio, video) - abrir en modal
     if (material.file) {
-      // Abrir archivo en nueva ventana
-      window.open(material.file, '_blank')
+      const fileUrl = material.file.startsWith('http') ? material.file : `${apiRoot}${material.file}`
+      setFileModalUrl(fileUrl)
+      setIsFileModalOpen(true)
       return
     }
     
-    if (material.url) {
-      // Abrir URL en nueva ventana
-      window.open(material.url, '_blank')
-      return
-    }
-    
-    // Si no hay contenido disponible, mostrar mensaje informativo
-    alert(`El material "${material.name}" no tiene contenido disponible para visualizar en este momento.`)
+    // Si no hay forma de previsualizar
+    alert('Este tipo de material no se puede visualizar en este momento.')
   }
 
   const handleClosePreviewModal = () => {
@@ -174,15 +190,22 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
     setSelectedMaterial(null)
   }
 
+  const handleCloseFileModal = () => {
+    setIsFileModalOpen(false)
+    setFileModalUrl('')
+    setSelectedMaterial(null)
+  }
+
   if (!portfolio) return null
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={portfolio.title}
-      size="xl"
-    >
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        title={portfolio.title}
+        size="xl"
+      >
       <div className="space-y-4">
         {/* Portfolio Info */}
         <div className="card p-3">
@@ -624,13 +647,28 @@ export function PortfolioDetailModal({ isOpen, onClose, portfolio }: PortfolioDe
 
       </div>
 
+      </Modal>
+
       {/* Preview Modal for AI-generated content */}
-      <PreviewModal
-        isOpen={isPreviewModalOpen}
-        onClose={handleClosePreviewModal}
-        document={previewDocument}
-        title={selectedMaterial?.name || 'Material'}
-      />
-    </Modal>
+      {isPreviewModalOpen && previewDocument && (
+        <PreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={handleClosePreviewModal}
+          document={previewDocument}
+          title={selectedMaterial?.name || 'Material'}
+        />
+      )}
+
+      {/* File View Modal for uploaded files */}
+      {isFileModalOpen && fileModalUrl && selectedMaterial && (
+        <FileViewModal
+          isOpen={isFileModalOpen}
+          onClose={handleCloseFileModal}
+          fileUrl={fileModalUrl}
+          fileName={selectedMaterial.name}
+          materialType={selectedMaterial.material_type}
+        />
+      )}
+    </>
   )
 }

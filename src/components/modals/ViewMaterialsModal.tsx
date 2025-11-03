@@ -2,10 +2,12 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, Topic, Material } from '../../api/endpoints'
 import { PreviewModal } from '../editor/PreviewModal'
+import { FileViewModal } from './FileViewModal'
 import { Document } from '../../types/block-schema'
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { Select } from '../ui/Select'
+import { getApiUrl } from '../../config/environment'
 
 interface ViewMaterialsModalProps {
   isOpen: boolean
@@ -16,6 +18,8 @@ interface ViewMaterialsModalProps {
 export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModalProps) {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
+  const [fileModalUrl, setFileModalUrl] = useState<string>('')
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
   const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'class' | 'personalized'>('all')
   const [contentTypeFilter, setContentTypeFilter] = useState<'all' | 'DOCUMENT' | 'VIDEO' | 'AUDIO' | 'IMAGE' | 'LINK' | 'SCORM' | 'OTHER'>('all')
@@ -24,12 +28,8 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
   const { data: materials, isLoading, error } = useQuery({
     queryKey: ['topic-materials', topic?.id],
     queryFn: async () => {
-      try {
-        const response = await academicApi.getMaterialsByTopic(topic!.id)
-        return response.data.results || response.data
-      } catch (err) {
-        throw err
-      }
+      const response = await academicApi.getMaterialsByTopic(topic!.id)
+      return response.data.results || response.data
     },
     enabled: isOpen && !!topic
   })
@@ -52,13 +52,38 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
       }
     }
     
-    // Para otros tipos de materiales, mostrar mensaje de que no se puede visualizar
+    // Para materiales con archivo o enlace, abrir en modal
+    const apiUrl = getApiUrl()
+    const apiRoot = apiUrl.replace(/\/?api\/v1\/?$/, '') // http://host:port
+
+    // Enlaces externos - abrir en nueva pestaña
+    if (material.material_type === 'LINK' && material.url) {
+      const url = material.url.startsWith('http') ? material.url : `${apiRoot}${material.url}`
+      window.open(url, '_blank')
+      return
+    }
+
+    // Archivos subidos (PDF, DOCX, imágenes, audio, video) - abrir en modal
+    if (material.file) {
+      const fileUrl = material.file.startsWith('http') ? material.file : `${apiRoot}${material.file}`
+      setFileModalUrl(fileUrl)
+      setIsFileModalOpen(true)
+      return
+    }
+
+    // Si no hay forma de previsualizar
     alert('Este tipo de material no se puede visualizar en este momento.')
   }
 
   const handleClosePreviewModal = () => {
     setIsPreviewModalOpen(false)
     setPreviewDocument(null)
+    setSelectedMaterial(null)
+  }
+
+  const handleCloseFileModal = () => {
+    setIsFileModalOpen(false)
+    setFileModalUrl('')
     setSelectedMaterial(null)
   }
 
@@ -429,6 +454,17 @@ export function ViewMaterialsModal({ isOpen, onClose, topic }: ViewMaterialsModa
           onClose={handleClosePreviewModal}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
+        />
+      )}
+
+      {/* File View Modal for uploaded files */}
+      {isFileModalOpen && fileModalUrl && selectedMaterial && (
+        <FileViewModal
+          isOpen={isFileModalOpen}
+          onClose={handleCloseFileModal}
+          fileUrl={fileModalUrl}
+          fileName={selectedMaterial.name}
+          materialType={selectedMaterial.material_type}
         />
       )}
     </>

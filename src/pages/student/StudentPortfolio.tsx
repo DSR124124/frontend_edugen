@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { academicApi, portfolioApi, Topic, Material, Portfolio } from '../../api/endpoints'
+import { getApiUrl } from '../../config/environment'
 // import { useAuthStore } from '../../store/auth' // Comentado temporalmente hasta que se use
 import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { PreviewModal } from '../../components/editor/PreviewModal'
+import { FileViewModal } from '../../components/modals/FileViewModal'
 import { Document } from '../../types/block-schema'
 import { 
   Book,
@@ -40,6 +42,8 @@ export function StudentPortfolio() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false)
+  const [fileModalUrl, setFileModalUrl] = useState<string>('')
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null)
   const [materialFilter, setMaterialFilter] = useState<'all' | 'personalized' | 'class'>('personalized')
 
@@ -142,7 +146,24 @@ export function StudentPortfolio() {
       }
     }
     
-    // Para otros tipos de materiales, mostrar mensaje de que no se puede visualizar
+    // Para materiales con archivo o enlace, abrir en modal o nueva pestaña
+    const apiRoot = getApiUrl().replace(/\/?api\/v1\/?$/, '')
+    
+    // Enlaces externos - abrir en nueva pestaña
+    if (material.material_type === 'LINK' && material.url) {
+      const url = material.url.startsWith('http') ? material.url : `${apiRoot}${material.url}`
+      window.open(url, '_blank')
+      return
+    }
+    
+    // Archivos subidos (PDF, DOCX, imágenes, audio, video) - abrir en modal
+    if (material.file) {
+      const fileUrl = material.file.startsWith('http') ? material.file : `${apiRoot}${material.file}`
+      setFileModalUrl(fileUrl)
+      setIsFileModalOpen(true)
+      return
+    }
+    
     alert('Este tipo de material no se puede visualizar en este momento.')
   }
 
@@ -157,6 +178,12 @@ export function StudentPortfolio() {
   const handleClosePreviewModal = () => {
     setIsPreviewModalOpen(false)
     setPreviewDocument(null)
+    setSelectedMaterial(null)
+  }
+
+  const handleCloseFileModal = () => {
+    setIsFileModalOpen(false)
+    setFileModalUrl('')
     setSelectedMaterial(null)
   }
 
@@ -605,6 +632,17 @@ export function StudentPortfolio() {
           onClose={handleClosePreviewModal}
           document={previewDocument}
           title={selectedMaterial?.name || 'Material'}
+        />
+      )}
+
+      {/* File View Modal for uploaded files */}
+      {isFileModalOpen && fileModalUrl && selectedMaterial && (
+        <FileViewModal
+          isOpen={isFileModalOpen}
+          onClose={handleCloseFileModal}
+          fileUrl={fileModalUrl}
+          fileName={selectedMaterial.name}
+          materialType={selectedMaterial.material_type}
         />
       )}
     </div>
