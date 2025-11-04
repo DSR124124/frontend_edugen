@@ -13,6 +13,7 @@ import {
   Book,
   FileText,
   Eye,
+  Users,
   ChevronRight,
   Calendar,
   Award,
@@ -37,6 +38,10 @@ interface Course {
   grade_level_name?: string
   code: string
   section_id?: number
+  professor_name?: string
+  progress?: number
+  total_materials?: number
+  completed_materials?: number
 }
 
 export function StudentPortfolio() {
@@ -85,25 +90,59 @@ export function StudentPortfolio() {
     enabled: !!hasSection, // Solo cargar si tiene sección
   })
 
+  // Obtener información completa de los cursos para incluir profesor
+  const { data: allCourses } = useQuery({
+    queryKey: ['student-courses'],
+    queryFn: () => academicApi.getCourses().then(res => res.data),
+    enabled: !!hasSection,
+  })
+
   const courses = useMemo(() => {
     const result: { results: Course[] } = { results: [] }
+    const courseMap = new Map<number, Course>()
+    
+    // Primero, agregar cursos desde portafolios
     for (const p of myPortfolios) {
       for (const pc of (p.courses || [])) {
-        // Evitar duplicados por course id
-        if (!result.results.some(c => c.id === pc.course)) {
-          result.results.push({
+        if (!courseMap.has(pc.course)) {
+          // Buscar información completa del curso en allCourses
+          const fullCourse = allCourses?.results?.find((c: any) => c.id === pc.course)
+          
+          courseMap.set(pc.course, {
             id: pc.course,
             name: pc.course_name,
             code: pc.course_code,
-            description: undefined,
+            description: fullCourse?.description || undefined,
             grade_level_name: undefined,
             section_id: p.section,
+            professor_name: fullCourse?.professor_name || undefined,
           })
         }
       }
     }
+    
+    // Calcular progreso para cada curso
+    if (materialsWithAnalytics) {
+      for (const [courseId, course] of courseMap.entries()) {
+        const courseMaterials = materialsWithAnalytics.filter((m: any) => 
+          m.course_id === courseId
+        )
+        const completedMaterials = courseMaterials.filter((m: any) => 
+          m.analytics?.completion_rate >= 100
+        )
+        const progress = courseMaterials.length > 0 
+          ? Math.round((completedMaterials.length / courseMaterials.length) * 100)
+          : 0
+        
+        course.progress = progress
+        course.total_materials = courseMaterials.length
+        course.completed_materials = completedMaterials.length
+      }
+    }
+    
+    result.results = Array.from(courseMap.values())
     return result
-  }, [myPortfolios])
+  }, [myPortfolios, allCourses, materialsWithAnalytics])
 
   const loadingCourses = loadingPortfolios
 
@@ -391,23 +430,58 @@ export function StudentPortfolio() {
 
   return (
     <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="my-portfolio-page">
-      {/* Header */}
+      {/* Header con información personal del estudiante */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl mb-4 sm:mb-6" data-tour="my-portfolio-header">
-        <div className="flex items-center p-3 sm:p-4">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
-              <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
-                <span>Mi Portafolio</span>
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                Explora tus cursos, temas y materiales de estudio
-              </p>
+        <div className="p-3 sm:p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
+              <div className="p-2 sm:p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
+                <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                  <span>Mi Portafolio</span>
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  {user?.first_name && user?.last_name 
+                    ? `${user.first_name} ${user.last_name}`
+                    : user?.username || 'Estudiante'}
+                </p>
+              </div>
             </div>
           </div>
+          
+          {/* Información personal del estudiante */}
+          {user?.section && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mt-3 pt-3 border-t border-blue-200">
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-500">Sección</p>
+                  <p className="text-sm font-semibold text-gray-900">{user.section.name}</p>
+                </div>
+              </div>
+              {user.section.grade_level_name && (
+                <div className="flex items-center space-x-2">
+                  <Award className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">Grado</p>
+                    <p className="text-sm font-semibold text-gray-900">{user.section.grade_level_name}</p>
+                  </div>
+                </div>
+              )}
+              {user.section.term_name && (
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">Período</p>
+                    <p className="text-sm font-semibold text-gray-900">{user.section.term_name}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -475,15 +549,31 @@ export function StudentPortfolio() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate">{course.name}</h3>
+                        {course.code && (
+                          <p className="text-xs text-gray-500 mt-0.5">Código: {course.code}</p>
+                        )}
                         {course.description && (
                           <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2">{course.description}</p>
                         )}
-                        <div className="flex items-center mt-2">
-                          <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                            <Award className="w-3 h-3 mr-1" />
-                            {course.grade_level_name}
-                          </span>
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
+                          {course.professor_name && (
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                              <Users className="w-3 h-3 mr-1" />
+                              Prof. {course.professor_name}
+                            </span>
+                          )}
+                          {course.progress !== undefined && (
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                              <Target className="w-3 h-3 mr-1" />
+                              {course.progress}% completado
+                            </span>
+                          )}
                         </div>
+                        {course.total_materials !== undefined && course.total_materials > 0 && (
+                          <div className="mt-2 text-xs text-gray-500">
+                            {course.completed_materials || 0} de {course.total_materials} materiales completados
+                          </div>
+                        )}
                       </div>
                       <div className="ml-4 flex-shrink-0">
                         <ChevronRight

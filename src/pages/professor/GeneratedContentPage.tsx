@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { aiContentApi, academicApi, GeneratedContent } from '../../api/endpoints'
+import { http } from '../../api/http'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GammaEditor } from '../../components/editor/GammaEditor'
@@ -21,6 +22,7 @@ import {
 import { PageLoadingState, PageErrorState } from '../../components/common'
 import { Button } from '../../components/ui/Button'
 import { AssignMaterialModal } from '../../components/modals/AssignMaterialModal'
+import { ExportSCORMModal, SCORMExportParams } from '../../components/modals/ExportSCORMModal'
 
 export function GeneratedContentPage() {
   const queryClient = useQueryClient()
@@ -34,6 +36,8 @@ export function GeneratedContentPage() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
+  const [isExportSCORMModalOpen, setIsExportSCORMModalOpen] = useState(false)
+  const [exportingContent, setExportingContent] = useState<GeneratedContent | null>(null)
 
   // Obtener contenidos generados
   const { data: generatedContents, isLoading, error } = useQuery({
@@ -215,42 +219,64 @@ export function GeneratedContentPage() {
   }
 
   const handleExportContent = async (content: GeneratedContent) => {
+    setExportingContent(content)
+    setIsExportSCORMModalOpen(true)
+  }
+
+  const handleExportSCORM = async (contentId: number, params: SCORMExportParams) => {
     try {
-      const token = localStorage.getItem('access_token')
-      if (!token) {
-        showError('Error de autenticación', 'No se encontró el token de acceso')
-        return
-      }
-
-      const response = await fetch('/api/v1/scorm/export/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await http.post(
+        'scorm/export/',
+        {
+          content_id: contentId,
+          ...params
         },
-        body: JSON.stringify({
-          content_id: content.id
-        })
-      })
+        {
+          responseType: 'blob'
+        }
+      )
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      // Crear blob desde los datos de la respuesta
+      const blob = new Blob([response.data], { type: 'application/zip' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `scorm-${content.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.zip`
+      a.download = `scorm-${params.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.zip`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
 
-      showSuccess('Paquete SCORM descargado exitosamente', 'success')
+      // El mensaje de éxito se mostrará en el modal
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-      showError('Error al exportar contenido SCORM', errorMessage)
+      let errorMessage = 'Error al generar el paquete SCORM'
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: unknown; status?: number; statusText?: string } }
+        
+        // Intentar leer el error como JSON si es posible
+        if (axiosError.response?.data) {
+          try {
+            // Si la respuesta es un blob, intentar leerlo como texto
+            if (axiosError.response.data instanceof Blob) {
+              const text = await (axiosError.response.data as Blob).text()
+              const errorData = JSON.parse(text)
+              errorMessage = errorData.error || errorMessage
+            } else if (typeof axiosError.response.data === 'object' && axiosError.response.data !== null) {
+              const errorData = axiosError.response.data as { error?: string }
+              errorMessage = errorData.error || errorMessage
+            }
+          } catch {
+            errorMessage = `Error ${axiosError.response?.status || ''}: ${axiosError.response?.statusText || 'Error desconocido'}`
+          }
+        } else {
+          errorMessage = `Error ${axiosError.response?.status || ''}: ${axiosError.response?.statusText || 'Error desconocido'}`
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      
+      throw new Error(errorMessage)
     }
   }
 
@@ -781,6 +807,19 @@ export function GeneratedContentPage() {
         content={assigningContent}
         sections={professorSections || []}
       />
+
+      {/* Modal de Exportación SCORM */}
+      {isExportSCORMModalOpen && exportingContent && (
+        <ExportSCORMModal
+          isOpen={isExportSCORMModalOpen}
+          onClose={() => {
+            setIsExportSCORMModalOpen(false)
+            setExportingContent(null)
+          }}
+          content={exportingContent}
+          onExport={handleExportSCORM}
+        />
+      )}
     </div>
   )
 }

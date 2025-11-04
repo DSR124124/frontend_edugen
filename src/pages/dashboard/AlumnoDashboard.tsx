@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { academicApi, assignmentApi } from '../../api/endpoints'
+import { academicApi, assignmentApi, portfolioApi } from '../../api/endpoints'
 import { useAuthStore } from '../../store/auth'
+import { useMyMaterialsWithAnalytics } from '../../hooks/useMaterialAnalytics'
 import { 
   Users,
   Calendar,
@@ -10,20 +11,48 @@ import {
   GraduationCap,
   Sparkles,
   BookOpen,
-  Target
+  Target,
+  Book,
+  RefreshCw
 } from 'lucide-react'
 
 export function AlumnoDashboard() {
   const { user } = useAuthStore()
   
-  // Obtener asignaciones del estudiante
+  // Configuración de auto-refresh: actualizar cada 30 segundos
+  const refetchInterval = 30000 // 30 segundos
+  
+  // Obtener asignaciones del estudiante (con auto-refresh)
   const { data: assignments, isLoading: assignmentsLoading } = useQuery({
     queryKey: ['student-assignments'],
     queryFn: () => assignmentApi.getAssignments().then(res => res.data),
-    enabled: !!user
+    enabled: !!user,
+    refetchInterval,
+    refetchIntervalInBackground: true
   })
 
-  // Obtener temas de la sección del estudiante
+  // Obtener portafolios del estudiante para derivar cursos (con auto-refresh)
+  const { data: myPortfolios = [], isLoading: loadingPortfolios } = useQuery({
+    queryKey: ['my-portfolios'],
+    queryFn: () => portfolioApi.getPortfolios().then(res => res.data as any[]),
+    enabled: !!user?.section,
+    refetchInterval,
+    refetchIntervalInBackground: true
+  })
+
+  // Obtener información completa de los cursos (con auto-refresh)
+  const { data: allCourses } = useQuery({
+    queryKey: ['student-courses'],
+    queryFn: () => academicApi.getCourses().then(res => res.data),
+    enabled: !!user?.section,
+    refetchInterval,
+    refetchIntervalInBackground: true
+  })
+
+  // Obtener materiales con analytics (con auto-refresh)
+  const { data: materialsWithAnalytics } = useMyMaterialsWithAnalytics()
+
+  // Obtener temas de la sección del estudiante (con auto-refresh)
   const { data: topics, isLoading: topicsLoading } = useQuery({
     queryKey: ['student-topics', user?.section?.id],
     queryFn: async () => {
@@ -35,16 +64,57 @@ export function AlumnoDashboard() {
         return []
       }
     },
-    enabled: !!user?.section?.id
+    enabled: !!user?.section?.id,
+    refetchInterval,
+    refetchIntervalInBackground: true
   })
 
-  const isLoading = assignmentsLoading || topicsLoading
+  const isLoading = assignmentsLoading || topicsLoading || loadingPortfolios
 
-  // Obtener asignaciones próximas a vencer (próximos 7 días)
-  const upcomingAssignments = assignments?.filter(assignment => {
-    if (!assignment.days_until_due) return false
-    return assignment.days_until_due <= 7 && assignment.days_until_due >= 0
-  }).slice(0, 3) || []
+  // Derivar cursos desde portafolios
+  const courses = (() => {
+    const courseMap = new Map<number, any>()
+    
+    for (const p of myPortfolios) {
+      for (const pc of (p.courses || [])) {
+        if (!courseMap.has(pc.course)) {
+          const fullCourse = allCourses?.results?.find((c: any) => c.id === pc.course)
+          courseMap.set(pc.course, {
+            id: pc.course,
+            name: pc.course_name,
+            code: pc.course_code,
+            description: fullCourse?.description || undefined,
+            section_id: p.section,
+            professor_name: fullCourse?.professor_name || undefined,
+          })
+        }
+      }
+    }
+    
+    // Calcular progreso para cada curso
+    if (materialsWithAnalytics) {
+      for (const [courseId, course] of courseMap.entries()) {
+        const courseMaterials = materialsWithAnalytics.filter((m: any) => 
+          m.course_id === courseId
+        )
+        const completedMaterials = courseMaterials.filter((m: any) => 
+          m.analytics?.completion_rate >= 100
+        )
+        const progress = courseMaterials.length > 0 
+          ? Math.round((completedMaterials.length / courseMaterials.length) * 100)
+          : 0
+        
+        course.progress = progress
+        course.total_materials = courseMaterials.length
+        course.completed_materials = completedMaterials.length
+      }
+    }
+    
+    return Array.from(courseMap.values())
+  })()
+
+  // Obtener todas las actividades pendientes
+  const pendingAssignmentsList = assignments?.filter(a => !a.is_completed) || []
 
   // Calcular estadísticas
   const completedAssignments = assignments?.filter(a => a.is_completed).length || 0
@@ -103,6 +173,10 @@ export function AlumnoDashboard() {
               <p className="text-xs sm:text-sm text-gray-600 mt-1">
                 Bienvenido {user?.first_name}, aquí está tu progreso académico
               </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RefreshCw className="w-4 h-4 text-blue-600 animate-pulse" />
+              <span className="text-xs text-gray-500">Actualización automática (30s)</span>
             </div>
           </div>
         </div>
@@ -164,7 +238,7 @@ export function AlumnoDashboard() {
       </div>
 
       {/* Mi Sección */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4 sm:mb-6">
         <div className="border-b border-gray-200 p-3 sm:p-4">
           <div className="flex items-center space-x-2 sm:space-x-3">
             <div className="p-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg">
@@ -172,7 +246,7 @@ export function AlumnoDashboard() {
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-gray-900">Mi Sección</h2>
-              <p className="text-xs sm:text-sm text-gray-600">Información de tu sección actual</p>
+              <p className="text-xs sm:text-sm text-gray-600">Información de tu sección y curso</p>
             </div>
           </div>
         </div>
@@ -181,29 +255,41 @@ export function AlumnoDashboard() {
           {user?.section ? (
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-base sm:text-lg text-gray-900 truncate flex-1 min-w-0 mr-2">
-                  {user.section.course_name || user.section.name}
-                </h3>
-                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 flex-shrink-0">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-1">
+                    Sección: {user.section.name}
+                  </h3>
+                  {user.section.grade_level_name && (
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Grado:</span> {user.section.grade_level_name}
+                    </p>
+                  )}
+                  {user.section.term_name && (
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Período:</span> {user.section.term_name}
+                    </p>
+                  )}
+                </div>
+                <span className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 flex-shrink-0 ml-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Activo
                 </span>
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-200">
                 <div className="flex items-start space-x-3">
-                  <Award className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-gray-700 truncate">
-                    <span className="font-medium">Sección:</span> {user.section.name}
-                  </span>
-                </div>
-                {topics && topics.length > 0 && (
-                  <div className="flex items-start space-x-3">
-                    <BookOpen className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-gray-700 truncate">
-                      <span className="font-medium">Temas disponibles:</span> {topics.length}
-                    </span>
+                  <BookOpen className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-gray-500">Temas disponibles</p>
+                    <p className="text-sm font-semibold text-gray-900">{topics?.length || 0}</p>
                   </div>
-                )}
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Book className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-gray-500">Cursos asignados</p>
+                    <p className="text-sm font-semibold text-gray-900">{courses.length}</p>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -222,58 +308,167 @@ export function AlumnoDashboard() {
         </div>
       </div>
 
-      {/* Actividad Reciente ocultada por solicitud */}
-
-      {/* Próximas Asignaciones */}
-      {upcomingAssignments.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
+      {/* Cursos Asignados */}
+      {courses.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4 sm:mb-6">
           <div className="border-b border-gray-200 p-3 sm:p-4">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="p-2 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+              <div className="p-2 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg">
+                <Book className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900">Próximas Asignaciones</h2>
-                <p className="text-xs sm:text-sm text-gray-600">Actividades que vencen pronto</p>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Mis Cursos</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Cursos en los que estás inscrito</p>
               </div>
             </div>
           </div>
           
           <div className="p-3 sm:p-4">
-            <div className="space-y-3">
-              {upcomingAssignments.map((assignment) => (
-                <div key={assignment.id} className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {courses.map((course: any) => (
+                <div key={course.id} className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900 truncate flex-1 mr-2">
-                      {assignment.activity_title}
-                    </span>
-                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                      (assignment.days_until_due ?? 0) === 0 
-                        ? 'bg-red-100 text-red-800' 
-                        : (assignment.days_until_due ?? 0) <= 2 
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {(assignment.days_until_due ?? 0) === 0 
-                        ? 'Hoy' 
-                        : (assignment.days_until_due ?? 0) === 1 
-                          ? 'Mañana'
-                          : `En ${assignment.days_until_due ?? 0} días`
-                      }
-                    </span>
+                    <h3 className="font-semibold text-base text-gray-900 truncate flex-1 mr-2">
+                      {course.name}
+                    </h3>
+                    {course.progress !== undefined && (
+                      <span className="text-xs font-bold text-green-600 flex-shrink-0">
+                        {course.progress}%
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-3 h-3 text-orange-600 flex-shrink-0" />
-                    <span className="text-xs text-orange-700">
-                      Vence en {assignment.days_until_due} días
-                    </span>
-                  </div>
+                  {course.code && (
+                    <p className="text-xs text-gray-600 mb-2">Código: {course.code}</p>
+                  )}
+                  {course.professor_name && (
+                    <p className="text-xs text-gray-600 mb-3">
+                      Prof. {course.professor_name}
+                    </p>
+                  )}
+                  {course.progress !== undefined && (
+                    <div className="mb-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${course.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                  {course.total_materials !== undefined && course.total_materials > 0 && (
+                    <p className="text-xs text-gray-600">
+                      {course.completed_materials || 0} de {course.total_materials} materiales completados
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </div>
       )}
+
+      {/* Actividades Pendientes */}
+      {pendingAssignmentsList.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm mb-4 sm:mb-6">
+          <div className="border-b border-gray-200 p-3 sm:p-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-2 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-gray-900">Actividades Pendientes</h2>
+                <p className="text-xs sm:text-sm text-gray-600">Tareas y actividades por completar</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-3 sm:p-4">
+            <div className="space-y-3">
+              {pendingAssignmentsList.slice(0, 10).map((assignment: any) => {
+                const daysUntilDue = assignment.days_until_due ?? null
+                const isOverdue = daysUntilDue !== null && daysUntilDue < 0
+                const isUrgent = daysUntilDue !== null && daysUntilDue <= 2 && daysUntilDue >= 0
+                
+                return (
+                  <div key={assignment.id} className={`border rounded-lg p-3 hover:shadow-md transition-shadow ${
+                    isOverdue 
+                      ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200' 
+                      : isUrgent
+                        ? 'bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200'
+                        : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200'
+                  }`}>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0 mr-2">
+                        <span className="text-sm font-medium text-gray-900 block truncate">
+                          {assignment.activity_title || assignment.title || 'Sin título'}
+                        </span>
+                        {assignment.course_name && (
+                          <span className="text-xs text-gray-600 mt-1 block">
+                            Curso: {assignment.course_name}
+                          </span>
+                        )}
+                      </div>
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${
+                        isOverdue
+                          ? 'bg-red-100 text-red-800' 
+                          : isUrgent
+                            ? 'bg-orange-100 text-orange-800'
+                            : daysUntilDue !== null && daysUntilDue <= 7
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {isOverdue 
+                          ? `Vencida hace ${Math.abs(daysUntilDue)} días`
+                          : daysUntilDue === null
+                            ? 'Sin fecha límite'
+                            : daysUntilDue === 0 
+                              ? 'Hoy' 
+                              : daysUntilDue === 1 
+                                ? 'Mañana'
+                                : daysUntilDue <= 7
+                                  ? `En ${daysUntilDue} días`
+                                  : 'Pendiente'
+                        }
+                      </span>
+                    </div>
+                    {daysUntilDue !== null && (
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Calendar className={`w-3 h-3 flex-shrink-0 ${
+                          isOverdue ? 'text-red-600' : isUrgent ? 'text-orange-600' : 'text-blue-600'
+                        }`} />
+                        <span className={`text-xs ${
+                          isOverdue ? 'text-red-700' : isUrgent ? 'text-orange-700' : 'text-blue-700'
+                        }`}>
+                          {isOverdue 
+                            ? `Vencida hace ${Math.abs(daysUntilDue)} días`
+                            : `Vence en ${daysUntilDue} ${daysUntilDue === 1 ? 'día' : 'días'}`
+                          }
+                        </span>
+                      </div>
+                    )}
+                    {assignment.points && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <Award className="w-3 h-3 text-yellow-600 flex-shrink-0" />
+                        <span className="text-xs text-gray-600">
+                          {assignment.points} puntos
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            {pendingAssignmentsList.length > 10 && (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-600">
+                  Mostrando 10 de {pendingAssignmentsList.length} actividades pendientes
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
