@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useProfessorSections } from '../../hooks/useProfessorSections'
 import { usePortfolios } from '../../hooks/usePortfolios'
 import { Portfolio, academicApi, Material } from '../../api/endpoints'
@@ -15,7 +16,9 @@ import {
   Search,
   Filter,
   FileText,
-  Sparkles
+  Sparkles,
+  X,
+  User
 } from 'lucide-react'
 import { LoadingState, ErrorState, EmptyState } from '../../components/common'
 
@@ -23,16 +26,30 @@ export function PortfolioManagement() {
   const { sections: professorSections, loading: sectionsLoading } = useProfessorSections()
   const { portfolios, loading: portfoliosLoading, error: portfoliosError, loadPortfoliosBySection } = usePortfolios()
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null)
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null)
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null)
   const [selectedPortfolio, setSelectedPortfolio] = useState<Portfolio | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'public' | 'private'>('all')
   const [materialCounts, setMaterialCounts] = useState<Record<number, number>>({})
   const [loadingCounts, setLoadingCounts] = useState(false)
 
+  // Obtener estudiantes de la sección seleccionada
+  const { data: sectionStudentsData, isLoading: loadingStudents } = useQuery({
+    queryKey: ['section-students', selectedSectionId],
+    queryFn: () => academicApi.getStudentsBySection(selectedSectionId!),
+    enabled: Boolean(selectedSectionId),
+  })
+
+  const sectionStudents = sectionStudentsData?.data?.students || []
+
   // Cargar portafolios cuando se selecciona una sección
   useEffect(() => {
     if (selectedSectionId) {
       loadPortfoliosBySection(selectedSectionId)
+      // Limpiar filtros al cambiar de sección
+      setSelectedCourseId(null)
+      setSelectedStudentId(null)
     }
   }, [selectedSectionId, loadPortfoliosBySection])
 
@@ -106,6 +123,27 @@ export function PortfolioManagement() {
     }
   }, [professorSections, selectedSectionId])
 
+  // Obtener cursos únicos de los portafolios
+  const availableCourses = useMemo(() => {
+    if (!portfolios) return []
+    const courseMap = new Map<number, { id: number; name: string }>()
+    
+    portfolios.forEach(portfolio => {
+      if (portfolio.courses && Array.isArray(portfolio.courses)) {
+        portfolio.courses.forEach((course: any) => {
+          if (course.course && !courseMap.has(course.course)) {
+            courseMap.set(course.course, {
+              id: course.course,
+              name: course.course_name || `Curso ${course.course}`
+            })
+          }
+        })
+      }
+    })
+    
+    return Array.from(courseMap.values())
+  }, [portfolios])
+
   // Filtrar portafolios
   const filteredPortfolios = portfolios?.filter((portfolio) => {
     const matchesSearch = portfolio.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,8 +154,27 @@ export function PortfolioManagement() {
                          (filterStatus === 'public' && portfolio.is_public) ||
                          (filterStatus === 'private' && !portfolio.is_public)
     
-    return matchesSearch && matchesStatus
+    // Filtro por curso
+    const matchesCourse = selectedCourseId === null || 
+      (portfolio.courses && Array.isArray(portfolio.courses) && 
+       portfolio.courses.some((course: any) => course.course === selectedCourseId))
+    
+    // Filtro por estudiante
+    const matchesStudent = selectedStudentId === null || portfolio.student === selectedStudentId
+    
+    return matchesSearch && matchesStatus && matchesCourse && matchesStudent
   }) || []
+
+  // Función para limpiar todos los filtros
+  const clearFilters = () => {
+    setSelectedCourseId(null)
+    setSelectedStudentId(null)
+    setSearchTerm('')
+    setFilterStatus('all')
+  }
+
+  // Verificar si hay filtros activos
+  const hasActiveFilters = selectedCourseId !== null || selectedStudentId !== null || searchTerm !== '' || filterStatus !== 'all'
 
 
   if (sectionsLoading) {
@@ -202,34 +259,174 @@ export function PortfolioManagement() {
       {/* Search and Filter Controls */}
       {selectedSectionId && (
         <div className="card p-3 mb-3">
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search Input */}
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-base-content/40" />
-                <input
-                  type="text"
-                  placeholder="Buscar portafolios por título, estudiante o sección..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+          <div className="space-y-3">
+            {/* Filtros principales */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Filtro por Curso */}
+              <div className="flex items-center space-x-2">
+                <Book className="w-4 h-4 text-base-content/40" />
+                <div className="relative">
+                  <select
+                    value={selectedCourseId || ''}
+                    onChange={(e) => setSelectedCourseId(e.target.value ? Number(e.target.value) : null)}
+                    className="px-3 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-w-[200px] pr-8"
+                  >
+                    <option value="">Todos los cursos</option>
+                    {availableCourses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedCourseId !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCourseId(null)}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-base-content/40 hover:text-base-content/70 hover:bg-base-200 rounded transition-colors"
+                      title="Limpiar filtro de curso"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* Filtro por Estudiante */}
+              <div className="flex items-center space-x-2">
+                <User className="w-4 h-4 text-base-content/40" />
+                {loadingStudents ? (
+                  <div className="px-3 py-2 border border-base-300 rounded-lg text-small min-w-[200px] bg-base-200 animate-pulse">
+                    Cargando...
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <select
+                      value={selectedStudentId || ''}
+                      onChange={(e) => setSelectedStudentId(e.target.value ? Number(e.target.value) : null)}
+                      className="px-3 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-w-[200px] pr-8"
+                    >
+                      <option value="">Todos los estudiantes</option>
+                      {sectionStudents.map((student: any) => (
+                        <option key={student.id} value={student.id}>
+                          {student.first_name && student.last_name
+                            ? `${student.first_name} ${student.last_name}`
+                            : student.username || student.email}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedStudentId !== null && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStudentId(null)}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-base-content/40 hover:text-base-content/70 hover:bg-base-200 rounded transition-colors"
+                        title="Limpiar filtro de estudiante"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Search Input */}
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-base-content/40" />
+                  <input
+                    type="text"
+                    placeholder="Buscar portafolios por título, estudiante o sección..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              {/* Status Filter */}
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-base-content/40" />
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as 'all' | 'public' | 'private')}
+                  className="px-3 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
+                  <option value="all">Todos</option>
+                  <option value="public">Públicos</option>
+                  <option value="private">Privados</option>
+                </select>
+              </div>
+
+              {/* Botón Limpiar Filtros */}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-2 border border-base-300 rounded-lg text-small hover:bg-base-200 transition-colors flex items-center space-x-2 whitespace-nowrap"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Limpiar filtros</span>
+                </button>
+              )}
             </div>
-            
-            {/* Status Filter */}
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-base-content/40" />
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'public' | 'private')}
-                className="px-3 py-2 border border-base-300 rounded-lg text-small focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              >
-                <option value="all">Todos</option>
-                <option value="public">Públicos</option>
-                <option value="private">Privados</option>
-              </select>
-            </div>
+
+            {/* Indicador de filtros activos */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-2 text-small text-base-content/70">
+                <span>Filtros activos:</span>
+                {selectedCourseId !== null && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary-100 text-primary">
+                    <Book className="w-3 h-3 mr-1" />
+                    {availableCourses.find(c => c.id === selectedCourseId)?.name || 'Curso seleccionado'}
+                    <button
+                      onClick={() => setSelectedCourseId(null)}
+                      className="ml-1 hover:text-primary/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {selectedStudentId !== null && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary-100 text-primary">
+                    <User className="w-3 h-3 mr-1" />
+                    {(() => {
+                      const student = sectionStudents.find((s: any) => s.id === selectedStudentId)
+                      return student
+                        ? (student.first_name && student.last_name
+                            ? `${student.first_name} ${student.last_name}`
+                            : student.username || student.email)
+                        : 'Estudiante seleccionado'
+                    })()}
+                    <button
+                      onClick={() => setSelectedStudentId(null)}
+                      className="ml-1 hover:text-primary/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {searchTerm && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary-100 text-primary">
+                    Búsqueda: "{searchTerm}"
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="ml-1 hover:text-primary/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+                {filterStatus !== 'all' && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-primary-100 text-primary">
+                    {filterStatus === 'public' ? 'Públicos' : 'Privados'}
+                    <button
+                      onClick={() => setFilterStatus('all')}
+                      className="ml-1 hover:text-primary/70"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

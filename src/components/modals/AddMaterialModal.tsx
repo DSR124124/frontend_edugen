@@ -564,12 +564,12 @@ export function AddMaterialModal({
                     <FiBook className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-small font-semibold text-base-content">Material de Clase</div>
+                    <div className="text-small font-semibold text-base-content">Distribución General</div>
                     <div className="text-extra-small text-primary font-medium">Recomendado</div>
                   </div>
                 </div>
                 <div className="text-extra-small text-base-content/70 leading-tight">
-                  Se compartirá automáticamente con todos los estudiantes del curso en sus portafolios
+                  El material se asignará a todos los estudiantes de la sección seleccionada
                 </div>
                 {formData.is_shared && (
                   <div className="mt-1 flex items-center space-x-1 text-extra-small text-primary">
@@ -604,12 +604,12 @@ export function AddMaterialModal({
                     <FiUser className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-small font-semibold text-base-content">Material Personalizado</div>
+                    <div className="text-small font-semibold text-base-content">Distribución Personalizada</div>
                     <div className="text-extra-small text-secondary font-medium">Avanzado</div>
                   </div>
                 </div>
                 <div className="text-extra-small text-base-content/70 leading-tight">
-                  Selecciona estudiantes específicos para agregar a sus portafolios
+                  Selecciona estudiantes específicos para recibir el material
                 </div>
                 {!formData.is_shared && (
                   <div className="mt-1 flex items-center space-x-1 text-extra-small text-secondary">

@@ -7,7 +7,7 @@ import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { Select } from '../ui/Select'
-import { FiUpload, FiGlobe, FiUserCheck, FiInfo } from 'react-icons/fi'
+import { FiUpload, FiGlobe, FiUserCheck, FiInfo, FiX } from 'react-icons/fi'
 
 interface AssignMaterialModalProps {
   isOpen: boolean
@@ -28,11 +28,12 @@ export function AssignMaterialModal({
   isOpen, 
   onClose, 
   onAssign, 
-  content, 
-  sections = [] 
+  content
 }: AssignMaterialModalProps) {
   const [formData, setFormData] = useState({
-    sectionId: 0,
+    courseId: '' as number | string,
+    gradeLevelId: '' as number | string,
+    sectionId: '' as number | string,
     title: '',
     description: '',
     assignmentType: 'general' as 'general' | 'personalized',
@@ -41,19 +42,71 @@ export function AssignMaterialModal({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
-  // Obtener estudiantes de la sección seleccionada
+  // Obtener cursos del profesor
+  const { data: coursesData, isLoading: loadingCourses } = useQuery({
+    queryKey: ['professor-courses'],
+    queryFn: async () => {
+      const response = await academicApi.getCourses()
+      // Manejar tanto respuestas con results como sin results
+      return response.data?.results || response.data || []
+    },
+    enabled: Boolean(isOpen)
+  })
+
+  const courses = Array.isArray(coursesData) ? coursesData : []
+
+  // Obtener secciones del profesor
+  const { data: professorSections } = useQuery({
+    queryKey: ['professor-sections'],
+    queryFn: () => academicApi.getMySections().then(res => res.data),
+    enabled: Boolean(isOpen)
+  })
+
+  // Filtrar secciones por curso y grado seleccionados
+  const availableSections = professorSections?.filter((section: Section) => {
+    const matchesCourse = !formData.courseId || section.course?.id === formData.courseId
+    const matchesGrade = !formData.gradeLevelId || section.grade_level?.id === formData.gradeLevelId
+    return matchesCourse && matchesGrade
+  }) || []
+
+  // Obtener grados únicos de las secciones del curso seleccionado
+  const availableGradeLevels = formData.courseId && formData.courseId !== '' 
+    ? Array.from(new Map(
+        (professorSections || [])
+          .filter((section: Section) => section.course?.id === formData.courseId)
+          .map((section: Section) => [
+            section.grade_level?.id,
+            section.grade_level
+          ])
+          .filter(([id]: [number | undefined, any]) => id)
+      ).values())
+    : []
+
+  // Obtener estudiantes de la sección seleccionada (solo para asignación personalizada)
   const { data: sectionStudents, isLoading: loadingStudents, error: studentsError } = useQuery({
     queryKey: ['section-students', formData.sectionId, formData.assignmentType],
-    queryFn: () => academicApi.getStudentsBySection(formData.sectionId),
-    enabled: isOpen && formData.sectionId > 0 && formData.assignmentType === 'personalized'
+    queryFn: () => academicApi.getStudentsBySection(Number(formData.sectionId)),
+    enabled: Boolean(isOpen && formData.sectionId && formData.sectionId !== '' && formData.assignmentType === 'personalized')
   })
 
   // Inicializar datos del formulario
   useEffect(() => {
     if (content && isOpen) {
       setFormData({
-        sectionId: 0,
+        courseId: '',
+        gradeLevelId: '',
+        sectionId: '',
         title: content.title || '',
+        description: '',
+        assignmentType: 'general',
+        selectedStudents: []
+      })
+    } else if (isOpen) {
+      setFormData({
+        courseId: '',
+        gradeLevelId: '',
+        sectionId: '',
+        title: '',
         description: '',
         assignmentType: 'general',
         selectedStudents: []
@@ -63,6 +116,29 @@ export function AssignMaterialModal({
     setErrors({})
     setTouched({})
   }, [content, isOpen])
+
+  // Limpiar campos dependientes cuando cambia el curso
+  useEffect(() => {
+    if (!formData.courseId || formData.courseId === '') {
+      setFormData(prev => ({
+        ...prev,
+        gradeLevelId: '',
+        sectionId: '',
+        selectedStudents: []
+      }))
+    }
+  }, [formData.courseId])
+
+  // Limpiar sección cuando cambia el grado
+  useEffect(() => {
+    if (!formData.gradeLevelId || formData.gradeLevelId === '') {
+      setFormData(prev => ({
+        ...prev,
+        sectionId: '',
+        selectedStudents: []
+      }))
+    }
+  }, [formData.gradeLevelId])
 
   // Limpiar estudiantes seleccionados cuando cambia el tipo de asignación
   useEffect(() => {
@@ -76,8 +152,10 @@ export function AssignMaterialModal({
 
   const validateField = (name: string, value: string | number | number[]) => {
     switch (name) {
+      case 'courseId':
+        return !value || value === '' ? 'Debe seleccionar un curso' : ''
       case 'sectionId':
-        return value === 0 ? 'Debe seleccionar una sección' : ''
+        return !value || value === '' ? 'Debe seleccionar una sección' : ''
       case 'title':
         return !value || (value as string).trim() === '' ? 'El título es obligatorio' : ''
       case 'selectedStudents':
@@ -92,13 +170,20 @@ export function AssignMaterialModal({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // Convertir valores numéricos, pero mantener '' para valores vacíos
+    let processedValue: string | number = value
+    if (name === 'courseId' || name === 'gradeLevelId' || name === 'sectionId') {
+      processedValue = value === '' ? '' : Number(value)
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: processedValue }))
     
     // Marcar campo como tocado
     setTouched(prev => ({ ...prev, [name]: true }))
     
     // Validar campo en tiempo real
-    const error = validateField(name, value)
+    const error = validateField(name, processedValue)
     setErrors(prev => ({ ...prev, [name]: error }))
   }
 
@@ -129,6 +214,29 @@ export function AssignMaterialModal({
     setErrors(prev => ({ ...prev, selectedStudents: 'Debe seleccionar al menos un estudiante' }))
   }
 
+  // Función para limpiar la selección de curso, grado y sección
+  const handleClearSelection = () => {
+    setFormData(prev => ({
+      ...prev,
+      courseId: '',
+      gradeLevelId: '',
+      sectionId: '',
+      selectedStudents: []
+    }))
+    setErrors(prev => ({
+      ...prev,
+      courseId: '',
+      gradeLevelId: '',
+      sectionId: ''
+    }))
+    setTouched(prev => ({
+      ...prev,
+      courseId: false,
+      gradeLevelId: false,
+      sectionId: false
+    }))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -141,6 +249,7 @@ export function AssignMaterialModal({
 
     setErrors(newErrors)
     setTouched({
+      courseId: true,
       sectionId: true,
       title: true,
       selectedStudents: formData.assignmentType === 'personalized'
@@ -148,7 +257,7 @@ export function AssignMaterialModal({
 
     if (Object.keys(newErrors).length === 0) {
       onAssign({
-        sectionId: formData.sectionId,
+        sectionId: Number(formData.sectionId),
         title: formData.title,
         description: formData.description,
         assignmentType: formData.assignmentType,
@@ -161,51 +270,26 @@ export function AssignMaterialModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Crear Material"
+      title={content ? "Asignar Material Generado por IA" : "Asignar Material"}
       size="lg"
     >
       <div className="space-y-6">
-        {/* Información del Contenido */}
-        {content && (
-          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <div className="p-2 bg-primary-100 rounded-lg flex-shrink-0">
-                <FiUpload className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-primary mb-2">Contenido a Asignar</h4>
-                <div className="text-sm text-primary/80 space-y-1">
-                  <p><strong>Título:</strong> {content.title || 'Sin título'}</p>
-                  <p><strong>Fecha de creación:</strong> {new Date(content.created_at).toLocaleDateString('es-ES')}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Selección de Sección */}
-          <Select
-            label="Sección"
-            value={formData.sectionId}
+          {/* 1. Título del Material (PRIMERO) */}
+          <Input
+            label="Título del Material"
+            value={formData.title}
             onChange={handleChange}
-            name="sectionId"
+            name="title"
+            placeholder="Ingrese el título del material"
             required
-            error={errors.sectionId && touched.sectionId ? errors.sectionId : undefined}
-            placeholder="Seleccionar sección..."
-            options={[
-              { value: 0, label: 'Seleccionar sección...' },
-              ...sections.map((section: Section) => ({
-                value: section.id,
-                label: `${section.name} - ${section.course?.name} (${section.grade_level?.name || 'Sin grado'} - Nivel ${section.grade_level?.level || 'N/A'})`
-              }))
-            ]}
+            error={errors.title && touched.title ? errors.title : undefined}
           />
 
-          {/* Tipo de Asignación */}
+          {/* 2. Tipo de Distribución */}
           <div>
             <label className="block text-sm font-medium text-base-content mb-3">
-              Tipo de Asignación <span className="text-error">*</span>
+              Tipo de Distribución <span className="text-error">*</span>
             </label>
             <div className="space-y-3">
               <label className="flex items-start space-x-3 p-4 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
@@ -222,9 +306,9 @@ export function AssignMaterialModal({
                     <FiGlobe className="w-4 h-4 text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium text-base-content">Asignación General</div>
+                    <div className="font-medium text-base-content">Distribución General</div>
                     <div className="text-sm text-base-content/70">
-                      El material se asignará a todos los estudiantes de la sección
+                      El material se asignará a todos los estudiantes de la sección seleccionada
                     </div>
                   </div>
                 </div>
@@ -244,7 +328,7 @@ export function AssignMaterialModal({
                     <FiUserCheck className="w-4 h-4 text-secondary" />
                   </div>
                   <div>
-                    <div className="font-medium text-base-content">Asignación Personalizada</div>
+                    <div className="font-medium text-base-content">Distribución Personalizada</div>
                     <div className="text-sm text-base-content/70">
                       Selecciona estudiantes específicos para recibir el material
                     </div>
@@ -254,16 +338,117 @@ export function AssignMaterialModal({
             </div>
           </div>
 
-          {/* Título del Material */}
-          <Input
-            label="Título del Material"
-            value={formData.title}
-            onChange={handleChange}
-            name="title"
-            placeholder="Ingrese el título del material"
-            required
-            error={errors.title && touched.title ? errors.title : undefined}
-          />
+          {/* 3. Selección de Curso */}
+          {loadingCourses ? (
+            <div>
+              <label className="block text-sm font-medium text-base-content mb-2">
+                Curso <span className="text-error">*</span>
+              </label>
+              <div className="animate-pulse bg-base-200 h-10 rounded-lg"></div>
+            </div>
+          ) : courses.length === 0 ? (
+            <div>
+              <label className="block text-sm font-medium text-base-content mb-2">
+                Curso <span className="text-error">*</span>
+              </label>
+              <div className="bg-warning-50 border border-warning-200 rounded-lg p-3">
+                <p className="text-sm text-warning-800">
+                  No tienes cursos asignados. Por favor, crea un curso primero.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="relative">
+              <Select
+                label="Curso"
+                value={formData.courseId}
+                onChange={handleChange}
+                name="courseId"
+                required
+                error={errors.courseId && touched.courseId ? errors.courseId : undefined}
+                placeholder="Seleccionar curso..."
+                options={courses.map((course: any) => ({
+                  value: course.id,
+                  label: `${course.name}${course.code ? ` (${course.code})` : ''}`
+                }))}
+              />
+              {formData.courseId && formData.courseId !== '' && (
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="absolute right-2 top-8 p-1 text-base-content/40 hover:text-base-content/70 hover:bg-base-200 rounded transition-colors"
+                  title="Limpiar selección"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* 4. Grado y Sección (se muestran cuando hay curso seleccionado) */}
+          {formData.courseId && formData.courseId !== '' && (
+            <>
+              {/* Selector de Grado (solo para asignación personalizada cuando hay múltiples grados) */}
+              {formData.assignmentType === 'personalized' && availableGradeLevels.length > 1 && (
+                <div className="relative">
+                  <Select
+                    label="Grado"
+                    value={formData.gradeLevelId}
+                    onChange={handleChange}
+                    name="gradeLevelId"
+                    placeholder="Seleccionar grado (opcional)..."
+                    options={availableGradeLevels.map((grade: any) => ({
+                      value: grade.id,
+                      label: `${grade.name} (Nivel ${grade.level})`
+                    }))}
+                  />
+                  {formData.gradeLevelId && formData.gradeLevelId !== '' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({ ...prev, gradeLevelId: '', sectionId: '', selectedStudents: [] }))
+                        setErrors(prev => ({ ...prev, gradeLevelId: '', sectionId: '' }))
+                      }}
+                      className="absolute right-2 top-8 p-1 text-base-content/40 hover:text-base-content/70 hover:bg-base-200 rounded transition-colors"
+                      title="Limpiar selección"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Selector de Sección */}
+              <div className="relative">
+                <Select
+                  label="Sección"
+                  value={formData.sectionId}
+                  onChange={handleChange}
+                  name="sectionId"
+                  required
+                  error={errors.sectionId && touched.sectionId ? errors.sectionId : undefined}
+                  placeholder="Seleccionar sección..."
+                  options={availableSections.map((section: Section) => ({
+                    value: section.id,
+                    label: `${section.name} - Grado: ${section.grade_level?.name || 'N/A'} (Nivel ${section.grade_level?.level || 'N/A'})`
+                  }))}
+                />
+                {formData.sectionId && formData.sectionId !== '' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, sectionId: '', selectedStudents: [] }))
+                      setErrors(prev => ({ ...prev, sectionId: '' }))
+                    }}
+                    className="absolute right-2 top-8 p-1 text-base-content/40 hover:text-base-content/70 hover:bg-base-200 rounded transition-colors"
+                    title="Limpiar selección"
+                  >
+                    <FiX className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Descripción */}
           <Textarea
@@ -276,8 +461,8 @@ export function AssignMaterialModal({
           />
 
 
-          {/* Selección de Estudiantes (solo para asignación personalizada) */}
-          {formData.assignmentType === 'personalized' && formData.sectionId > 0 && (
+          {/* 5. Selección de Estudiantes (solo para asignación personalizada) */}
+          {formData.assignmentType === 'personalized' && formData.sectionId && formData.sectionId !== '' && (
             <div>
               <label className="block text-sm font-medium text-base-content mb-3">
                 Seleccionar Estudiantes <span className="text-error">*</span>
@@ -384,24 +569,34 @@ export function AssignMaterialModal({
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-between items-center pt-4 border-t border-base-300">
             <Button
               type="button"
-              onClick={onClose}
-              variant="outline"
+              onClick={handleClearSelection}
+              variant="ghost"
+              leftIcon={<FiX className="w-4 h-4" />}
             >
-              Cancelar
+              Limpiar filtros
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              leftIcon={<FiUpload className="w-4 h-4" />}
-            >
-              {formData.assignmentType === 'general' 
-                ? 'Asignar a Toda la Sección' 
-                : `Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
-              }
-            </Button>
+            <div className="flex space-x-3">
+              <Button
+                type="button"
+                onClick={onClose}
+                variant="outline"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                leftIcon={<FiUpload className="w-4 h-4" />}
+              >
+                {formData.assignmentType === 'general' 
+                  ? 'Asignar a Toda la Sección' 
+                  : `Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
+                }
+              </Button>
+            </div>
           </div>
         </form>
       </div>

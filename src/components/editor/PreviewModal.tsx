@@ -44,7 +44,7 @@ export function PreviewModal({
         <div className="flex-1 overflow-y-auto p-6">
           <Card className="p-6">
             <div className="prose max-w-none">
-              {document.blocks.map((block, index) => (
+              {(document.blocks || []).map((block, index) => (
                 <div key={block.id || index} className="mb-4">
                   {block.type === 'hero' && (
                     <div className="text-center py-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg">
@@ -81,7 +81,7 @@ export function PreviewModal({
                   )}
                   {block.type === 'list' && (
                     <ul className="list-disc list-inside space-y-2">
-                      {block.items.map((item: string, itemIndex: number) => (
+                      {(block.items || []).map((item: string, itemIndex: number) => (
                         <li key={itemIndex} className="text-gray-700">{item}</li>
                       ))}
                     </ul>
@@ -125,7 +125,7 @@ export function PreviewModal({
                       <p className="text-gray-700">{block.content}</p>
                     </div>
                   )}
-                  {block.type === 'table' && (
+                  {block.type === 'table' && block.tableData && (
                     <div className="my-6 overflow-x-auto">
                       <table className={`w-full border-collapse ${
                         block.striped ? 'table-striped' : ''
@@ -134,7 +134,7 @@ export function PreviewModal({
                       }`}>
                         <thead>
                           <tr className="bg-gray-50">
-                            {block.tableData.headers.map((header, index) => (
+                            {(block.tableData.headers || []).map((header, index) => (
                               <th key={index} className="px-4 py-2 text-left font-semibold text-gray-700 border-b">
                                 {header}
                               </th>
@@ -142,9 +142,9 @@ export function PreviewModal({
                           </tr>
                         </thead>
                         <tbody>
-                          {block.tableData.rows.map((row, rowIndex) => (
+                          {(block.tableData.rows || []).map((row, rowIndex) => (
                             <tr key={rowIndex} className="hover:bg-gray-50">
-                              {row.map((cell, cellIndex) => (
+                              {(row || []).map((cell, cellIndex) => (
                                 <td key={cellIndex} className="px-4 py-2 border-b text-gray-700">
                                   {cell}
                                 </td>
@@ -206,8 +206,10 @@ export function PreviewModal({
                               <p className="text-gray-600">{formBlock.description}</p>
                             )}
                             <div className="space-y-3">
-                              {formBlock.fields?.map((field, fIndex) => (
-                                <div key={field.id ?? `${fIndex}-${(field as any).label ?? (field as any).name ?? 'field'}` }>
+                              {formBlock.fields?.map((field, fIndex) => {
+                                const fieldKey = field.id || `field-${fIndex}-${field.label || 'unnamed'}`
+                                return (
+                                <div key={fieldKey}>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
                                     {field.label}
                                     {field.required && <span className="text-red-500 ml-1">*</span>}
@@ -228,7 +230,8 @@ export function PreviewModal({
                                     />
                                   )}
                                 </div>
-                              ))}
+                                )
+                              })}
                             </div>
                             <button className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
                               Enviar
@@ -249,7 +252,7 @@ export function PreviewModal({
                           <div className="space-y-4">
                             <h3 className="text-lg font-semibold text-gray-800">{quizBlock.question}</h3>
                             <div className="space-y-2">
-                              {quizBlock.options.map((option, index) => (
+                              {(quizBlock.options || []).map((option, index) => (
                                 <label key={index} className="flex items-center space-x-2 cursor-pointer">
                                   <input
                                     type="radio"
