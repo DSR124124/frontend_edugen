@@ -37,6 +37,8 @@ export function ExportSCORMModal({
     description: content?.description || ''
   })
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [titleError, setTitleError] = useState<string>('')
+  const [identifierError, setIdentifierError] = useState<string>('')
 
   // Resetear estado cuando se abre el modal o cambia el contenido
   useEffect(() => {
@@ -50,6 +52,8 @@ export function ExportSCORMModal({
         description: content.description || ''
       })
       setErrorMessage('')
+      setTitleError('')
+      setIdentifierError('')
     }
   }, [isOpen, content])
 
@@ -58,6 +62,8 @@ export function ExportSCORMModal({
     setStep('select')
     setExportFormat('')
     setErrorMessage('')
+    setTitleError('')
+    setIdentifierError('')
     onClose()
   }
 
@@ -69,12 +75,43 @@ export function ExportSCORMModal({
 
   // Paso 2: Configurar parámetros
   const handleConfigure = () => {
+    // Validar título
     if (!exportParams.title.trim()) {
-      setErrorMessage('El título es obligatorio')
+      setTitleError('El título es obligatorio')
+      setErrorMessage('Por favor, completa todos los campos obligatorios')
       return
     }
+    
+    // Validar identificador
+    if (!exportParams.identifier.trim()) {
+      setIdentifierError('El identificador es obligatorio')
+      setErrorMessage('Por favor, completa todos los campos obligatorios')
+      return
+    }
+    
+    // Limpiar errores si todo está bien
+    setTitleError('')
+    setIdentifierError('')
     setErrorMessage('')
     setStep('exporting')
+  }
+  
+  // Limpiar error del título cuando el usuario empieza a escribir
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExportParams(prev => ({ ...prev, title: e.target.value }))
+    if (titleError) {
+      setTitleError('')
+      setErrorMessage('')
+    }
+  }
+  
+  // Limpiar error del identificador cuando el usuario empieza a escribir
+  const handleIdentifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setExportParams(prev => ({ ...prev, identifier: e.target.value }))
+    if (identifierError) {
+      setIdentifierError('')
+      setErrorMessage('')
+    }
   }
 
   // Ejecutar exportación cuando se llega al paso de exporting
@@ -153,9 +190,10 @@ export function ExportSCORMModal({
               <Input
                 label="Título del Paquete SCORM"
                 value={exportParams.title}
-                onChange={(e) => setExportParams(prev => ({ ...prev, title: e.target.value }))}
+                onChange={handleTitleChange}
                 placeholder="Ingrese el título del paquete"
                 required
+                error={titleError}
               />
 
               <Select
@@ -172,9 +210,10 @@ export function ExportSCORMModal({
               <Input
                 label="Identificador (ID)"
                 value={exportParams.identifier}
-                onChange={(e) => setExportParams(prev => ({ ...prev, identifier: e.target.value }))}
+                onChange={handleIdentifierChange}
                 placeholder="Identificador único del paquete"
                 required
+                error={identifierError}
               />
 
               <div>
@@ -190,9 +229,12 @@ export function ExportSCORMModal({
                 />
               </div>
 
-              {errorMessage && (
+              {errorMessage && !titleError && !identifierError && (
                 <div className="p-3 bg-error-50 border border-error-200 rounded-lg text-sm text-error">
-                  {errorMessage}
+                  <div className="flex items-center space-x-2">
+                    <FiAlertCircle className="w-4 h-4" />
+                    <span>{errorMessage}</span>
+                  </div>
                 </div>
               )}
             </div>

@@ -18,6 +18,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     options,
     placeholder,
     id,
+    required,
     ...props 
   }, ref) => {
     const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`
@@ -30,6 +31,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className="label"
           >
             {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <select
@@ -40,6 +42,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
           ref={ref}
+          required={required}
           {...props}
         >
           {placeholder && (

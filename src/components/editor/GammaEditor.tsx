@@ -314,7 +314,7 @@ const BlockComponent = memo<BlockComponentProps>(({
                       Opciones de respuesta
                     </label>
                     <div className="space-y-2">
-                      {quizBlock.options.map((option, index) => (
+                      {(Array.isArray(quizBlock.options) ? quizBlock.options : []).map((option, index) => (
                         <div key={`quiz-option-${index}-${option.slice(0, 10)}`} className="flex items-center space-x-2">
                           <input
                             type="radio"
@@ -438,7 +438,7 @@ const BlockComponent = memo<BlockComponentProps>(({
                     <div className="space-y-3">
                       <h3 className="text-lg font-semibold text-gray-800">{quizBlock.question}</h3>
                       <div className="space-y-2">
-                        {quizBlock.options.map((option, index) => (
+                        {(Array.isArray(quizBlock.options) ? quizBlock.options : []).map((option, index) => (
                           <label key={`quiz-preview-option-${index}-${option.slice(0, 10)}`} className="flex items-center space-x-2 cursor-pointer">
                             <input
                               type="radio"
@@ -1303,7 +1303,7 @@ const BlockComponent = memo<BlockComponentProps>(({
       {block.type === 'list' && (
         <div className={`${block.props?.padding === 'medium' ? 'p-4' : ''}`}>
           <div className="space-y-2">
-            {block.items.map((item, index) => (
+            {(Array.isArray(block.items) ? block.items : []).map((item, index) => (
               <div key={`list-item-${index}-${item.slice(0, 10)}`} className="flex items-center space-x-2">
                 <span className="text-gray-400">•</span>
                 <input
@@ -1375,7 +1375,7 @@ const BlockComponent = memo<BlockComponentProps>(({
             }`}>
               <thead>
                 <tr className="bg-gray-50">
-                  {block.tableData.headers.map((header, index) => (
+                  {(Array.isArray(block.tableData?.headers) ? block.tableData.headers : []).map((header, index) => (
                     <th key={`table-header-${index}-${header.slice(0, 10)}`} className="px-4 py-2 text-left font-semibold text-gray-700 border-b">
                       <input
                         type="text"
@@ -1396,9 +1396,9 @@ const BlockComponent = memo<BlockComponentProps>(({
                 </tr>
               </thead>
               <tbody>
-                {block.tableData.rows.map((row, rowIndex) => (
+                {(Array.isArray(block.tableData?.rows) ? block.tableData.rows : []).map((row, rowIndex) => (
                   <tr key={`table-row-${rowIndex}`} className="hover:bg-gray-50">
-                    {row.map((cell, cellIndex) => (
+                    {(Array.isArray(row) ? row : []).map((cell, cellIndex) => (
                       <td key={`table-cell-${rowIndex}-${cellIndex}-${cell.slice(0, 5)}`} className="px-4 py-2 border-b">
                         <input
                           type="text"
