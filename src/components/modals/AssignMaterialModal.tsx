@@ -22,13 +22,15 @@ interface AssignMaterialModalProps {
   content: GeneratedContent | null
   sections?: Section[]
   topics?: Topic[]
+  isLoading?: boolean
 }
 
 export function AssignMaterialModal({ 
   isOpen, 
   onClose, 
   onAssign, 
-  content
+  content,
+  isLoading = false
 }: AssignMaterialModalProps) {
   const [formData, setFormData] = useState({
     courseId: '' as number | string,
@@ -590,11 +592,15 @@ export function AssignMaterialModal({
                 type="submit"
                 variant="primary"
                 leftIcon={<FiUpload className="w-4 h-4" />}
+                disabled={isLoading}
               >
-                {formData.assignmentType === 'general' 
-                  ? 'Asignar a Toda la Sección' 
-                  : `Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
-                }
+                {isLoading ? (
+                  'Asignando...'
+                ) : (
+                  formData.assignmentType === 'general' 
+                    ? 'Asignar a Toda la Sección' 
+                    : `Asignar a ${formData.selectedStudents.length} Estudiante${formData.selectedStudents.length !== 1 ? 's' : ''}`
+                )}
               </Button>
             </div>
           </div>

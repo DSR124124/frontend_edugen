@@ -7,6 +7,7 @@ import { useNotificationContext } from '../../hooks/useNotificationContext'
 import { GammaEditor } from '../../components/editor/GammaEditor'
 import { PreviewModal } from '../../components/editor/PreviewModal'
 import { Document } from '../../types/block-schema'
+import { useAuthStore } from '../../store/auth'
 import { 
   FiFileText, 
   FiEdit3, 
@@ -28,6 +29,7 @@ export function GeneratedContentPage() {
   const queryClient = useQueryClient()
   const { showSuccess, showError } = useNotificationContext()
   const { sections: professorSections } = useProfessorSections()
+  const { user } = useAuthStore()
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
   const [currentDocument, setCurrentDocument] = useState<Document | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -38,6 +40,7 @@ export function GeneratedContentPage() {
   const [assigningContent, setAssigningContent] = useState<GeneratedContent | null>(null)
   const [isExportSCORMModalOpen, setIsExportSCORMModalOpen] = useState(false)
   const [exportingContent, setExportingContent] = useState<GeneratedContent | null>(null)
+  const [isAssigningMaterial, setIsAssigningMaterial] = useState(false)
 
   // Obtener contenidos generados
   const { data: generatedContents, isLoading, error } = useQuery({
@@ -50,7 +53,7 @@ export function GeneratedContentPage() {
     mutationFn: (id: number) => aiContentApi.deleteGeneratedContent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['generated-content'] })
-      showSuccess('Contenido eliminado exitosamente', 'success')
+      showSuccess('Contenido eliminado exitosamente', 'El contenido se ha eliminado correctamente')
       setIsDeleteModalOpen(false)
       setDeletingContent(null)
     },
@@ -95,10 +98,55 @@ export function GeneratedContentPage() {
     }
   }
 
+  const normalizeDocument = (doc: Document): Document => {
+    // Normalizar bloques para asegurar que todas las propiedades requeridas estén presentes
+    const normalizedBlocks = doc.blocks.map(block => {
+      // Normalizar bloques de tipo 'list'
+      if (block.type === 'list') {
+        return {
+          ...block,
+          items: Array.isArray(block.items) ? block.items : []
+        }
+      }
+      // Normalizar bloques de tipo 'table'
+      if (block.type === 'table') {
+        return {
+          ...block,
+          tableData: {
+            headers: Array.isArray(block.tableData?.headers) ? block.tableData.headers : ['Columna 1'],
+            rows: Array.isArray(block.tableData?.rows) ? block.tableData.rows : [['']]
+          }
+        }
+      }
+      // Normalizar bloques de tipo 'quiz'
+      if (block.type === 'quiz') {
+        return {
+          ...block,
+          options: Array.isArray(block.options) ? block.options : ['Opción 1', 'Opción 2'],
+          correctAnswer: typeof block.correctAnswer === 'number' ? block.correctAnswer : 0
+        }
+      }
+      // Normalizar bloques de tipo 'form'
+      if (block.type === 'form') {
+        return {
+          ...block,
+          fields: Array.isArray(block.fields) ? block.fields : []
+        }
+      }
+      return block
+    })
+    
+    return {
+      ...doc,
+      blocks: normalizedBlocks
+    }
+  }
+
   const handleEditContent = (content: GeneratedContent) => {
     try {
       const document = content.gamma_document as unknown as Document
-      setCurrentDocument(document)
+      const normalizedDocument = normalizeDocument(document)
+      setCurrentDocument(normalizedDocument)
       setSelectedContent(content)
       setIsEditorModalOpen(true)
     } catch {
@@ -128,10 +176,67 @@ export function GeneratedContentPage() {
     assignmentType: 'general' | 'personalized'
     selectedStudents?: number[]
   }) => {
+    // Prevenir doble clic
+    if (isAssigningMaterial) {
+      return
+    }
+
     try {
+      setIsAssigningMaterial(true)
+      
       if (!assigningContent) {
         showError('Error', 'No hay contenido seleccionado para asignar')
+        setIsAssigningMaterial(false)
         return
+      }
+
+      // Verificar si ya existe un material con el mismo nombre en la misma sección
+      try {
+        const { data: existingMaterials } = await academicApi.getMaterials()
+        const materials = Array.isArray(existingMaterials) ? existingMaterials : []
+        
+        const duplicateMaterial = materials.find((material: any) => 
+          material.name === data.title && 
+          material.topic &&
+          material.professor === user?.id
+        )
+
+        if (duplicateMaterial) {
+          // Verificar si el material ya está asignado a los estudiantes de la sección
+          const { data: sectionStudents } = await academicApi.getStudentsBySection(data.sectionId)
+          const students = sectionStudents?.students || []
+          const studentIds = students.map((s: any) => s.id)
+          
+          const existingAssignedStudents = duplicateMaterial.assigned_students || []
+          const allStudentsAssigned = studentIds.every((id: number) => 
+            existingAssignedStudents.includes(id)
+          )
+
+          if (allStudentsAssigned && studentIds.length > 0) {
+            showError(
+              'Material ya asignado', 
+              `El material "${data.title}" ya está asignado a todos los estudiantes de esta sección. Por favor, use un nombre diferente o edite el material existente.`
+            )
+            setIsAssigningMaterial(false)
+            return
+          }
+
+          // Si el material existe pero no está completamente asignado, mostrar advertencia
+          const response = await new Promise((resolve) => {
+            const shouldProceed = window.confirm(
+              `Ya existe un material con el nombre "${data.title}". ¿Desea crear un nuevo material o actualizar el existente asignándolo a esta sección?`
+            )
+            resolve(shouldProceed)
+          })
+
+          if (!response) {
+            setIsAssigningMaterial(false)
+            return
+          }
+        }
+      } catch (error) {
+        console.warn('Error al verificar materiales existentes:', error)
+        // Continuar con la creación si hay error en la verificación
       }
 
       // Paso 1: Obtener un tema válido para el material
@@ -184,13 +289,26 @@ export function GeneratedContentPage() {
         
         if (assignResponse.data) {
           const assignResult = assignResponse.data
-          showSuccess(`Material asignado exitosamente a ${assignResult.assigned_count} estudiante(s)`, 'success')
+          
+          // Verificar si ya estaba asignado
+          if (assignResult.already_assigned || assignResult.assigned_count === 0) {
+            showError(
+              'Material ya asignado', 
+              assignResult.warning || `El material ya está asignado a todos los estudiantes seleccionados.`
+            )
+          } else {
+            showSuccess(
+              `Material asignado exitosamente a ${assignResult.assigned_count} estudiante(s)`, 
+              'El material ya está disponible en los portafolios de los estudiantes seleccionados'
+            )
+          }
           
           // Invalidar queries relacionadas con materiales para refrescar la UI
           await queryClient.invalidateQueries({ queryKey: ['topic-materials'] })
           await queryClient.invalidateQueries({ queryKey: ['materials'] })
           await queryClient.invalidateQueries({ queryKey: ['section-materials'] })
           
+          setIsAssigningMaterial(false)
           handleCloseAssignModal()
         } else {
           throw new Error('Error al asignar el material a los estudiantes')
@@ -200,6 +318,7 @@ export function GeneratedContentPage() {
       }
     } catch (error: unknown) {
       console.error('Error al asignar material:', error)
+      setIsAssigningMaterial(false)
       
       if (error instanceof Error) {
         // Si es un error de autenticación, mostrar mensaje específico
@@ -315,7 +434,7 @@ export function GeneratedContentPage() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 min-h-0" data-tour="generated-content-page">
+    <div className="space-y-3 sm:space-y-4 min-h-0 max-w-full overflow-x-hidden" data-tour="generated-content-page">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-3 sm:space-y-0" data-tour="generated-content-header">
         <div className="flex items-start sm:items-center space-x-2 sm:space-x-3">
@@ -388,7 +507,7 @@ export function GeneratedContentPage() {
       </div>
 
       {/* Content Table */}
-      <div className="card p-3 sm:p-4" data-tour="generated-content-content">
+      <div className="card p-3 sm:p-4 max-w-full overflow-x-auto" data-tour="generated-content-content">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
           <h2 className="text-lg sm:text-xl font-bold text-base-content flex items-center space-x-2">
             <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
@@ -493,8 +612,8 @@ export function GeneratedContentPage() {
             </div>
             
             {/* Vista de Tabla para tablets */}
-            <div className="hidden sm:block lg:hidden overflow-x-auto">
-              <table className="w-full">
+            <div className="hidden sm:block lg:hidden overflow-x-auto -mx-3 sm:-mx-4 px-3 sm:px-4">
+              <table className="w-full min-w-[600px]">
                 <thead className="bg-base-200">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
@@ -596,23 +715,23 @@ export function GeneratedContentPage() {
             </div>
             
             {/* Vista de Tabla para desktop */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full">
+            <div className="hidden lg:block overflow-x-auto -mx-3 sm:-mx-4 px-3 sm:px-4" style={{ maxWidth: '100%' }}>
+              <table className="w-full min-w-[700px]">
                 <thead className="bg-base-200">
                   <tr>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-2 lg:px-3 xl:px-4 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider min-w-[180px] max-w-[250px]">
                       Contenido
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-2 lg:px-3 xl:px-4 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider min-w-[100px] max-w-[120px]">
                       Autor
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-2 lg:px-3 xl:px-4 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider whitespace-nowrap min-w-[100px]">
                       Creado
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-2 lg:px-3 xl:px-4 py-3 text-left text-xs font-medium text-base-content/70 uppercase tracking-wider whitespace-nowrap min-w-[80px]">
                       Estado
                     </th>
-                    <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider">
+                    <th className="px-2 lg:px-3 xl:px-4 py-3 text-right text-xs font-medium text-base-content/70 uppercase tracking-wider min-w-[200px] 2xl:min-w-[280px]">
                       Acciones
                     </th>
                   </tr>
@@ -620,28 +739,28 @@ export function GeneratedContentPage() {
                 <tbody className="bg-base-100 divide-y divide-base-300">
                   {contents.map((content) => (
                     <tr key={content.id} className="hover:bg-base-200/50 transition-colors">
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                            <FiFileText className="w-4 h-4 text-primary" />
+                      <td className="px-2 lg:px-3 xl:px-4 py-4">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                            <FiFileText className="w-3.5 h-3.5 text-primary" />
                           </div>
-                          <div>
-                            <div className="text-sm font-medium text-base-content">{content.title}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs lg:text-sm font-medium text-base-content truncate" title={content.title}>{content.title}</div>
                             {content.description && (
-                              <div className="text-sm text-base-content/70 max-w-xs truncate" title={content.description}>
+                              <div className="text-xs text-base-content/70 truncate max-w-[150px] xl:max-w-[200px]" title={content.description}>
                                 {content.description}
                               </div>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-base-content font-medium bg-base-200 px-2 py-1 rounded">
+                      <td className="px-2 lg:px-3 xl:px-4 py-4">
+                        <span className="text-xs lg:text-sm text-base-content font-medium bg-base-200 px-1.5 py-0.5 rounded inline-block truncate max-w-[90px]" title={content.user_name}>
                           {content.user_name}
                         </span>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-base-content">
+                      <td className="px-2 lg:px-3 xl:px-4 py-4 whitespace-nowrap">
+                        <div className="text-xs lg:text-sm text-base-content">
                           {new Date(content.created_at).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'short',
@@ -649,53 +768,63 @@ export function GeneratedContentPage() {
                           })}
                         </div>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
-                          <div className="w-2 h-2 bg-success rounded-full mr-1"></div>
+                      <td className="px-2 lg:px-3 xl:px-4 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success-100 text-success">
+                          <div className="w-1.5 h-1.5 bg-success rounded-full mr-1"></div>
                           Activo
                         </span>
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
+                      <td className="px-2 lg:px-3 xl:px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-0.5 lg:gap-1 2xl:gap-2">
                           <Button 
                             onClick={() => handleViewContent(content)}
                             variant="ghost"
                             size="sm"
-                            leftIcon={<FiEye className="w-4 h-4" />}
+                            leftIcon={<FiEye className="w-3.5 h-3.5" />}
+                            className="text-xs px-1.5 lg:px-2 2xl:px-3 min-w-[32px] h-8"
+                            title="Ver"
                           >
-                            Ver
+                            <span className="hidden 2xl:inline">Ver</span>
                           </Button>
                           <Button 
                             onClick={() => handleEditContent(content)}
                             variant="ghost"
                             size="sm"
-                            leftIcon={<FiEdit3 className="w-4 h-4" />}
+                            leftIcon={<FiEdit3 className="w-3.5 h-3.5" />}
+                            className="text-xs px-1.5 lg:px-2 2xl:px-3 min-w-[32px] h-8"
+                            title="Editar"
                           >
-                            Editar
+                            <span className="hidden 2xl:inline">Editar</span>
                           </Button>
                           <Button 
                             onClick={() => handleAssignContent(content)}
                             variant="primary"
                             size="sm"
-                            leftIcon={<FiUserCheck className="w-4 h-4" />}
+                            leftIcon={<FiUserCheck className="w-3.5 h-3.5" />}
+                            className="text-xs px-1.5 lg:px-2 2xl:px-3 min-w-[32px] h-8"
+                            title="Asignar"
                           >
-                            Asignar
+                            <span className="hidden 2xl:inline">Asignar</span>
                           </Button>
                           <Button 
                             onClick={() => handleExportContent(content)}
                             variant="secondary"
                             size="sm"
-                            leftIcon={<FiDownload className="w-4 h-4" />}
+                            leftIcon={<FiDownload className="w-3.5 h-3.5" />}
+                            className="text-xs px-1.5 lg:px-2 2xl:px-3 min-w-[32px] h-8"
+                            title="Exportar SCORM"
                           >
-                            SCORM
+                            <span className="hidden 2xl:inline">SCORM</span>
                           </Button>
                           <Button 
                             onClick={() => handleDeleteContent(content)}
                             variant="danger"
                             size="sm"
-                            leftIcon={<FiTrash2 className="w-4 h-4" />}
+                            leftIcon={<FiTrash2 className="w-3.5 h-3.5" />}
+                            className="text-xs px-1.5 lg:px-2 2xl:px-3 min-w-[32px] h-8"
+                            title="Eliminar"
                           >
-                            Eliminar
+                            <span className="hidden 2xl:inline">Eliminar</span>
                           </Button>
                         </div>
                       </td>
@@ -806,6 +935,7 @@ export function GeneratedContentPage() {
         onAssign={handleAssignMaterial}
         content={assigningContent}
         sections={professorSections || []}
+        isLoading={isAssigningMaterial}
       />
 
       {/* Modal de Exportación SCORM */}
